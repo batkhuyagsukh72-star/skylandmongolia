@@ -504,10 +504,10 @@
     var tl = gsap.timeline({ onComplete: finalState });
     fig._tl = tl;
     tl.add(function () { pins[0].classList.add('on'); }, 0.15);
-    fly(tl, route, mob ? 1.5 : 1.8, 0.75);
+    fly(tl, route, mob ? 1.1 : 1.3, 0.45);
     tl.set(car, { opacity: 1 });
     segEls.forEach(function (el, si) {
-      var len = +el.dataset.len, dur = Math.min(Math.max(len / 62, 0.7), 1.8), st = { v: 0 };
+      var len = +el.dataset.len, dur = Math.min(Math.max(len / 95, 0.55), 1.2), st = { v: 0 };
       tl.to(st, { v: 1, duration: dur, ease: 'power1.inOut', onUpdate: function () {
         el.style.strokeDashoffset = len * (1 - st.v);
         var pt = el.getPointAtLength(len * st.v); carPt = [pt.x, pt.y]; placeCar(q(cam.s) / cam.s);
@@ -518,11 +518,11 @@
         chips.forEach(function (b) { if (+b.dataset.i === to) b.classList.remove('dim'); });
         if (stops[to] && stops[to].img) showCard(to); else hideCard();
       });
-      if (stops[to] && stops[to].img) tl.to({}, { duration: 1.1 });
+      if (stops[to] && stops[to].img) tl.to({}, { duration: 0.75 });
     });
     tl.add(function () { hideCard(); gsap.to(car, { opacity: 0, duration: 0.3 }); if (!mob) svg.classList.add('lbl-off'); }, '+=0.15');
     if (!mob) {
-      fly(tl, full, 1.7, '+=0.2');
+      fly(tl, full, 1.2, '+=0.1');
       tl.add(function () { applyLayout(le); svg.classList.remove('lbl-off'); });
       tl.to({}, { duration: 0.4 });
     }
@@ -633,14 +633,19 @@
     jm.view.addEventListener('click', function () { jmToggleView(); });
     jm.chips.addEventListener('click', function (e) { var b = e.target.closest('button[data-i]'); if (b) jmGoStop(+b.dataset.i); });
     if (!hasGL()) { jmFallback(); return; }
-    var io = new IntersectionObserver(function (es) {
+    /* load the map library a little before the section, but start the flight only when most of the map is on screen */
+    var pre = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting && !jm.loading) { jm.loading = true; jmLoad(); pre.disconnect(); } });
+    }, { rootMargin: '700px 0px' });
+    pre.observe(jm.stage);
+    var see = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
-        if (e.isIntersecting && !jm.loading) { jm.loading = true; jmLoad(); }
-        jm.visible = e.intersectionRatio >= 0.4;
-        if (jm.visible && jm.ready && !jm.played) jmStart();
+        var r = e.intersectionRatio;
+        if (r >= 0.6) { jm.visible = true; if (jm.ready && !jm.played) jmStart(); }
+        else if (r < 0.2) { jm.visible = false; if (jm.playing) { jmStop(false); jm.played = false; } }
       });
-    }, { rootMargin: '900px 0px', threshold: [0, 0.4] });
-    io.observe(jm.stage);
+    }, { threshold: [0, 0.2, 0.6] });
+    see.observe(jm.stage);
   }
   function jmFallback() {
     jm.fallback = true; jm.stage.classList.add('jm-flat');
@@ -768,7 +773,7 @@
     var R = jm.R, s = R.segs[i], map = jm.map;
     return new Promise(function (res) {
       if (my !== jm.tok) return res();
-      var dur = Math.min(Math.max(s.km / 150, 2.1), 3.6) * 1000, c0 = { z: map.getZoom(), p: map.getPitch(), b: map.getBearing() };
+      var dur = Math.min(Math.max(s.km / 260, 1.2), 2) * 1000, c0 = { z: map.getZoom(), p: map.getPitch(), b: map.getBearing() };
       var a = posAt(R, s.g0), b = posAt(R, s.g1), lat = (a[1] + b[1]) / 2, zD = jmDriveZoom(s.km, lat), zA = jmCloseZoom(), hb = jmHeading(a, b), t0 = performance.now();
       if (jm.car) { jm.carEl.classList.add('on'); }
       (function fr(now) {
@@ -797,9 +802,9 @@
     (jm.pins || []).forEach(function (p) { p.el.classList.remove('on'); });
     $$('button', jm.chips).forEach(function (b) { b.classList.add('dim'); });
     map.jumpTo(Object.assign(map.cameraForBounds(MN_B, { padding: 16, bearing: 0 }) || {}, { pitch: 0, bearing: 0 }));
-    await jmWait(500, my); if (my !== jm.tok) return;
+    await jmWait(250, my); if (my !== jm.tok) return;
     jmPinOn(0, true);
-    await jmCam({ center: R.ll[0], zoom: jmCloseZoom() - 1.3, pitch: 52, bearing: -10 }, 2600, my);
+    await jmCam({ center: R.ll[0], zoom: jmCloseZoom() - 1.3, pitch: 52, bearing: -10 }, 1500, my);
     for (var i = 0; i < R.segs.length; i++) {
       await jmDrive(i, my); if (my !== jm.tok) return;
       var to = i + 1, st = R.stops[to];
@@ -807,12 +812,12 @@
       $$('button', jm.chips).forEach(function (b) { if (+b.dataset.i === to) b.classList.remove('dim'); });
       if (st.img) {
         jmCard(to);
-        await jmCam({ ease: true, bearing: map.getBearing() + 16, pitch: 62 }, 2400, my); if (my !== jm.tok) return;
+        await jmCam({ ease: true, bearing: map.getBearing() + 9, pitch: 62 }, 1300, my); if (my !== jm.tok) return;
         jmHideCard();
       }
     }
     jm.carEl.classList.remove('on');
-    await jmOverview(2600, my); if (my !== jm.tok) return;
+    await jmOverview(1800, my); if (my !== jm.tok) return;
     jm.playing = false; jm.atRoute = true; jmCtl();
   }
   function jmStop(showAll) {
