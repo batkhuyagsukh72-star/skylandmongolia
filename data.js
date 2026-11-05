@@ -270,6 +270,17 @@ window.SKY = {
     elsen: { en: 'Elsen Tasarkhai', mn: 'Элсэн тасархай' }, orkhon: { en: 'Orkhon waterfall', mn: 'Орхоны хүрхрээ' }, erdenezuu: { en: 'Erdene Zuu', mn: 'Эрдэнэ Зуу' },
     khustai: { en: 'Khustai park', mn: 'Хустайн нуруу' }
   },
+  /* Place labels on the route map: [lon, lat], optional rotation r (degrees) and anchor a */
+  mapLabels: [
+    { c: 'big', ll: [97.4, 44.85], t: { en: 'MONGOLIA', mn: 'МОНГОЛ УЛС' } },
+    { c: 'country', ll: [113.4, 51.55], t: { en: 'RUSSIA', mn: 'ОРОС' } },
+    { c: 'country', ll: [98.6, 41.3], t: { en: 'CHINA', mn: 'ХЯТАД' } },
+    { c: 'mt', ll: [98.7, 47.75], r: 18, t: { en: 'KHANGAI MOUNTAINS', mn: 'ХАНГАЙН НУРУУ' } },
+    { c: 'mt', ll: [92.5, 47.05], r: 40, t: { en: 'ALTAI MOUNTAINS', mn: 'МОНГОЛ АЛТАЙН НУРУУ' } },
+    { c: 'mt', ll: [109.8, 48.95], r: -28, t: { en: 'KHENTII', mn: 'ХЭНТИЙ' } },
+    { c: 'mt', ll: [108.6, 43.25], t: { en: 'GOBI DESERT', mn: 'ГОВЬ' } },
+    { c: 'lakel', ll: [101.05, 50.95], a: 'start', t: { en: 'Lake Khövsgöl', mn: 'Хөвсгөл нуур' } }
+  ],
   /* Packing list from the client's tour PDF */
   packing: [
     { t: { en: 'Clothing', mn: 'Хувцас' }, i: { en: ['Waterproof jacket', 'Warm fleece or down jacket', 'Thermal base layers', 'T-shirts and long-sleeve shirts', 'Hiking pants', 'Comfortable clothes for evenings', 'Sun hat'], mn: ['Ус нэвтрэхгүй хүрэм', 'Дулаан флийс эсвэл хөвөнтэй хүрэм', 'Дулаан дотуур хувцас', 'Футболк, урт ханцуйтай цамц', 'Явган аяллын өмд', 'Оройд өмсөх эвтэйхэн хувцас', 'Нарны малгай'] } },
@@ -327,7 +338,7 @@ window.SKY = {
       'why.1t': 'Locally owned and operated', 'why.1': 'Run by Mongolians, with Mongolian drivers and guides. Our founder travels and films the country for his vlog, so he knows these places first-hand.',
       'why.2t': 'Authentic nomadic family experiences', 'why.2': 'Nights with herder families along the route: share their tea, join the day’s work and sleep in their ger.',
       'why.3t': 'Custom and private tours', 'why.3': 'Private trips built around what you want to see, at your pace — no fixed bus tours, no rushing past the view.',
-      'tr.film': 'Watch the tour film', 'rm.title': 'The route on the map', 'rm.replay': 'Replay', 'rm.start': 'Start and finish', 'rm.days': 'Days', 'rm.day': 'Day', 'tr.meals': 'Meals', 'tr.B': 'breakfast', 'tr.L': 'lunch', 'tr.D': 'dinner', 'tr.price': 'Price per person', 'tr.group': 'Group of', 'tr.solo': 'Solo traveller', 'tr.perday': 'per day', 'tr.total': 'for the whole tour', 'tr.priceq': 'Price on request: tell us your dates and group size.', 'tr.inc': 'Included', 'tr.exc': 'Not included', 'tr.deposit': 'A 10% deposit confirms your tour. The rest can be paid before the tour starts or when you arrive in Mongolia. Payment is by international bank transfer; we send the details with your confirmation.', 'tr.pack': 'What to pack', 'tr.packnote': 'Temperatures can change a lot in a single day, so dress in layers.', 'dc.wa': 'WhatsApp', 'tr.watch': 'Watch', 'social.film': 'Mongolia film',
+      'tr.film': 'Watch the tour film', 'rm.title': 'The route on the map', 'rm.replay': 'Replay', 'rm.start': 'Start and finish', 'rm.km': 'km', 'rm.zin': 'Zoom to route', 'rm.zout': 'Whole Mongolia', 'rm.days': 'Days', 'rm.day': 'Day', 'tr.meals': 'Meals', 'tr.B': 'breakfast', 'tr.L': 'lunch', 'tr.D': 'dinner', 'tr.price': 'Price per person', 'tr.group': 'Group of', 'tr.solo': 'Solo traveller', 'tr.perday': 'per day', 'tr.total': 'for the whole tour', 'tr.priceq': 'Price on request: tell us your dates and group size.', 'tr.inc': 'Included', 'tr.exc': 'Not included', 'tr.deposit': 'A 10% deposit confirms your tour. The rest can be paid before the tour starts or when you arrive in Mongolia. Payment is by international bank transfer; we send the details with your confirmation.', 'tr.pack': 'What to pack', 'tr.packnote': 'Temperatures can change a lot in a single day, so dress in layers.', 'dc.wa': 'WhatsApp', 'tr.watch': 'Watch', 'social.film': 'Mongolia film',
       'steps.title': 'Plan your trip in three steps',
       'step.1t': 'Pick your places', 'step.1': 'Add destinations from the list above, or simply tell us the trip you dream of.',
       'step.2t': 'Get your route', 'step.2': 'We send a day-by-day plan with drives, ger camps and a clear price.',
@@ -362,7 +373,7 @@ window.SKY = {
       'why.1t': 'Монголчууд эзэмшиж, өөрсдөө ажиллуулдаг', 'why.1': 'Монгол жолооч, хөтөчтэй. Үүсгэн байгуулагч маань Монголоор аялж влог хийдэг тул эдгээр газрыг өөрийн биеэр мэднэ.',
       'why.2t': 'Малчин айлын жинхэнэ амьдрал', 'why.2': 'Замдаа малчин айлд хоноглож, цайг нь ууж, өдрийн ажилд нь оролцож, гэрт нь унтана.',
       'why.3t': 'Хувийн, танд тохирсон аялал', 'why.3': 'Таны үзэхийг хүссэн зүйлд тулгуурласан, таны хэмнэлээр явах хувийн аялал — тогтмол автобусны тур, яаруу аялал байхгүй.',
-      'tr.film': 'Аяллын бичлэг үзэх', 'rm.title': 'Маршрут газрын зураг дээр', 'rm.replay': 'Дахин үзэх', 'rm.start': 'Эхлэх, дуусах цэг', 'rm.days': 'Өдөр', 'rm.day': 'Өдөр', 'tr.meals': 'Хоол', 'tr.B': 'өглөө', 'tr.L': 'өдөр', 'tr.D': 'орой', 'tr.price': 'Нэг хүний үнэ', 'tr.group': 'Бүлэгт', 'tr.solo': 'Ганцаараа', 'tr.perday': 'өдөрт', 'tr.total': 'бүх аялал', 'tr.priceq': 'Үнийг хүсэлтээр: огноо, хүний тоогоо бичээрэй.', 'tr.inc': 'Багтсан', 'tr.exc': 'Багтаагүй', 'tr.deposit': 'Нийт үнийн 10% урьдчилгаагаар аялал баталгаажна. Үлдэгдлийг аялал эхлэхээс өмнө эсвэл Монголд ирэхдээ төлж болно. Олон улсын банкны шилжүүлгээр төлнө, дансны мэдээллийг баталгаажуулах үед илгээнэ.', 'tr.pack': 'Юу авч явах вэ', 'tr.packnote': 'Нэг өдрийн дотор агаарын хэм их өөрчлөгддөг тул давхарлаж хувцаслаарай.', 'dc.wa': 'WhatsApp', 'tr.watch': 'Үзэх', 'social.film': 'Монголын бичлэг',
+      'tr.film': 'Аяллын бичлэг үзэх', 'rm.title': 'Маршрут газрын зураг дээр', 'rm.replay': 'Дахин үзэх', 'rm.start': 'Эхлэх, дуусах цэг', 'rm.km': 'км', 'rm.zin': 'Ойртуулах', 'rm.zout': 'Бүх Монгол', 'rm.days': 'Өдөр', 'rm.day': 'Өдөр', 'tr.meals': 'Хоол', 'tr.B': 'өглөө', 'tr.L': 'өдөр', 'tr.D': 'орой', 'tr.price': 'Нэг хүний үнэ', 'tr.group': 'Бүлэгт', 'tr.solo': 'Ганцаараа', 'tr.perday': 'өдөрт', 'tr.total': 'бүх аялал', 'tr.priceq': 'Үнийг хүсэлтээр: огноо, хүний тоогоо бичээрэй.', 'tr.inc': 'Багтсан', 'tr.exc': 'Багтаагүй', 'tr.deposit': 'Нийт үнийн 10% урьдчилгаагаар аялал баталгаажна. Үлдэгдлийг аялал эхлэхээс өмнө эсвэл Монголд ирэхдээ төлж болно. Олон улсын банкны шилжүүлгээр төлнө, дансны мэдээллийг баталгаажуулах үед илгээнэ.', 'tr.pack': 'Юу авч явах вэ', 'tr.packnote': 'Нэг өдрийн дотор агаарын хэм их өөрчлөгддөг тул давхарлаж хувцаслаарай.', 'dc.wa': 'WhatsApp', 'tr.watch': 'Үзэх', 'social.film': 'Монголын бичлэг',
       'steps.title': 'Аяллаа гурван алхмаар төлөвлө',
       'step.1t': 'Газраа сонго', 'step.1': 'Дээрх жагсаалтаас газраа нэм, эсвэл мөрөөдлийн аяллаа бидэнд хэлээрэй.',
       'step.2t': 'Маршрутаа ав', 'step.2': 'Өдөр бүрийн зам, гэр бааз, тодорхой үнэтэй төлөвлөгөө илгээнэ.',

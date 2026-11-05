@@ -263,14 +263,24 @@
   /* ---------- real tours, day by day ---------- */
   var tourSel = D.tours[0].id;
   function esc(x) { return String(x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  /* ---------- tour route map (animated) ---------- */
+  /* ---------- tour route map: a real map of Mongolia; the camera flies in to the route and back out ---------- */
+  var MK = M.proj[0] * 180 / Math.PI;
+  function pj(lon, lat) { return [M.proj[0] * lon + M.proj[1], M.proj[2] - MK * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))]; }
+  function latAt(y) { return (2 * Math.atan(Math.exp((M.proj[2] - y) / MK)) - Math.PI / 2) * 180 / Math.PI; }
   function routeMap(tr) {
     if (!tr.route) return '';
+    var n = 0;
     return '<figure class="rmap" data-tour="' + tr.id + '"><figcaption class="rmap-h">' + esc(t('rm.title')) + '</figcaption>' +
       '<div class="rmap-stage"><svg class="rmap-svg" role="img" aria-label="' + esc(t('rm.title') + ': ' + tr.route.filter(function (r) { return r.d; }).map(function (r) { return L(D.mapNames[r.id]); }).join(', ')) + '"></svg>' +
-      '<svg class="rmap-inset" viewBox="-10 -10 1020 540" aria-hidden="true"><path d="' + M.d + '"/><rect class="rmap-box"/></svg>' +
       '<div class="rmap-card" aria-hidden="true"><img alt="" width="400" height="300"><p><small></small><b></b></p></div>' +
-      '<button class="rmap-replay" type="button" hidden><svg><use href="#i-play"/></svg>' + esc(t('rm.replay')) + '</button></div></figure>';
+      '<div class="rmap-scale" aria-hidden="true"><i></i><span></span></div>' +
+      '<div class="rmap-ctl"><button class="rmap-zoom" type="button" hidden><svg><use href="#i-zin"/></svg><span></span></button>' +
+      '<button class="rmap-replay" type="button" hidden><svg><use href="#i-play"/></svg>' + esc(t('rm.replay')) + '</button></div></div>' +
+      '<ol class="rmap-stops">' + tr.route.map(function (r, i) {
+        if (r.id === 'ub') return '';
+        n++;
+        return '<li><button type="button" data-i="' + i + '"><b>' + n + '</b><span class="st"><span>' + esc(L(D.mapNames[r.id])) + '</span><small>' + esc(dayLbl(r.d)) + '</small></span></button></li>';
+      }).join('') + '</ol></figure>';
   }
   function cr(pts) { /* closed Catmull-Rom → cubic segments */
     var n = pts.length, segs = [];
@@ -283,109 +293,225 @@
   }
   function dayLbl(d) { return t(/[–-]/.test(d) ? 'rm.days' : 'rm.day') + ' ' + d; }
   function f1(v) { return Math.round(v * 10) / 10; }
-  function drawRouteMap(fig, animate) {
+  function f3(v) { return Math.round(v * 1000) / 1000; }
+  var LBL_OFF = { r: [15, -2, 'start'], l: [-15, -2, 'end'], t: [0, -30, 'middle'], b: [0, 27, 'middle'] };
+  /* mode: 'final' (everything drawn), 'wait' (map only, before it scrolls into view), 'play' */
+  function drawRouteMap(fig, mode) {
     var tr = D.tours.filter(function (x) { return x.id === fig.dataset.tour; })[0]; if (!tr) return;
+    if (fig._tl) { fig._tl.kill(); fig._tl = null; }
     var stage = $('.rmap-stage', fig), svg = $('.rmap-svg', fig), card = $('.rmap-card', fig), replay = $('.rmap-replay', fig);
-    var W = stage.clientWidth || 800, ar = W < 620 ? 4 / 5 : 16 / 9, H = W / ar;
-    stage.style.aspectRatio = W < 620 ? '4 / 5' : '16 / 9';
-    var pts = tr.route.map(function (r) { return r.id === 'ub' ? M.ub : M.pins[r.id]; });
+    var scI = $('.rmap-scale i', fig), scS = $('.rmap-scale span', fig), chips = $$('.rmap-stops button', fig), zb = $('.rmap-zoom', fig);
+    var W = stage.clientWidth || 800, mob = W < 620, ar = mob ? 1 : 16 / 9, H = W / ar;
+    stage.style.aspectRatio = mob ? '1 / 1' : '16 / 9';
+    var stops = tr.route, pts = stops.map(function (r) { return r.id === 'ub' ? M.ub : M.pins[r.id]; });
+    /* camera views: the whole country, and the route */
+    var sFull = Math.min(W / (960 * 1.06), H / (462 * 1.1)), full = { x: 500, y: 262, s: sFull };
     var xs = pts.map(function (p) { return p[0]; }), ys = pts.map(function (p) { return p[1]; });
     var minX = Math.min.apply(0, xs), maxX = Math.max.apply(0, xs), minY = Math.min.apply(0, ys), maxY = Math.max.apply(0, ys);
-    var cx = (minX + maxX) / 2, cy = (minY + maxY) / 2, sw = (maxX - minX), sh = (maxY - minY);
-    var padX = W < 620 ? 2.75 : 1.75, padY = W < 620 ? 1.6 : 1.4;
-    var vw = Math.max(sw * padX, sh * padY * ar, 150), vh = vw / ar;
-    var vx = cx - vw / 2, vy = cy - vh / 2 + (W < 620 ? vh * 0.06 : 0);
-    var k = W / vw, u = function (px) { return f1(px / k); };
-    svg.setAttribute('viewBox', [vx, vy, vw, vh].map(f1).join(' '));
-    var box = $('.rmap-box', fig); box.setAttribute('x', f1(vx)); box.setAttribute('y', f1(vy)); box.setAttribute('width', f1(vw)); box.setAttribute('height', f1(vh));
-    var pid = 'rmd-' + tr.id, segs = cr(pts), stops = tr.route;
-    var h = '<defs><pattern id="' + pid + '" width="' + u(9) + '" height="' + u(9) + '" patternUnits="userSpaceOnUse"><circle cx="' + u(1.5) + '" cy="' + u(1.5) + '" r="' + u(0.9) + '" class="rm-dot"/></pattern></defs>' +
-      '<path class="rm-land" d="' + M.d + '" style="stroke-width:' + u(1.2) + '"/><path class="rm-tex" d="' + M.d + '" fill="url(#' + pid + ')"/>' +
-      '<path class="rm-track" d="' + segs.join('') + '" style="stroke-width:' + u(2) + ';stroke-dasharray:' + u(2) + ' ' + u(7) + '"/>';
-    segs.forEach(function (d) { h += '<path class="rm-seg" d="' + d + '" style="stroke-width:' + u(3.4) + '"/>'; });
-    h += '<circle class="rm-car" r="' + u(6) + '" style="stroke-width:' + u(3) + '" cx="' + M.ub[0] + '" cy="' + M.ub[1] + '"/>';
+    var sw = maxX - minX, sh = maxY - minY, padX = mob ? 2.75 : 1.75, padY = mob ? 1.6 : 1.65;
+    var sR = Math.min(Math.max(W / Math.max(sw * padX, sh * padY * ar, 150), sFull * 1.2), sFull * (mob ? 3.4 : 2.6));
+    var route = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 + (mob ? (H / sR) * 0.04 : 0), s: sR }, end = mob ? route : full;
+    var cam = { x: end.x, y: end.y, s: end.s };
+    function q(s) { var a = Math.log(s / sFull) / Math.log(sR / sFull); return 0.86 + 0.14 * Math.min(Math.max(a || 0, 0), 1); }
+    /* base map */
+    var cid = 'rmc-' + tr.id, rl = M.relief, cx = M.ctx;
+    var h = '<defs><clipPath id="' + cid + '"><path d="' + M.border + '"/></clipPath></defs>' +
+      '<rect class="rm-sea" x="-3000" y="-3000" width="7000" height="7000"/>' +
+      '<image href="img/map/mn-ctx.webp" x="' + cx[0] + '" y="' + cx[1] + '" width="' + cx[2] + '" height="' + cx[3] + '" preserveAspectRatio="none"/>' +
+      '<g clip-path="url(#' + cid + ')"><image href="img/map/mn-relief.webp" x="' + rl[0] + '" y="' + rl[1] + '" width="' + rl[2] + '" height="' + rl[3] + '" preserveAspectRatio="none"/>' +
+      '<path class="rm-riv" d="' + M.rivers + '"/><path class="rm-lake" d="' + M.lakes + '"/><path class="rm-aimag" d="' + M.aimag + '"/></g>' +
+      '<path class="rm-border" d="' + M.border + '"/><g class="rm-rgs" aria-hidden="true">' + (D.mapLabels || []).map(function (l) {
+        var p = pj(l.ll[0], l.ll[1]);
+        return '<g class="rm-rg rm-' + l.c + '" data-x="' + f1(p[0]) + '" data-y="' + f1(p[1]) + '" data-r="' + (l.r || 0) + '"><text text-anchor="' + (l.a || 'middle') + '" dy=".35em">' + esc(L(l.t)) + '</text></g>';
+      }).join('') + '</g>';
+    var segs = cr(pts);
+    h += '<path class="rm-track" d="' + segs.join('') + '"/>';
+    segs.forEach(function (d) { h += '<path class="rm-seg" d="' + d + '"/>'; });
+    h += '<g class="rm-car"><circle r="6"/></g>';
     var n = 0;
     stops.forEach(function (r, i) {
       if (r.id === 'ub' && i > 0) return;
-      var p = pts[i], name = L(D.mapNames[r.id]);
+      var name = L(D.mapNames[r.id]);
       if (r.id === 'ub') {
-        h += '<g class="rm-pin rm-ub" data-i="0"><rect x="' + f1(p[0] - u(7)) + '" y="' + f1(p[1] - u(7)) + '" width="' + u(14) + '" height="' + u(14) + '" transform="rotate(45 ' + p[0] + ' ' + p[1] + ')" style="stroke-width:' + u(2.5) + '"/>' +
-          '<text x="' + f1(p[0] + u(14)) + '" y="' + f1(p[1] - u(10)) + '" style="font-size:' + u(13) + 'px;stroke-width:' + u(4) + '"><tspan class="rm-n">' + esc(name) + '</tspan><tspan class="rm-d" x="' + f1(p[0] + u(14)) + '" dy="' + u(14) + '" style="font-size:' + u(10.5) + 'px">' + esc(t('rm.start')) + '</tspan></text></g>';
+        h += '<g class="rm-pin rm-ub" data-i="0"><g class="rm-pop"><rect x="-7" y="-7" width="14" height="14" transform="rotate(45)"/>' +
+          '<text class="rm-lbl"><tspan class="rm-n">' + esc(name) + '</tspan><tspan class="rm-d" dy="14">' + esc(t('rm.start')) + '</tspan></text></g></g>';
         return;
       }
       n++;
-      var pos = r.pos || 'r', tx = p[0], ty = p[1], an = 'middle';
-      if (pos === 'r') { tx += u(15); ty -= u(2); an = 'start'; } else if (pos === 'l') { tx -= u(15); ty -= u(2); an = 'end'; } else if (pos === 't') { ty -= u(30); } else { ty += u(26); }
-      h += '<g class="rm-pin" data-i="' + i + '" tabindex="0" role="button" aria-label="' + esc(dayLbl(r.d) + ': ' + name) + '">' +
-        '<circle class="rm-halo" cx="' + p[0] + '" cy="' + p[1] + '" r="' + u(15) + '"/><circle class="rm-core" cx="' + p[0] + '" cy="' + p[1] + '" r="' + u(10) + '" style="stroke-width:' + u(2.5) + '"/>' +
-        '<text class="rm-num" x="' + p[0] + '" y="' + f1(p[1] + u(4)) + '" text-anchor="middle" style="font-size:' + u(11) + 'px">' + n + '</text>' +
-        '<text class="rm-lbl" x="' + f1(tx) + '" y="' + f1(ty) + '" text-anchor="' + an + '" style="font-size:' + u(13) + 'px;stroke-width:' + u(4) + '"><tspan class="rm-n">' + esc(name) + '</tspan><tspan class="rm-d" x="' + f1(tx) + '" dy="' + u(14) + '" style="font-size:' + u(10.5) + 'px">' + esc(dayLbl(r.d)) + '</tspan></text></g>';
+      h += '<g class="rm-pin" data-i="' + i + '" tabindex="0" role="button" aria-label="' + esc(dayLbl(r.d) + ': ' + name) + '"><g class="rm-pop">' +
+        '<circle class="rm-halo" r="15"/><circle class="rm-core" r="10"/><text class="rm-num" y="4" text-anchor="middle">' + n + '</text>' +
+        '<text class="rm-lbl"><tspan class="rm-n">' + esc(name) + '</tspan><tspan class="rm-d" dy="14">' + esc(dayLbl(r.d)) + '</tspan></text></g></g>';
     });
     svg.innerHTML = h;
-    /* keep labels inside the frame: flip to the other side of the pin when they would be cut off */
-    $$('.rm-pin text:not(.rm-num)', svg).forEach(function (tx) {
-      var bb = tx.getBBox(), m = u(8), g = tx.parentNode, i = +g.dataset.i, p = pts[i], off = u(i ? 15 : 14), nx = null, an = null;
-      if (bb.x + bb.width > vx + vw - m) { nx = p[0] - off; an = 'end'; }
-      else if (bb.x < vx + m) { nx = p[0] + off; an = 'start'; }
-      if (nx === null) return;
-      tx.setAttribute('x', f1(nx)); tx.setAttribute('text-anchor', an); $$('tspan[x]', tx).forEach(function (ts) { ts.setAttribute('x', f1(nx)); });
-    });
-    var segEls = $$('.rm-seg', svg), car = $('.rm-car', svg), pins = $$('.rm-pin', svg);
+    var segEls = $$('.rm-seg', svg), track = $('.rm-track', svg), car = $('.rm-car', svg), pins = $$('.rm-pin', svg), rgs = $$('.rm-rg', svg);
+    var carPt = M.ub, curCard = -1, pinByIdx = {};
+    pins.forEach(function (g) { pinByIdx[g.dataset.i] = g; });
+    rgs.forEach(function (g) { var bb = $('text', g).getBBox(); g.dataset.hw = f1(bb.width / 2); });
     segEls.forEach(function (el) { var L0 = el.getTotalLength(); el.dataset.len = L0; el.style.strokeDasharray = L0 + ' ' + L0; el.style.strokeDashoffset = L0; });
+    /* labels: try the preferred side, then the others; keep them inside the frame and off each other */
+    function placeLbl(g, pos) {
+      var tx = $('.rm-lbl', g), o = LBL_OFF[pos]; g.dataset.pos = pos;
+      tx.setAttribute('x', o[0]); tx.setAttribute('y', o[1]); tx.setAttribute('text-anchor', o[2]);
+      $('.rm-d', tx).setAttribute('x', o[0]);
+    }
+    function layout(v, canHide) {
+      var vw = W / v.s, vh = H / v.s, vx = v.x - vw / 2, vy = v.y - vh / 2, qq = q(v.s), res = [];
+      var scr = pins.map(function (g) { var p = pts[+g.dataset.i]; return [(p[0] - vx) * v.s, (p[1] - vy) * v.s]; });
+      var taken = scr.map(function (c) { var r = 12 * qq; return [c[0] - r, c[1] - r, c[0] + r, c[1] + r]; });
+      taken.push([W - (mob ? 250 : 320), H - 60, W, H], mob ? [0, 0, 110, 36] : [0, H - 40, 120, H]);
+      pins.forEach(function (g, gi) {
+        var i = +g.dataset.i, pref = stops[i].pos || 'r', c = scr[gi], pick = null;
+        var cands = [pref].concat(['r', 'l', 't', 'b'].filter(function (x) { return x !== pref; }));
+        for (var k = 0; k < cands.length && !pick; k++) {
+          placeLbl(g, cands[k]);
+          var bb = $('.rm-lbl', g).getBBox(), rc = [c[0] + bb.x * qq - 3, c[1] + bb.y * qq - 2, c[0] + (bb.x + bb.width) * qq + 3, c[1] + (bb.y + bb.height) * qq + 2];
+          var inside = rc[0] >= 6 && rc[1] >= 6 && rc[2] <= W - 6 && rc[3] <= H - 6;
+          var hit = taken.some(function (o, oi) { return oi !== gi && rc[0] < o[2] && rc[2] > o[0] && rc[1] < o[3] && rc[3] > o[1]; });
+          if (inside && !hit) { pick = cands[k]; taken.push(rc); }
+        }
+        res.push({ pos: pick || pref, hide: !pick && canHide });
+      });
+      return res;
+    }
+    function applyLayout(res) { res.forEach(function (o, gi) { placeLbl(pins[gi], o.pos); pins[gi].classList.toggle('nolbl', o.hide); }); }
+    function placeCar(k) { car.setAttribute('transform', 'translate(' + f1(carPt[0]) + ' ' + f1(carPt[1]) + ') scale(' + f3(k) + ')'); }
+    function applyCam() {
+      var s = cam.s, k = 1 / s, vw = W / s, vh = H / s, vx = cam.x - vw / 2, vy = cam.y - vh / 2, qq = q(s), zoom = s / sFull;
+      svg.setAttribute('viewBox', [vx, vy, vw, vh].map(function (v) { return v.toFixed(2); }).join(' '));
+      pins.forEach(function (g) { var p = pts[+g.dataset.i]; g.setAttribute('transform', 'translate(' + p[0] + ' ' + p[1] + ') scale(' + f3(k * qq) + ')'); });
+      placeCar(k * qq);
+      segEls.forEach(function (el) { el.style.strokeWidth = f3(3.2 * k * qq); });
+      track.style.strokeWidth = f3(2 * k); track.style.strokeDasharray = f3(1.5 * k) + ' ' + f3(6.5 * k);
+      rgs.forEach(function (g) {
+        var x = +g.dataset.x, y = +g.dataset.y, sx = (x - vx) * s, sy = (y - vy) * s, hw = +g.dataset.hw, big = g.classList.contains('rm-big');
+        var lf = g.querySelector('text').getAttribute('text-anchor') === 'start';
+        var m = Math.min(lf ? sx - 8 : sx - hw, W - sx - (lf ? hw * 2 : hw), sy - 12, H - sy - 12);
+        var o = Math.max(0, Math.min(1, m / 24));
+        if (big) o *= Math.max(0, Math.min(1, 1 - (zoom - 1) / 0.45));
+        else if (zoom > 1.25) o *= 0.75;
+        g.setAttribute('transform', 'translate(' + x + ' ' + y + ') rotate(' + g.dataset.r + ') scale(' + f3(k) + ')');
+        g.style.opacity = f3(o);
+      });
+      var kmPerUnit = 111.32 * Math.cos(latAt(cam.y) * Math.PI / 180) / M.proj[0], pxKm = s / kmPerUnit;
+      var dist = [10, 20, 50, 100, 200, 300, 500, 1000].filter(function (d) { return d * pxKm <= 100; }).pop() || 10;
+      scI.style.width = Math.round(dist * pxKm) + 'px'; scS.textContent = dist + ' ' + t('rm.km');
+      if (curCard >= 0) posCard(curCard);
+    }
+    function posCard(i) {
+      var vw = W / cam.s, vh = H / cam.s, p = pts[i], left = (p[0] - (cam.x - vw / 2)) * cam.s, top = (p[1] - (cam.y - vh / 2)) * cam.s;
+      var cw = card.offsetWidth || 170, ch = card.offsetHeight || 150, gap = 24;
+      var x = left > W / 2 ? left - gap - cw : left + gap, y = Math.min(Math.max(top - ch / 2, 10), H - ch - 10);
+      card.style.left = Math.round(Math.max(8, Math.min(x, W - cw - 8))) + 'px'; card.style.top = Math.round(y) + 'px';
+    }
+    function mark(i) {
+      pins.forEach(function (g) { g.classList.toggle('hl', +g.dataset.i === i); });
+      chips.forEach(function (b) { b.classList.toggle('cur', +b.dataset.i === i); });
+    }
     function showCard(i) {
-      var r = stops[i]; if (!r || !r.img) { card.classList.remove('on'); return; }
-      var p = pts[i], left = (p[0] - vx) / vw, top = (p[1] - vy) / vh, img = $('img', card);
-      img.src = 'img/' + r.img + '.webp'; $('small', card).textContent = dayLbl(r.d); $('b', card).textContent = L(D.mapNames[r.id]);
-      var cw = card.offsetWidth || 170, ch = card.offsetHeight || 150, gap = 26;
-      var x = left > 0.5 ? left * W - gap - cw : left * W + gap, y = Math.min(Math.max(top * H - ch / 2, 10), H - ch - 10);
-      card.style.transform = ''; card.style.left = Math.round(Math.max(8, Math.min(x, W - cw - 8))) + 'px'; card.style.top = Math.round(y) + 'px';
-      card.classList.add('on');
+      var r = stops[i]; if (!r || !r.img) { hideCard(); return; }
+      $('img', card).src = 'img/' + r.img + '.webp'; $('small', card).textContent = dayLbl(r.d); $('b', card).textContent = L(D.mapNames[r.id]);
+      curCard = i; posCard(i); card.classList.add('on'); mark(i);
+    }
+    function hideCard() { curCard = -1; card.classList.remove('on'); mark(-1); }
+    var lr = layout(route, false), le = mob ? lr : layout(full, true);
+    function startState() {
+      cam.x = full.x; cam.y = full.y; cam.s = full.s; carPt = M.ub;
+      applyLayout(lr); svg.classList.remove('lbl-off');
+      segEls.forEach(function (el) { el.style.strokeDashoffset = el.dataset.len; });
+      pins.forEach(function (g) { g.classList.remove('on'); }); car.style.opacity = 0; hideCard();
+      chips.forEach(function (b) { b.classList.add('dim'); }); replay.hidden = true; zb.hidden = true;
+      applyCam();
+    }
+    var atEnd = true;
+    function setZoomBtn() {
+      var zin = (atEnd ? end : (end === full ? route : full)) === full;
+      zb.hidden = false; $('use', zb).setAttribute('href', zin ? '#i-zin' : '#i-zout'); $('span', zb).textContent = t(zin ? 'rm.zin' : 'rm.zout');
     }
     function finalState() {
+      cam.x = end.x; cam.y = end.y; cam.s = end.s; atEnd = true; setZoomBtn();
+      applyLayout(le); svg.classList.remove('lbl-off');
       segEls.forEach(function (el) { el.style.strokeDashoffset = 0; });
-      pins.forEach(function (g) { g.classList.add('on'); }); car.style.opacity = 0; card.classList.remove('on'); replay.hidden = false;
+      pins.forEach(function (g) { g.classList.add('on'); }); car.style.opacity = 0; hideCard();
+      chips.forEach(function (b) { b.classList.remove('dim'); }); replay.hidden = false; fig.dataset.playing = '0';
+      applyCam();
     }
+    function fly(tl, to, dur, pos) {
+      var st = { p: 0 }, fr;
+      tl.to(st, { p: 1, duration: dur, ease: 'power2.inOut', onStart: function () { fr = { x: cam.x, y: cam.y, s: cam.s }; }, onUpdate: function () {
+        var p = st.p, s = Math.exp(Math.log(fr.s) + (Math.log(to.s) - Math.log(fr.s)) * p);
+        if (Math.abs(to.s - fr.s) / fr.s > 0.05) { /* zoom about the point that stays put, like a camera dolly */
+          var fx = (to.x * to.s - fr.x * fr.s) / (to.s - fr.s), fy = (to.y * to.s - fr.y * fr.s) / (to.s - fr.s);
+          cam.x = fx + (fr.x - fx) * fr.s / s; cam.y = fy + (fr.y - fy) * fr.s / s;
+        } else { cam.x = fr.x + (to.x - fr.x) * p; cam.y = fr.y + (to.y - fr.y) * p; }
+        cam.s = s; applyCam();
+      } }, pos);
+    }
+    var idle = function () { return fig.dataset.playing !== '1'; };
     pins.forEach(function (g) {
       var i = +g.dataset.i; if (!i) return;
-      var on = function () { if (fig.dataset.playing !== '1') showCard(i); }, off = function () { if (fig.dataset.playing !== '1') card.classList.remove('on'); };
-      g.addEventListener('mouseenter', on); g.addEventListener('focus', on); g.addEventListener('mouseleave', off); g.addEventListener('blur', off);
-      g.addEventListener('click', function () { if (fig.dataset.playing !== '1') { card.classList.contains('on') ? card.classList.remove('on') : showCard(i); } });
+      g.addEventListener('mouseenter', function () { if (idle()) showCard(i); });
+      g.addEventListener('focus', function () { if (idle()) showCard(i); });
+      g.addEventListener('mouseleave', function () { if (idle()) hideCard(); });
+      g.addEventListener('blur', function () { if (idle()) hideCard(); });
+      g.addEventListener('click', function () { if (idle()) { curCard === i ? hideCard() : showCard(i); } });
     });
-    if (!animate || reduce || !window.gsap) { finalState(); return; }
-    if (fig._tl) fig._tl.kill();
-    fig.dataset.playing = '1'; replay.hidden = true; card.classList.remove('on');
-    pins.forEach(function (g) { g.classList.remove('on'); });
-    var tl = gsap.timeline({ onComplete: function () { fig.dataset.playing = '0'; card.classList.remove('on'); car.style.opacity = 0; replay.hidden = false; } });
+    chips.forEach(function (b) {
+      var i = +b.dataset.i;
+      b.onmouseenter = b.onfocus = function () { if (idle()) showCard(i); };
+      b.onmouseleave = b.onblur = function () { if (idle()) hideCard(); };
+      b.onclick = function () { if (idle()) { curCard === i ? hideCard() : showCard(i); } };
+    });
+    zb.onclick = function () {
+      if (!idle() || !window.gsap) return;
+      var cur = atEnd ? end : (end === full ? route : full), to = cur === full ? route : full, lay = to === full ? (mob ? layout(full, true) : le) : lr;
+      if (fig._tl) fig._tl.kill();
+      hideCard(); svg.classList.add('lbl-off'); fig.dataset.playing = '1';
+      var zt = gsap.timeline({ onComplete: function () { applyLayout(lay); svg.classList.remove('lbl-off'); fig.dataset.playing = '0'; atEnd = to === end; setZoomBtn(); } });
+      fig._tl = zt; fly(zt, to, reduce ? 0.01 : 1.2, 0);
+    };
+    if (mode === 'wait') { startState(); fig.dataset.playing = '0'; return; }
+    if (mode !== 'play' || reduce || !window.gsap) { finalState(); return; }
+    startState(); fig.dataset.playing = '1';
+    var tl = gsap.timeline({ onComplete: finalState });
     fig._tl = tl;
-    tl.add(function () { pins[0].classList.add('on'); }, 0.1).set(car, { opacity: 1 }, 0.3);
-    var pinByIdx = {}; pins.forEach(function (g) { pinByIdx[g.dataset.i] = g; });
+    tl.add(function () { pins[0].classList.add('on'); }, 0.15);
+    fly(tl, route, mob ? 1.5 : 1.8, 0.75);
+    tl.set(car, { opacity: 1 });
     segEls.forEach(function (el, si) {
-      var len = +el.dataset.len, dur = Math.min(Math.max(len / 70, 0.7), 1.8), st = { v: 0 };
+      var len = +el.dataset.len, dur = Math.min(Math.max(len / 62, 0.7), 1.8), st = { v: 0 };
       tl.to(st, { v: 1, duration: dur, ease: 'power1.inOut', onUpdate: function () {
         el.style.strokeDashoffset = len * (1 - st.v);
-        var pt = el.getPointAtLength(len * st.v); car.setAttribute('cx', pt.x); car.setAttribute('cy', pt.y);
-      } }, '+=0.15');
+        var pt = el.getPointAtLength(len * st.v); carPt = [pt.x, pt.y]; placeCar(q(cam.s) / cam.s);
+      } }, '+=0.12');
       var to = si + 1;
       tl.add(function () {
         if (pinByIdx[to]) pinByIdx[to].classList.add('on');
-        if (stops[to] && stops[to].img) showCard(to); else card.classList.remove('on');
+        chips.forEach(function (b) { if (+b.dataset.i === to) b.classList.remove('dim'); });
+        if (stops[to] && stops[to].img) showCard(to); else hideCard();
       });
       if (stops[to] && stops[to].img) tl.to({}, { duration: 1.1 });
     });
+    tl.add(function () { hideCard(); gsap.to(car, { opacity: 0, duration: 0.3 }); if (!mob) svg.classList.add('lbl-off'); }, '+=0.15');
+    if (!mob) {
+      fly(tl, full, 1.7, '+=0.2');
+      tl.add(function () { applyLayout(le); svg.classList.remove('lbl-off'); });
+      tl.to({}, { duration: 0.4 });
+    }
   }
   var rmObs = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
-    es.forEach(function (e) { if (e.isIntersecting && !e.target.dataset.played) { e.target.dataset.played = '1'; drawRouteMap(e.target, true); } });
+    es.forEach(function (e) { if (e.isIntersecting && !e.target.dataset.played) { e.target.dataset.played = '1'; drawRouteMap(e.target, 'play'); } });
   }, { threshold: 0.45 }) : null;
   function initRouteMap(fig) {
     if (!fig) return;
-    drawRouteMap(fig, false);
-    if (rmObs && !reduce) { $$('.rm-seg', fig).forEach(function (el) { el.style.strokeDashoffset = el.dataset.len; }); $$('.rm-pin', fig).forEach(function (g) { g.classList.remove('on'); }); $('.rmap-replay', fig).hidden = true; rmObs.observe(fig); }
-    $('.rmap-replay', fig).addEventListener('click', function () { drawRouteMap(fig, true); });
+    var wait = rmObs && !reduce;
+    drawRouteMap(fig, wait ? 'wait' : 'final');
+    if (wait) rmObs.observe(fig);
+    $('.rmap-replay', fig).addEventListener('click', function () { drawRouteMap(fig, 'play'); });
   }
   var rmW = window.innerWidth;
   window.addEventListener('resize', function () {
     if (Math.abs(window.innerWidth - rmW) < 40) return; rmW = window.innerWidth;
-    $$('.rmap').forEach(function (fig) { if (fig._tl) fig._tl.kill(); fig.dataset.playing = '0'; drawRouteMap(fig, false); });
+    $$('.rmap').forEach(function (fig) { fig.dataset.playing = '0'; drawRouteMap(fig, rmObs && !reduce && !fig.dataset.played ? 'wait' : 'final'); });
   });
   function money(n) { return '$' + n.toLocaleString('en-US'); }
   function tourInfo(tr) {
