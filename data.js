@@ -307,7 +307,9 @@ window.SKY = {
     { r: 5, q: 'An authentic and enriching Gobi tour from start to finish. Highly recommended for anyone seeking a real Mongolian experience.', who: 'Zoe' },
     { r: 4.5, q: 'It was incredible to spend days in these places.', who: 'Gianluca, Italy' }
   ],
-  contact: { phone: '+976 9503 0466', phoneRaw: '+97695030466', email: 'skylandmongolia@gmail.com' },
+  contact: { phone: '+976 9503 0466', phoneRaw: '+97695030466', email: 'skylandmongolia@gmail.com',
+    /* trip requests go to the Supabase function "contact" (stores the request, emails through Resend); the publishable key is public by design */
+    api: 'https://bruodjdxenzyqvajygvx.supabase.co/functions/v1/contact', apiKey: 'sb_publishable_pWqf0n5-wQ4oUATtqZIuXw_LRyVx0NW' },
 
   links: {
     instagram: 'https://www.instagram.com/skyland.mongolia',

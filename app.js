@@ -985,13 +985,25 @@
     if (f._honey && f._honey.value) return;
     var btn = f.querySelector('button[type=submit]'), label = btn.querySelector('span'), old = label.textContent;
     btn.disabled = true; label.textContent = t('p.sending');
-    fetch('https://formsubmit.co/ajax/' + D.contact.email, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ _subject: 'Trip request — ' + f.name.value.trim(), _template: 'box', _captcha: 'false', name: f.name.value.trim(), contact: f.contact.value.trim(), request: lines })
-    }).then(function (r) { return r.json(); }).then(function (j) {
-      if (j && (j.success === 'true' || j.success === true)) { note.textContent = t('p.sent'); f.reset(); fillSelects(); }
-      else fallback();
-    }).catch(fallback).then(function () { btn.disabled = false; label.textContent = old; });
+    var msg = f.msg.value.trim(), tourM = msg.match(/^Tour: (.+)$/m);
+    function sent() { note.textContent = t('p.sent'); f.reset(); fillSelects(); }
+    /* backup route: FormSubmit straight to the team's Gmail */
+    function viaFormSubmit(stored) {
+      return fetch('https://formsubmit.co/ajax/' + D.contact.email, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ _subject: 'Trip request — ' + f.name.value.trim(), _template: 'box', _captcha: 'false', name: f.name.value.trim(), contact: f.contact.value.trim(), request: lines })
+      }).then(function (r) { return r.json(); }).then(function (j) {
+        if (j && (j.success === 'true' || j.success === true)) sent(); else if (stored) sent(); else fallback();
+      }).catch(function () { if (stored) sent(); else fallback(); });
+    }
+    /* main route: our Supabase function stores the request and emails the team and the traveller (Resend) */
+    fetch(D.contact.api, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + D.contact.apiKey },
+      body: JSON.stringify({ name: f.name.value.trim(), contact: f.contact.value.trim(), month: D.months.en[+f.month.value], travellers: f.who.value, style: f.tstyle.value,
+        places: order.map(function (id) { return byId[id].name.en; }).join(', '), tour: tourM ? tourM[1] : '', note: msg, lang: lang })
+    }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      if (j && j.ok && j.mailed) sent(); else return viaFormSubmit(!!(j && j.ok));
+    }).catch(function () { return viaFormSubmit(false); }).then(function () { btn.disabled = false; label.textContent = old; });
   });
 
   /* ---------- i18n apply ---------- */
