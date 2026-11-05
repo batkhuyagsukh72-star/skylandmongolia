@@ -858,7 +858,6 @@
     }
   }
   jmInit();
-  if (/[?&]jmdebug/.test(location.search)) window.__skyJM = { go: function (i) { jmGoStop(i); }, play: function () { jmPlay(); }, view: function () { jmToggleView(); } };
   function money(n) { return '$' + n.toLocaleString('en-US'); }
   function tourInfo(tr) {
     var h = '<div class="tour-info">';
