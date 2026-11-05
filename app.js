@@ -609,8 +609,8 @@
         { id: 'bg', type: 'background', paint: { 'background-color': '#EEE6DC' } },
         { id: 'ctx', type: 'raster', source: 'ctx', paint: { 'raster-fade-duration': 0 } },
         { id: 'rel', type: 'raster', source: 'rel', paint: { 'raster-fade-duration': 0 } },
-        { id: 'bm', type: 'raster', source: 'bm', paint: { 'raster-saturation': 0.12, 'raster-contrast': 0.06, 'raster-brightness-min': 0.12, 'raster-brightness-max': 1, 'raster-fade-duration': 250 } },
-        { id: 'hs', type: 'hillshade', source: 'hs', paint: { 'hillshade-exaggeration': 0.5, 'hillshade-shadow-color': '#4A3A2A', 'hillshade-highlight-color': '#FFF7E8', 'hillshade-accent-color': '#5E4B36', 'hillshade-illumination-direction': 315 } },
+        { id: 'bm', type: 'raster', source: 'bm', paint: { 'raster-saturation': 0.4, 'raster-contrast': 0.16, 'raster-brightness-min': 0.05, 'raster-brightness-max': 1, 'raster-fade-duration': 250 } },
+        { id: 'hs', type: 'hillshade', source: 'hs', paint: { 'hillshade-exaggeration': 0.75, 'hillshade-shadow-color': '#3B2A1C', 'hillshade-highlight-color': '#FFF3DC', 'hillshade-accent-color': '#6B4E33', 'hillshade-illumination-direction': 315 } },
         { id: 'lakes', type: 'fill', source: 'lakes', paint: { 'fill-color': '#7FAFD6', 'fill-outline-color': '#5C8FBF' } },
         { id: 'rivers', type: 'line', source: 'rivers', paint: { 'line-color': '#5C8FBF', 'line-width': 1.1, 'line-opacity': 0.75 } },
         { id: 'mask', type: 'fill', source: 'mask', paint: { 'fill-color': '#EEE6DC', 'fill-opacity': 0.6 } },
@@ -669,7 +669,7 @@
     map.addControl(new ml.NavigationControl({ visualizePitch: true }), 'top-right');
     map.on('error', function (e) { if (window.console) console.warn('map:', e && e.error && e.error.message); });
     map.on('load', function () {
-      try { map.setTerrain({ source: 'dem', exaggeration: 1.5 }); } catch (e) {}
+      try { map.setTerrain({ source: 'dem', exaggeration: 2 }); } catch (e) {}
       jm.carEl = document.createElement('div'); jm.carEl.className = 'jm-car';
       jm.car = new ml.Marker({ element: jm.carEl }).setLngLat(lonlat(M.ub)).addTo(map);
       jm.rg = (D.mapLabels || []).map(function (l) {
@@ -686,7 +686,7 @@
   function jmZoomClass() { if (jm.map) jm.stage.classList.toggle('jm-far', jm.map.getZoom() < 6.6); }
   function jmTabs() {
     jm.tabs.innerHTML = jmTours().map(function (tr) {
-      return '<button class="jm-tab" type="button" role="tab" data-tour="' + tr.id + '" aria-selected="' + (tr.id === jm.cur) + '"><b>' + tr.days + '</b>' + esc(L(tr.name).replace(/^\d+-Day\s*/, '').replace(/^\d+\s*хоногийн\s*/i, '')) + '</button>';
+      return '<button class="jm-tab" type="button" role="tab" data-tour="' + tr.id + '" aria-selected="' + (tr.id === jm.cur) + '"><b>' + tr.days + '</b><small>' + esc(t('tr.days')) + '</small>' + esc(L(tr.name).replace(/^\d+-Day\s*/, '').replace(/\s*\d+\s*хоногийн\s*/i, ' ').replace(/,?\s*\d+\s*хоног\s*$/i, '').trim()) + '</button>';
     }).join('');
   }
   function jmChips() {
@@ -851,6 +851,7 @@
     }
   }
   jmInit();
+  if (/[?&]jmdebug/.test(location.search)) window.__skyJM = { go: function (i) { jmGoStop(i); }, play: function () { jmPlay(); }, view: function () { jmToggleView(); } };
   function money(n) { return '$' + n.toLocaleString('en-US'); }
   function tourInfo(tr) {
     var h = '<div class="tour-info">';
