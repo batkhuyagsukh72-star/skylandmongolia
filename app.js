@@ -117,6 +117,35 @@
     setTimeout(function () { dragMoved = false; }, 0);
   });
 
+  /* mouse-follow: on desktop the row glides sideways with the pointer; photos drift inside their cards for depth */
+  var finePtr = window.matchMedia('(hover: hover) and (pointer: fine)'), panTo = null, panRaf = 0, pxRaf = 0;
+  function gridOn() { return $('#destinations').classList.contains('grid-mode'); }
+  function cardParallax() {
+    pxRaf = 0; if (reduce || gridOn()) return;
+    var vw = window.innerWidth;
+    $$('.card:not([hidden])', track).forEach(function (c) {
+      var r = c.getBoundingClientRect(); if (r.right < -60 || r.left > vw + 60) return;
+      c.style.setProperty('--px', (((r.left + r.width / 2) - vw / 2) / vw * -10).toFixed(2) + '%');
+    });
+  }
+  function panLoop() {
+    panRaf = 0; if (panTo === null) return;
+    var d = panTo - track.scrollLeft;
+    if (Math.abs(d) < 0.6) { track.scrollLeft = panTo; return; }
+    track.scrollLeft += d * 0.07; panRaf = requestAnimationFrame(panLoop);
+  }
+  $('#trackWrap').addEventListener('pointermove', function (e) {
+    if (e.pointerType !== 'mouse' || !finePtr.matches || dragging || reduce || gridOn() || e.target.closest('.track-arrow')) return;
+    var r = track.getBoundingClientRect(), f = Math.min(Math.max(((e.clientX - r.left) / r.width - 0.1) / 0.8, 0), 1);
+    panTo = Math.round(f * (track.scrollWidth - track.clientWidth));
+    if (!panRaf) panRaf = requestAnimationFrame(panLoop);
+  });
+  $('#trackWrap').addEventListener('pointerleave', function () { panTo = null; });
+  track.addEventListener('pointerdown', function () { panTo = null; });
+  track.addEventListener('scroll', function () { if (!pxRaf) pxRaf = requestAnimationFrame(cardParallax); }, { passive: true });
+  window.addEventListener('resize', function () { if (!pxRaf) pxRaf = requestAnimationFrame(cardParallax); });
+  setTimeout(cardParallax, 300);
+
   /* grid toggle */
   $('#toggleGrid').addEventListener('click', function () {
     var s = $('#destinations'), on = s.classList.toggle('grid-mode');
@@ -513,6 +542,315 @@
     if (Math.abs(window.innerWidth - rmW) < 40) return; rmW = window.innerWidth;
     $$('.rmap').forEach(function (fig) { fig.dataset.playing = '0'; drawRouteMap(fig, rmObs && !reduce && !fig.dataset.played ? 'wait' : 'final'); });
   });
+  /* ---------- 3D journey map under the hero: MapLibre over real terrain; the camera drives the route and stops at each place ---------- */
+  var jm = { sec: $('#journey-map') };
+  var GIBS = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_NextGeneration/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg';
+  var DEM = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
+  var MN_B = [[87.7, 41.55], [119.95, 52.2]];
+  function f5(v) { return Math.round(v * 1e5) / 1e5; }
+  function lonlat(p) { return [f5((p[0] - M.proj[1]) / M.proj[0]), f5(latAt(p[1]))]; }
+  function rings(d) { var out = [], re = /M([^MZ]+)(Z?)/g, m; while ((m = re.exec(d))) out.push(m[1].split('L').map(function (s) { return lonlat(s.split(',').map(Number)); })); return out; }
+  function lerp(a, b, k) { return a + (b - a) * k; }
+  function smooth(k) { k = Math.min(Math.max(k, 0), 1); return k * k * (3 - 2 * k); }
+  function angd(to, from) { return ((to - from + 540) % 360) - 180; }
+  function hasGL() { try { var c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } }
+  function jmTours() { return D.tours.filter(function (x) { return x.route; }); }
+  function dayTitle(tr, d) { var p = tr.plan && tr.plan[parseInt(d, 10) - 1]; return p ? L(p.t) : ''; }
+  function jmRoute(tr) {
+    var stops = tr.route, pts = stops.map(function (r) { return r.id === 'ub' ? M.ub : M.pins[r.id]; }), n = pts.length, N = 44;
+    var xy = [], F = [0], segKm = [];
+    for (var i = 0; i < n - 1; i++) {
+      var p0 = pts[(i - 1 + n - 1) % (n - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[(i + 2) % (n - 1)];
+      var c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      for (var k = i ? 1 : 0; k <= N; k++) {
+        var u = k / N, v = 1 - u;
+        xy.push([v * v * v * p1[0] + 3 * v * v * u * c1[0] + 3 * v * u * u * c2[0] + u * u * u * p2[0], v * v * v * p1[1] + 3 * v * v * u * c1[1] + 3 * v * u * u * c2[1] + u * u * u * p2[1]]);
+      }
+      F.push(xy.length - 1);
+    }
+    var cum = [0];
+    for (var j = 1; j < xy.length; j++) cum.push(cum[j - 1] + Math.hypot(xy[j][0] - xy[j - 1][0], xy[j][1] - xy[j - 1][1]));
+    var tot = cum[cum.length - 1];
+    var ll = xy.map(lonlat), lat0 = latAt(xy[0][1]);
+    var segs = F.slice(0, -1).map(function (a, i) {
+      var km = (cum[F[i + 1]] - cum[a]) * 111.32 * Math.cos(latAt((xy[a][1] + xy[F[i + 1]][1]) / 2) * Math.PI / 180) / M.proj[0];
+      return { g0: cum[a] / tot, g1: cum[F[i + 1]] / tot, km: km };
+    });
+    var lons = ll.map(function (p) { return p[0]; }), lats = ll.map(function (p) { return p[1]; });
+    return { tr: tr, stops: stops, ll: pts.map(lonlat), line: ll, cum: cum, tot: tot, segs: segs, lat0: lat0,
+      bounds: [[Math.min.apply(0, lons), Math.min.apply(0, lats)], [Math.max.apply(0, lons), Math.max.apply(0, lats)]] };
+  }
+  function posAt(R, g) {
+    var d = g * R.tot, a = 0, b = R.cum.length - 1;
+    while (b - a > 1) { var m = (a + b) >> 1; if (R.cum[m] <= d) a = m; else b = m; }
+    var k = (d - R.cum[a]) / ((R.cum[b] - R.cum[a]) || 1);
+    return [lerp(R.line[a][0], R.line[b][0], k), lerp(R.line[a][1], R.line[b][1], k)];
+  }
+  function jmStyle() {
+    function corners(r) { var x0 = r[0], y0 = r[1], x1 = r[0] + r[2], y1 = r[1] + r[3]; return [lonlat([x0, y0]), lonlat([x1, y0]), lonlat([x1, y1]), lonlat([x0, y1])]; }
+    var mn = rings(M.border);
+    function fc(type, coords) { return { type: 'Feature', properties: {}, geometry: { type: type, coordinates: coords } }; }
+    return {
+      version: 8,
+      sources: {
+        ctx: { type: 'image', url: 'img/map/mn-ctx.webp', coordinates: corners(M.ctx) },
+        rel: { type: 'image', url: 'img/map/mn-relief.webp', coordinates: corners(M.relief) },
+        bm: { type: 'raster', tiles: [GIBS], tileSize: 256, maxzoom: 8, attribution: '<a href="https://earthdata.nasa.gov/gibs" target="_blank" rel="noopener">NASA GIBS</a>' },
+        dem: { type: 'raster-dem', tiles: [DEM], tileSize: 256, maxzoom: 11, encoding: 'terrarium', attribution: '<a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Terrain: Mapzen, AWS</a>' },
+        hs: { type: 'raster-dem', tiles: [DEM], tileSize: 256, maxzoom: 12, encoding: 'terrarium' },
+        lakes: { type: 'geojson', data: fc('MultiPolygon', rings(M.lakes).map(function (r) { return [r]; })) },
+        rivers: { type: 'geojson', data: fc('MultiLineString', rings(M.rivers)) },
+        aimag: { type: 'geojson', data: fc('MultiLineString', rings(M.aimag)) },
+        border: { type: 'geojson', data: fc('MultiLineString', mn), attribution: 'Natural Earth' },
+        mask: { type: 'geojson', data: fc('Polygon', [[[55, 15], [155, 15], [155, 70], [55, 70], [55, 15]]].concat(mn)) },
+        route: { type: 'geojson', lineMetrics: true, data: fc('LineString', [[106.9, 47.9], [106.91, 47.91]]) }
+      },
+      layers: [
+        { id: 'bg', type: 'background', paint: { 'background-color': '#EEE6DC' } },
+        { id: 'ctx', type: 'raster', source: 'ctx', paint: { 'raster-fade-duration': 0 } },
+        { id: 'rel', type: 'raster', source: 'rel', paint: { 'raster-fade-duration': 0 } },
+        { id: 'bm', type: 'raster', source: 'bm', paint: { 'raster-saturation': 0.12, 'raster-contrast': 0.06, 'raster-brightness-min': 0.12, 'raster-brightness-max': 1, 'raster-fade-duration': 250 } },
+        { id: 'hs', type: 'hillshade', source: 'hs', paint: { 'hillshade-exaggeration': 0.5, 'hillshade-shadow-color': '#4A3A2A', 'hillshade-highlight-color': '#FFF7E8', 'hillshade-accent-color': '#5E4B36', 'hillshade-illumination-direction': 315 } },
+        { id: 'lakes', type: 'fill', source: 'lakes', paint: { 'fill-color': '#7FAFD6', 'fill-outline-color': '#5C8FBF' } },
+        { id: 'rivers', type: 'line', source: 'rivers', paint: { 'line-color': '#5C8FBF', 'line-width': 1.1, 'line-opacity': 0.75 } },
+        { id: 'mask', type: 'fill', source: 'mask', paint: { 'fill-color': '#EEE6DC', 'fill-opacity': 0.6 } },
+        { id: 'aimag', type: 'line', source: 'aimag', paint: { 'line-color': '#FFFFFF', 'line-width': 0.9, 'line-opacity': 0.6 } },
+        { id: 'border', type: 'line', source: 'border', layout: { 'line-join': 'round' }, paint: { 'line-color': '#131A27', 'line-width': 1.6, 'line-opacity': 0.7 } },
+        { id: 'plan', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': 'rgba(19,26,39,.55)', 'line-width': 2, 'line-dasharray': [0.6, 2.4] } },
+        { id: 'drawn-case', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-width': 8, 'line-gradient': 'rgba(255,255,255,0)' } },
+        { id: 'drawn', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-width': 4, 'line-gradient': 'rgba(44,108,166,0)' } }
+      ]
+    };
+  }
+  function jmInit() {
+    var sec = jm.sec; if (!sec) return;
+    jm.stage = $('.jm-stage', sec); jm.box = $('.jm-map', sec); jm.card = $('.jm-card', sec); jm.tabs = $('.jm-tabs', sec); jm.chips = $('.jm-stops', sec);
+    jm.replay = $('.jm-replay', sec); jm.view = $('.jm-view', sec);
+    jm.cur = jmTours()[0].id; jm.tok = 0; jm.playing = false; jm.atRoute = true;
+    jmTabs(); jmChips();
+    jm.tabs.addEventListener('click', function (e) { var b = e.target.closest('[data-tour]'); if (b && b.dataset.tour !== jm.cur) jmSetTour(b.dataset.tour, true); });
+    jm.replay.addEventListener('click', function () { jmPlay(); });
+    jm.view.addEventListener('click', function () { jmToggleView(); });
+    jm.chips.addEventListener('click', function (e) { var b = e.target.closest('button[data-i]'); if (b) jmGoStop(+b.dataset.i); });
+    if (!hasGL()) { jmFallback(); return; }
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting && !jm.loading) { jm.loading = true; jmLoad(); }
+        jm.visible = e.intersectionRatio >= 0.4;
+        if (jm.visible && jm.ready && !jm.played) jmStart();
+      });
+    }, { rootMargin: '900px 0px', threshold: [0, 0.4] });
+    io.observe(jm.stage);
+  }
+  function jmFallback() {
+    jm.fallback = true; jm.stage.classList.add('jm-flat');
+    var tr = D.tours.filter(function (x) { return x.id === jm.cur; })[0];
+    jm.box.innerHTML = routeMap(tr); var fig = $('.rmap', jm.box); if (fig) initRouteMap(fig);
+    jm.chips.hidden = true;
+  }
+  function jmLoad() {
+    var css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'vendor/maplibre/maplibre-gl.css'; document.head.appendChild(css);
+    var s = document.createElement('script'); s.src = 'vendor/maplibre/maplibre-gl.js'; s.async = true;
+    s.onload = jmCreate; s.onerror = jmFallback; document.head.appendChild(s);
+  }
+  function jmLocale() {
+    return {
+      'CooperativeGesturesHandler.WindowsHelpText': t('jm.coop.win'), 'CooperativeGesturesHandler.MacHelpText': t('jm.coop.mac'), 'CooperativeGesturesHandler.MobileHelpText': t('jm.coop.mob'),
+      'NavigationControl.ZoomIn': t('jm.zin'), 'NavigationControl.ZoomOut': t('jm.zout'), 'NavigationControl.ResetBearing': t('jm.north')
+    };
+  }
+  function jmCreate() {
+    var ml = window.maplibregl; if (!ml) { jmFallback(); return; }
+    try {
+      jm.map = new ml.Map({ container: jm.box, style: jmStyle(), bounds: MN_B, fitBoundsOptions: { padding: 16 }, maxPitch: 70, maxBounds: [[66, 26], [141, 63]],
+        pixelRatio: Math.min(window.devicePixelRatio || 1, 2), cooperativeGestures: true, attributionControl: { compact: true }, locale: jmLocale(), fadeDuration: 120 });
+    } catch (e) { jmFallback(); return; }
+    var map = jm.map;
+    map.addControl(new ml.NavigationControl({ visualizePitch: true }), 'top-right');
+    map.on('error', function (e) { if (window.console) console.warn('map:', e && e.error && e.error.message); });
+    map.on('load', function () {
+      try { map.setTerrain({ source: 'dem', exaggeration: 1.5 }); } catch (e) {}
+      jm.carEl = document.createElement('div'); jm.carEl.className = 'jm-car';
+      jm.car = new ml.Marker({ element: jm.carEl }).setLngLat(lonlat(M.ub)).addTo(map);
+      jm.rg = (D.mapLabels || []).map(function (l) {
+        var el = document.createElement('div'); el.className = 'jm-rg jm-' + l.c; el.textContent = L(l.t); el.setAttribute('aria-hidden', 'true');
+        return { l: l, el: el, m: new ml.Marker({ element: el, anchor: l.a === 'start' ? 'left' : 'center' }).setLngLat(l.ll).addTo(map) };
+      });
+      map.on('zoom', jmZoomClass); jmZoomClass();
+      ['dragstart', 'zoomstart', 'rotatestart', 'pitchstart'].forEach(function (ev) { map.on(ev, function (e) { if (e.originalEvent && jm.playing) jmStop(true); }); });
+      jmSetTour(jm.cur, false);
+      jm.ready = true;
+      if (jm.visible && !jm.played) jmStart();
+    });
+  }
+  function jmZoomClass() { if (jm.map) jm.stage.classList.toggle('jm-far', jm.map.getZoom() < 6.6); }
+  function jmTabs() {
+    jm.tabs.innerHTML = jmTours().map(function (tr) {
+      return '<button class="jm-tab" type="button" role="tab" data-tour="' + tr.id + '" aria-selected="' + (tr.id === jm.cur) + '"><b>' + tr.days + '</b>' + esc(L(tr.name).replace(/^\d+-Day\s*/, '').replace(/^\d+\s*хоногийн\s*/i, '')) + '</button>';
+    }).join('');
+  }
+  function jmChips() {
+    var tr = D.tours.filter(function (x) { return x.id === jm.cur; })[0], n = 0;
+    jm.chips.innerHTML = tr.route.map(function (r, i) {
+      if (r.id === 'ub') return '';
+      n++;
+      return '<li><button type="button" data-i="' + i + '"><b>' + n + '</b><span class="st"><span>' + esc(L(D.mapNames[r.id])) + '</span><small>' + esc(dayLbl(r.d)) + '</small></span></button></li>';
+    }).join('');
+  }
+  function jmSetTour(id, play) {
+    jm.cur = id; jmStop(false);
+    $$('.jm-tab', jm.tabs).forEach(function (b) { b.setAttribute('aria-selected', b.dataset.tour === id); });
+    jmChips();
+    if (jm.fallback) { jmFallback(); return; }
+    if (!jm.map || !jm.map.getSource('route')) return;
+    var ml = window.maplibregl, map = jm.map, R = jm.R = jmRoute(D.tours.filter(function (x) { return x.id === id; })[0]);
+    map.getSource('route').setData({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: R.line } });
+    (jm.pins || []).forEach(function (p) { p.m.remove(); });
+    var n = 0;
+    jm.pins = R.stops.map(function (r, i) {
+      if (r.id === 'ub' && i > 0) return null;
+      var wrap = document.createElement('div'), ub = r.id === 'ub';
+      if (!ub) n++;
+      wrap.className = 'jm-mk';
+      wrap.innerHTML = '<div class="jm-pin' + (ub ? ' jm-ub' : '') + '"><i>' + (ub ? '' : n) + '</i><span class="jm-l"><b>' + esc(L(D.mapNames[r.id])) + '</b><small>' + esc(ub ? t('rm.start') : dayLbl(r.d)) + '</small></span></div>';
+      if (!ub) {
+        wrap.tabIndex = 0; wrap.setAttribute('role', 'button'); wrap.setAttribute('aria-label', dayLbl(r.d) + ': ' + L(D.mapNames[r.id]));
+        wrap.addEventListener('click', function () { jmGoStop(i); });
+        wrap.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jmGoStop(i); } });
+      }
+      return { i: i, el: $('.jm-pin', wrap), m: new ml.Marker({ element: wrap, anchor: 'left', offset: [ub ? -9 : -14, 0] }).setLngLat(R.ll[i]).addTo(map) };
+    }).filter(Boolean);
+    R.stops.forEach(function (r) { if (r.img) { var im = new Image(); im.decoding = 'async'; im.src = 'img/' + r.img + '.webp'; } });
+    if (play && jm.visible && !reduce) jmPlay(); else jmShowAll(true);
+  }
+  function jmProgress(g) {
+    if (!jm.map) return;
+    var a = 'rgba(44,108,166,1)', a0 = 'rgba(44,108,166,0)', w = 'rgba(255,255,255,.95)', w0 = 'rgba(255,255,255,0)';
+    var gg = Math.min(Math.max(g, 0), 1);
+    jm.map.setPaintProperty('drawn', 'line-gradient', gg >= 1 ? a : gg <= 0 ? a0 : ['step', ['line-progress'], a, gg, a0]);
+    jm.map.setPaintProperty('drawn-case', 'line-gradient', gg >= 1 ? w : gg <= 0 ? w0 : ['step', ['line-progress'], w, gg, w0]);
+  }
+  function jmPinOn(i, on) { (jm.pins || []).forEach(function (p) { if (p.i === i) p.el.classList.toggle('on', on); }); }
+  function jmMark(i) {
+    (jm.pins || []).forEach(function (p) { p.el.classList.toggle('act', p.i === i); });
+    $$('button', jm.chips).forEach(function (b) { b.classList.toggle('cur', +b.dataset.i === i); });
+  }
+  function jmCard(i) {
+    var R = jm.R, r = R && R.stops[i], c = jm.card;
+    if (!r || !r.img) { c.classList.remove('on'); jmMark(-1); return; }
+    var img = $('img', c); img.src = 'img/' + r.img + '.webp';
+    $('small', c).textContent = dayLbl(r.d); $('b', c).textContent = L(D.mapNames[r.id]); $('p', c).textContent = dayTitle(R.tr, r.d);
+    c.classList.remove('on'); void c.offsetWidth; c.classList.add('on'); jmMark(i);
+  }
+  function jmHideCard() { jm.card.classList.remove('on'); jmMark(-1); }
+  function zOff() { return Math.log2(Math.max(jm.stage.clientWidth, 300) / 1150); }
+  function jmCloseZoom() { return 9.9 + 0.45 * zOff(); }
+  function jmDriveZoom(km, lat) { var W = jm.stage.clientWidth || 800; return Math.min(Math.max(Math.log2(156543 * Math.cos(lat * Math.PI / 180) * 0.55 * W / (km * 1000)), 5.6), 8.6); }
+  function jmHeading(a, b) { var h = Math.atan2(b[0] - a[0], (b[1] - a[1]) / Math.cos(a[1] * Math.PI / 180)) * 180 / Math.PI; if (h > 90) h -= 180; else if (h < -90) h += 180; return Math.max(-35, Math.min(35, h * 0.5)); }
+  function jmCam(o, dur, my) {
+    return new Promise(function (res) {
+      if (my !== jm.tok) return res();
+      var done = false, fin = function () { if (!done) { done = true; res(); } };
+      jm.map.once('moveend', fin); setTimeout(fin, dur + 500);
+      if (o.ease) { delete o.ease; jm.map.easeTo(Object.assign({ duration: dur, essential: true, easing: function (k) { return k; } }, o)); }
+      else jm.map.flyTo(Object.assign({ duration: dur, essential: true, curve: 1.3 }, o));
+    });
+  }
+  function jmWait(ms, my) { return new Promise(function (res) { var t0 = Date.now(); (function w() { if (my !== jm.tok || Date.now() - t0 >= ms) return res(); setTimeout(w, 60); })(); }); }
+  function jmDrive(i, my) {
+    var R = jm.R, s = R.segs[i], map = jm.map;
+    return new Promise(function (res) {
+      if (my !== jm.tok) return res();
+      var dur = Math.min(Math.max(s.km / 150, 2.1), 3.6) * 1000, c0 = { z: map.getZoom(), p: map.getPitch(), b: map.getBearing() };
+      var a = posAt(R, s.g0), b = posAt(R, s.g1), lat = (a[1] + b[1]) / 2, zD = jmDriveZoom(s.km, lat), zA = jmCloseZoom(), hb = jmHeading(a, b), t0 = performance.now();
+      if (jm.car) { jm.carEl.classList.add('on'); }
+      (function fr(now) {
+        if (my !== jm.tok) return res();
+        var p = Math.min((now - t0) / dur, 1), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+        var g = lerp(s.g0, s.g1, e), pos = posAt(R, g);
+        jmProgress(g); jm.car.setLngLat(pos);
+        var z = p < 0.68 ? lerp(c0.z, zD, smooth(p / 0.32)) : lerp(zD, zA, smooth((p - 0.68) / 0.32));
+        var pt = p < 0.68 ? lerp(c0.p, 50, smooth(p / 0.32)) : lerp(50, 60, smooth((p - 0.68) / 0.32));
+        var br = c0.b + angd(hb, c0.b) * smooth(p / 0.7);
+        map.jumpTo({ center: pos, zoom: z, pitch: pt, bearing: br });
+        if (p < 1) requestAnimationFrame(fr); else res();
+      })(t0);
+    });
+  }
+  function jmOverview(dur, my) {
+    var cam = jm.map.cameraForBounds(jm.R.bounds, { padding: 70, bearing: -6 }) || {};
+    return jmCam({ center: cam.center, zoom: (cam.zoom || 6) - 0.25, pitch: 45, bearing: -6 }, dur, my);
+  }
+  function jmStart() { if (jm.played || jm.playing || !jm.R) return; jm.played = true; if (reduce) { jmShowAll(true); return; } jmPlay(); }
+  async function jmPlay() {
+    if (!jm.map || !jm.R) return;
+    var my = ++jm.tok, R = jm.R, map = jm.map;
+    jm.playing = true; jm.replay.hidden = true; jm.view.hidden = true; jm.played = true;
+    map.stop(); jmHideCard(); jmProgress(0); jm.carEl.classList.remove('on'); jm.car.setLngLat(R.ll[0]);
+    (jm.pins || []).forEach(function (p) { p.el.classList.remove('on'); });
+    $$('button', jm.chips).forEach(function (b) { b.classList.add('dim'); });
+    map.jumpTo(Object.assign(map.cameraForBounds(MN_B, { padding: 16, bearing: 0 }) || {}, { pitch: 0, bearing: 0 }));
+    await jmWait(500, my); if (my !== jm.tok) return;
+    jmPinOn(0, true);
+    await jmCam({ center: R.ll[0], zoom: jmCloseZoom() - 1.3, pitch: 52, bearing: -10 }, 2600, my);
+    for (var i = 0; i < R.segs.length; i++) {
+      await jmDrive(i, my); if (my !== jm.tok) return;
+      var to = i + 1, st = R.stops[to];
+      if (st.id !== 'ub') jmPinOn(to, true);
+      $$('button', jm.chips).forEach(function (b) { if (+b.dataset.i === to) b.classList.remove('dim'); });
+      if (st.img) {
+        jmCard(to);
+        await jmCam({ ease: true, bearing: map.getBearing() + 16, pitch: 62 }, 2400, my); if (my !== jm.tok) return;
+        jmHideCard();
+      }
+    }
+    jm.carEl.classList.remove('on');
+    await jmOverview(2600, my); if (my !== jm.tok) return;
+    jm.playing = false; jm.atRoute = true; jmCtl();
+  }
+  function jmStop(showAll) {
+    jm.tok++; var was = jm.playing; jm.playing = false;
+    if (jm.map) jm.map.stop();
+    if (showAll && was) jmShowAll(false);
+  }
+  function jmShowAll(moveCam) {
+    if (!jm.map || !jm.R) return;
+    jmProgress(1); if (jm.carEl) jm.carEl.classList.remove('on'); jmHideCard();
+    (jm.pins || []).forEach(function (p) { p.el.classList.add('on'); });
+    $$('button', jm.chips).forEach(function (b) { b.classList.remove('dim'); });
+    if (moveCam) { var cam = jm.map.cameraForBounds(jm.R.bounds, { padding: 70, bearing: -6 }) || {}; jm.map.jumpTo({ center: cam.center, zoom: (cam.zoom || 6) - 0.25, pitch: reduce ? 30 : 45, bearing: -6 }); }
+    jm.atRoute = true; jmCtl();
+  }
+  function jmCtl() {
+    jm.replay.hidden = !!jm.playing; jm.view.hidden = !!jm.playing;
+    $('use', jm.view).setAttribute('href', jm.atRoute ? '#i-zout' : '#i-zin'); $('span', jm.view).textContent = t(jm.atRoute ? 'rm.zout' : 'jm.route');
+  }
+  function jmToggleView() {
+    if (!jm.map) return;
+    jmStop(true); var my = jm.tok, d = reduce ? 0 : 2000;
+    jmHideCard();
+    if (jm.atRoute) { var cam = jm.map.cameraForBounds(MN_B, { padding: 16, bearing: 0 }) || {}; jmCam({ center: cam.center, zoom: cam.zoom, pitch: 0, bearing: 0 }, d, my); jm.atRoute = false; }
+    else { jmOverview(d, my); jm.atRoute = true; }
+    jmCtl();
+  }
+  function jmGoStop(i) {
+    if (jm.fallback || !jm.map || !jm.R) return;
+    if (jm.playing) jmStop(true); else jmShowAll(false);
+    var my = jm.tok, R = jm.R;
+    jmCard(i);
+    jmCam({ center: R.ll[i], zoom: jmCloseZoom(), pitch: reduce ? 40 : 60, bearing: jm.map.getBearing() }, reduce ? 0 : 2200, my);
+    jm.atRoute = false; jmCtl();
+  }
+  function jmLang() {
+    if (!jm.sec || !jm.stage) return;
+    jm.box.setAttribute('aria-label', t('jm.aria')); jmTabs(); jmChips();
+    if (jm.fallback) { jmFallback(); return; }
+    if (jm.map) {
+      (jm.rg || []).forEach(function (o) { o.el.textContent = L(o.l.t); });
+      if (jm.R) { var playing = jm.playing; jmSetTour(jm.cur, false); if (!playing) jmCtl(); }
+    }
+  }
+  jmInit();
   function money(n) { return '$' + n.toLocaleString('en-US'); }
   function tourInfo(tr) {
     var h = '<div class="tour-info">';
@@ -655,7 +993,7 @@
     root.lang = lang === 'mn' ? 'mn' : 'en';
     $$('[data-i18n]').forEach(function (el) { if (el.classList.contains('hero-word')) return; el.textContent = t(el.getAttribute('data-i18n')); });
     $$('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.lang === lang); });
-    renderTabs(); renderCards(); renderJourneys(); renderTours(); renderGallery(); renderReviews(); renderTiles(); fillSelects(); syncTrip();
+    renderTabs(); renderCards(); renderJourneys(); renderTours(); jmLang(); renderGallery(); renderReviews(); renderTiles(); fillSelects(); syncTrip();
     if (!first) { splitWord(); if (window.ScrollTrigger) { ScrollTrigger.refresh(); } }
   }
   $$('.lang button').forEach(function (b) {
