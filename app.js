@@ -276,8 +276,12 @@
       return '<li class="tday"><span class="tday-n"><small>' + esc(t('tr.day')) + '</small><b>' + (i + 1) + '</b></span><div class="tday-b"><h3>' + esc(L(d.t)) + '</h3><p>' + esc(L(d.d)) + '</p>' +
         (d.img ? '<figure class="tday-img"><img src="img/' + d.img + '.webp" alt="' + esc(L(d.t)) + '" width="1600" height="720" loading="lazy" decoding="async"></figure>' : '') +
         (d.s ? '<p class="tday-s"><svg><use href="#i-toono"/></svg><span>' + esc(t('tr.stay')) + ': ' + esc(L(d.s)) + '</span></p>' : '') + '</div></li>';
-    }).join('') + '</ol><button class="btn btn-ink tour-book" type="button" data-book="' + tr.id + '">' + esc(t('tr.book')) + ' <svg><use href="#i-arrow"/></svg></button>';
-    $('#moreTours').innerHTML = D.moreTours.map(function (m) { return '<li>' + esc(L(m)) + '</li>'; }).join('');
+    }).join('') + '</ol><div class="tour-actions"><button class="btn btn-ink tour-book" type="button" data-book="' + tr.id + '">' + esc(t('tr.book')) + ' <svg><use href="#i-arrow"/></svg></button>' +
+      (tr.film ? '<a class="tour-film" href="' + tr.film + '" target="_blank" rel="noopener"><span class="play"><svg><use href="#i-play"/></svg></span>' + esc(t('tr.film')) + '</a>' : '') + '</div>';
+    $('#moreTours').innerHTML = D.moreTours.map(function (m) {
+      return '<li><h3>' + esc(L(m.name)) + '</h3><p>' + esc(L(m.d)) + '</p>' +
+        (m.film ? '<a class="mt-film" href="' + m.film + '" target="_blank" rel="noopener" aria-label="' + esc(t('tr.watch') + ': ' + L(m.name)) + '"><svg><use href="#i-play"/></svg>' + esc(t('tr.watch')) + '</a>' : '') + '</li>';
+    }).join('');
   }
   $('#tourTabs').addEventListener('click', function (e) {
     var b = e.target.closest('[data-tour]'); if (!b || b.dataset.tour === tourSel) return;

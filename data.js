@@ -162,7 +162,7 @@ window.SKY = {
 
   /* Real itineraries from Skyland's own website (skylandmongolia.com, WordPress version) */
   tours: [
-    { id: 'gobi7', days: 7, popular: true,
+    { id: 'gobi7', days: 7, popular: true, film: 'https://youtube.com/shorts/_mi0AqjuEBI',
       name: { en: '7-Day Gobi Tour', mn: 'Говийн 7 хоногийн аялал' },
       lead: { en: 'The legendary Gobi: granite cliffs, painted canyons, an ice gorge, singing dunes and the Flaming Cliffs, with nights in nomad gers.',
               mn: 'Домогт Говь: боржин хад, өнгө алаг хясаа, мөстэй хавцал, дуулдаг элс, Баянзаг, малчин айлын гэрт хоноглоно.' },
@@ -255,10 +255,16 @@ window.SKY = {
     { img: 'old/tr-khustai', en: 'Khustai National Park', mn: 'Хустайн нуруу' },
     { img: 'old/tr-chinggis-statue', en: 'At the Chinggis Khaan statue', mn: 'Чингис хааны хөшөөнд' }
   ],
+  /* From the client's old website (Mongolia Tours page and home page). Films are the client's own YouTube Shorts. */
   moreTours: [
-    { en: '11-Day Central Mongolia', mn: 'Төв Монгол, 11 хоног' },
-    { en: '22-Day Across Mongolia: Gobi, Khuvsgul and the reindeer herders', mn: 'Монголоор бүтэн тойрох 22 хоног: Говь, Хөвсгөл, цаатан' },
-    { en: 'Western Mongolia & the Eagle Hunters', mn: 'Баруун Монгол ба бүргэдчид' }
+    { name: { en: '11-Day Central Mongolia', mn: 'Төв Монгол, 11 хоног' },
+      d: { en: 'Rolling steppes, ancient monasteries and days with nomad families.', mn: 'Уудам тал, эртний хийд, нүүдэлчин айлын амьдрал.' } },
+    { name: { en: '22-Day Across Mongolia', mn: 'Монголоор тойрох 22 хоног' },
+      d: { en: 'The Gobi, Central Mongolia, Lake Khuvsgul and the taiga home of the Tsaatan reindeer herders.', mn: 'Говь, Төв Монгол, Хөвсгөл нуур, цаатан иргэдийн тайга.' } },
+    { name: { en: 'Western Mongolia', mn: 'Баруун Монгол' }, film: 'https://youtube.com/shorts/fH4ZgxGQiVY',
+      d: { en: 'A region of breathtaking nature and rich cultural diversity, dominated by the Altai Mountains.', mn: 'Алтайн нуруу ноёлсон, байгаль сайхан, олон үндэстний соёлтой нутаг.' } },
+    { name: { en: 'Eagle Hunters', mn: 'Бүргэдчид' }, film: 'https://youtube.com/shorts/9Y_Kz85KGRg',
+      d: { en: 'Western Mongolia is home to the Kazakh eagle hunters, who keep the ancient art of hunting with golden eagles.', mn: 'Баруун Монголын казах бүргэдчид алтан бүргэдээр ан хийх эртний урлагийг хадгалсаар буй.' } }
   ],
   /* Testimonials as published on Skyland's own website — confirm with the client before launch */
   reviews: [
@@ -294,10 +300,11 @@ window.SKY = {
       'dc.addr': '1-101 Selbe, 20th khoroo, Sukhbaatar district, Ulaanbaatar', 'p.mail': 'Send by email', 'toast.tour': 'Tour added to your request',
       'j.title': 'Signature journeys', 'j.lead': 'Routes that link our favourite places. Pick one and we’ll shape it around your dates, pace and budget.', 'j.custom': 'Build my own', 'j.places': 'places', 'j.add': 'Add route',
       's.title': 'Travel your way',
-      'why.title': 'Why Skyland', 'why.lead': 'Mongolia is vast and roads are few. The difference between a good trip and an unforgettable one is who plans it.',
-      'why.1t': 'Planned by a traveller who films it', 'why.1': 'Our founder travels and films Mongolia for his vlog. The places on this page are ones he knows first-hand.',
-      'why.2t': 'Your route, your pace', 'why.2': 'Private trips built around what you want to see — no fixed bus tours, no rushing past the view.',
-      'why.3t': 'Local all the way', 'why.3': 'Mongolian drivers, guides and herder families, so your journey supports the places you visit.',
+      'why.title': 'Why Skyland', 'why.lead': 'We believe the best way to discover Mongolia is not just by seeing it, but by living it — sharing tea with nomads, riding across the open steppe and sleeping under endless starry skies.',
+      'why.1t': 'Locally owned and operated', 'why.1': 'Run by Mongolians, with Mongolian drivers and guides. Our founder travels and films the country for his vlog, so he knows these places first-hand.',
+      'why.2t': 'Authentic nomadic family experiences', 'why.2': 'Nights with herder families along the route: share their tea, join the day’s work and sleep in their ger.',
+      'why.3t': 'Custom and private tours', 'why.3': 'Private trips built around what you want to see, at your pace — no fixed bus tours, no rushing past the view.',
+      'tr.film': 'Watch the tour film', 'tr.watch': 'Watch', 'social.film': 'Mongolia film',
       'steps.title': 'Plan your trip in three steps',
       'step.1t': 'Pick your places', 'step.1': 'Add destinations from the list above, or simply tell us the trip you dream of.',
       'step.2t': 'Get your route', 'step.2': 'We send a day-by-day plan with drives, ger camps and a clear price.',
@@ -328,10 +335,11 @@ window.SKY = {
       'dc.addr': 'Улаанбаатар, Сүхбаатар дүүрэг, 20-р хороо, Сэлбэ 1-101', 'p.mail': 'Имэйлээр илгээх', 'toast.tour': 'Аялал хүсэлтэд нэмэгдлээ',
       'j.title': 'Онцлох аяллууд', 'j.lead': 'Бидний дуртай газруудыг холбосон маршрутууд. Нэгийг сонгоход таны огноо, хэмнэл, төсөвт тааруулна.', 'j.custom': 'Өөрөө зохиох', 'j.places': 'газар', 'j.add': 'Маршрут нэмэх',
       's.title': 'Өөрийнхөөрөө аялаарай',
-      'why.title': 'Яагаад Skyland', 'why.lead': 'Монгол уудам, зам цөөн. Сайн аялал, мартагдашгүй аялал хоёрын ялгаа нь хэн төлөвлөсөнд байдаг.',
-      'why.1t': 'Өөрөө явж, бичлэг хийдэг хүн төлөвлөнө', 'why.1': 'Үүсгэн байгуулагч маань Монголоор аялж влог хийдэг. Энэ хуудсан дээрх газруудыг өөрийн биеэр мэднэ.',
-      'why.2t': 'Таны маршрут, таны хэмнэл', 'why.2': 'Таны үзэхийг хүссэн зүйлд тулгуурласан хувийн аялал — тогтмол автобусны тур, яаруу аялал байхгүй.',
-      'why.3t': 'Бүх зүйл орон нутгийнх', 'why.3': 'Монгол жолооч, хөтөч, малчин айлууд — таны аялал очсон газрынхаа хүмүүсийг дэмжинэ.',
+      'why.title': 'Яагаад Skyland', 'why.lead': 'Монголыг зөвхөн үзээд өнгөрөх биш, амьдарч мэдрэх нь хамгийн сайн арга гэж бид итгэдэг — нүүдэлчидтэй цай ууж, уудам талаар морь унаж, од түгсэн тэнгэр дор хоноглоно.',
+      'why.1t': 'Монголчууд эзэмшиж, өөрсдөө ажиллуулдаг', 'why.1': 'Монгол жолооч, хөтөчтэй. Үүсгэн байгуулагч маань Монголоор аялж влог хийдэг тул эдгээр газрыг өөрийн биеэр мэднэ.',
+      'why.2t': 'Малчин айлын жинхэнэ амьдрал', 'why.2': 'Замдаа малчин айлд хоноглож, цайг нь ууж, өдрийн ажилд нь оролцож, гэрт нь унтана.',
+      'why.3t': 'Хувийн, танд тохирсон аялал', 'why.3': 'Таны үзэхийг хүссэн зүйлд тулгуурласан, таны хэмнэлээр явах хувийн аялал — тогтмол автобусны тур, яаруу аялал байхгүй.',
+      'tr.film': 'Аяллын бичлэг үзэх', 'tr.watch': 'Үзэх', 'social.film': 'Монголын бичлэг',
       'steps.title': 'Аяллаа гурван алхмаар төлөвлө',
       'step.1t': 'Газраа сонго', 'step.1': 'Дээрх жагсаалтаас газраа нэм, эсвэл мөрөөдлийн аяллаа бидэнд хэлээрэй.',
       'step.2t': 'Маршрутаа ав', 'step.2': 'Өдөр бүрийн зам, гэр бааз, тодорхой үнэтэй төлөвлөгөө илгээнэ.',
