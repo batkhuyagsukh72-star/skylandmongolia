@@ -1,4 +1,4 @@
-/* Skyland Mongolia — content (EN / MN). Edit text here; the page renders from this file. */
+/* Azure Skyland Mongolia — content (EN / MN). Edit text here; the page renders from this file. */
 window.SKY = {
   regions: [
     { id: 'all', en: 'All', mn: 'Бүгд' },
@@ -289,7 +289,7 @@ window.SKY = {
       'dest.all': 'See all places', 'dest.less': 'Back to slider', 'dest.best': 'Best', 'dest.add': 'Add to trip', 'dest.added': 'In your trip', 'dest.more': 'Read more', 'dest.plan': 'Plan this trip',
       'tr.title': 'Our tours, day by day', 'tr.lead': 'Two of our most requested routes, exactly as we run them. Dates, pace and comfort can all be changed for you.',
       'tr.day': 'Day', 'tr.days': 'days', 'tr.stay': 'Overnight', 'tr.popular': 'Most popular', 'tr.book': 'Request this tour', 'tr.more': 'Also on request',
-      'gl.more': 'Show all photos', 'gl.less': 'Show fewer photos', 'gl.title': 'From our journeys', 'gl.lead': 'Photos from Skyland trips across Mongolia.', 'rv.title': 'What travellers say', 'rv.lead': 'From travellers who explored Mongolia with us.',
+      'gl.more': 'Show all photos', 'gl.less': 'Show fewer photos', 'gl.title': 'From our journeys', 'gl.lead': 'Photos from Azure Skyland trips across Mongolia.', 'rv.title': 'What travellers say', 'rv.lead': 'From travellers who explored Mongolia with us.',
       'dc.title': 'Or reach us directly', 'dc.phone': 'Phone', 'dc.email': 'Email', 'dc.office': 'Office', 'dc.hours': 'Hours', 'dc.copy': 'Copy', 'dc.copied': 'Copied',
       'dc.addr': '1-101 Selbe, 20th khoroo, Sukhbaatar district, Ulaanbaatar', 'p.mail': 'Send by email', 'toast.tour': 'Tour added to your request',
       'j.title': 'Signature journeys', 'j.lead': 'Routes that link our favourite places. Pick one and we’ll shape it around your dates, pace and budget.', 'j.custom': 'Build my own', 'j.places': 'places', 'j.add': 'Add route',
@@ -307,8 +307,8 @@ window.SKY = {
       'plan.title': 'Plan your trip', 'plan.route': 'Your route', 'plan.empty': 'Add places from the list and watch your route appear on the map.',
       'plan.from': 'from Ulaanbaatar', 'plan.count1': 'place', 'plan.countN': 'places', 'plan.clear': 'Clear',
       'p.name': 'Your name', 'p.contact': 'Email or WhatsApp', 'p.when': 'Travel month', 'p.who': 'Travellers', 'p.msg': 'Anything else we should know?',
-      'p.send': 'Send request', 'p.open': 'Open Instagram chat', 'p.note': 'We’ll copy your request so you can send it through Instagram chat or by email.',
-      'p.done': 'Your request is copied. Send it through Instagram chat or by email below.', 'p.req': 'Please add your name and a way to reach you.',
+      'p.send': 'Send request', 'p.open': 'Open Instagram chat', 'p.note': 'Your request goes straight to our team at skylandmongolia@gmail.com.',
+      'p.done': 'Your request is copied. Send it through Instagram chat or by email below.', 'p.req': 'Please add your name and a way to reach you.', 'p.sending': 'Sending…', 'p.sent': 'Thank you! Your request has been sent to our team. We will reply by email or WhatsApp soon.', 'p.fail': 'We could not send it automatically. Your request is copied — send it through Instagram chat or by email below.',
       'toast.added': 'added to your trip', 'toast.route': 'places added to your trip',
       'foot.rights': 'All rights reserved', 'foot.top': 'Back to top'
     },
@@ -323,7 +323,7 @@ window.SKY = {
       'dest.all': 'Бүх газрыг харах', 'dest.less': 'Слайдер руу буцах', 'dest.best': 'Тохиромжтой', 'dest.add': 'Аялалд нэмэх', 'dest.added': 'Аялалд байна', 'dest.more': 'Дэлгэрэнгүй', 'dest.plan': 'Энэ аяллыг төлөвлөх',
       'tr.title': 'Аяллууд өдөр өдрөөр', 'tr.lead': 'Хамгийн их захиалдаг хоёр маршрут маань яг явдгаараа. Огноо, хэмнэл, тав тухыг танд тааруулж өөрчилнө.',
       'tr.day': 'Өдөр', 'tr.days': 'хоног', 'tr.stay': 'Хоноглох', 'tr.popular': 'Хамгийн эрэлттэй', 'tr.book': 'Энэ аяллыг захиалах', 'tr.more': 'Захиалгаар',
-      'gl.more': 'Бүх зургийг харах', 'gl.less': 'Цөөн зураг харуулах', 'gl.title': 'Аяллын агшнууд', 'gl.lead': 'Skyland-ын аяллуудаас авсан зургууд.', 'rv.title': 'Аялагчид юу гэж хэлсэн бэ', 'rv.lead': 'Бидэнтэй хамт Монголоор аялсан хүмүүсийн сэтгэгдэл.',
+      'gl.more': 'Бүх зургийг харах', 'gl.less': 'Цөөн зураг харуулах', 'gl.title': 'Аяллын агшнууд', 'gl.lead': 'Azure Skyland-ын аяллуудаас авсан зургууд.', 'rv.title': 'Аялагчид юу гэж хэлсэн бэ', 'rv.lead': 'Бидэнтэй хамт Монголоор аялсан хүмүүсийн сэтгэгдэл.',
       'dc.title': 'Эсвэл шууд холбогдоорой', 'dc.phone': 'Утас', 'dc.email': 'Имэйл', 'dc.office': 'Оффис', 'dc.hours': 'Цагийн хуваарь', 'dc.copy': 'Хуулах', 'dc.copied': 'Хуулагдлаа',
       'dc.addr': 'Улаанбаатар, Сүхбаатар дүүрэг, 20-р хороо, Сэлбэ 1-101', 'p.mail': 'Имэйлээр илгээх', 'toast.tour': 'Аялал хүсэлтэд нэмэгдлээ',
       'j.title': 'Онцлох аяллууд', 'j.lead': 'Бидний дуртай газруудыг холбосон маршрутууд. Нэгийг сонгоход таны огноо, хэмнэл, төсөвт тааруулна.', 'j.custom': 'Өөрөө зохиох', 'j.places': 'газар', 'j.add': 'Маршрут нэмэх',
@@ -341,8 +341,8 @@ window.SKY = {
       'plan.title': 'Аяллаа төлөвлөх', 'plan.route': 'Таны маршрут', 'plan.empty': 'Жагсаалтаас газар нэмэхэд таны маршрут газрын зураг дээр гарч ирнэ.',
       'plan.from': 'Улаанбаатараас', 'plan.count1': 'газар', 'plan.countN': 'газар', 'plan.clear': 'Цэвэрлэх',
       'p.name': 'Таны нэр', 'p.contact': 'Имэйл эсвэл WhatsApp', 'p.when': 'Аялах сар', 'p.who': 'Хүний тоо', 'p.msg': 'Өөр бидэнд хэлэх зүйл байна уу?',
-      'p.send': 'Хүсэлт илгээх', 'p.note': 'Таны хүсэлтийг хуулна. Instagram чатаар эсвэл имэйлээр илгээгээрэй.', 'p.open': 'Instagram чат нээх',
-      'p.done': 'Хүсэлт хуулагдлаа. Доорх Instagram чат эсвэл имэйлээр илгээгээрэй.', 'p.req': 'Нэр болон холбогдох хаягаа бичнэ үү.',
+      'p.send': 'Хүсэлт илгээх', 'p.note': 'Таны хүсэлт skylandmongolia@gmail.com хаягаар манай багт шууд очно.', 'p.open': 'Instagram чат нээх',
+      'p.done': 'Хүсэлт хуулагдлаа. Доорх Instagram чат эсвэл имэйлээр илгээгээрэй.', 'p.req': 'Нэр болон холбогдох хаягаа бичнэ үү.', 'p.sending': 'Илгээж байна…', 'p.sent': 'Баярлалаа! Таны хүсэлт манай багт илгээгдлээ. Удахгүй имэйл эсвэл WhatsApp-аар хариу өгнө.', 'p.fail': 'Автоматаар илгээж чадсангүй. Хүсэлт хуулагдсан тул доорх Instagram чат эсвэл имэйлээр илгээнэ үү.',
       'toast.added': 'аялалд нэмэгдлээ', 'toast.route': 'газар аялалд нэмэгдлээ',
       'foot.rights': 'Бүх эрх хуулиар хамгаалагдсан', 'foot.top': 'Дээш буцах'
     }

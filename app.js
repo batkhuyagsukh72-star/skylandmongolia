@@ -1,4 +1,4 @@
-/* Skyland Mongolia — interactions & motion */
+/* Azure Skyland Mongolia — interactions & motion */
 (function () {
   'use strict';
   var D = window.SKY, M = window.SKY_MAP;
@@ -340,7 +340,7 @@
     note.classList.remove('err');
     var order = routeOrder(trip).concat(trip.filter(function (id) { return !M.pins[id]; }));
     var lines = [
-      'Trip request — Skyland Mongolia',
+      'Trip request — Azure Skyland Mongolia',
       'Name: ' + f.name.value.trim(),
       'Contact: ' + f.contact.value.trim(),
       'Month: ' + D.months.en[+f.month.value],
@@ -349,11 +349,22 @@
       order.length ? 'Places: ' + order.map(function (id) { return byId[id].name.en; }).join(', ') : '',
       f.msg.value.trim() ? 'Note: ' + f.msg.value.trim() : ''
     ].filter(Boolean).join('\n');
-    var done = function () { note.textContent = t('p.done'); };
-    try { navigator.clipboard.writeText(lines).then(done, fallbackCopy); } catch (err) { fallbackCopy(); }
-    function fallbackCopy() { var ta = document.createElement('textarea'); ta.value = lines; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (x) {} ta.remove(); done(); }
-    var ml = $('#mailLink'); ml.href = 'mailto:' + D.contact.email + '?subject=' + encodeURIComponent('Trip request — ' + f.name.value.trim()) + '&body=' + encodeURIComponent(lines); ml.hidden = false;
-    var dm = $('#dmLink'); dm.hidden = false; dm.focus({ preventScroll: true });
+    var ml = $('#mailLink'); ml.href = 'mailto:' + D.contact.email + '?subject=' + encodeURIComponent('Trip request — ' + f.name.value.trim()) + '&body=' + encodeURIComponent(lines);
+    function fallback() {
+      var done = function () { note.textContent = t('p.fail'); ml.hidden = false; var dm = $('#dmLink'); dm.hidden = false; dm.focus({ preventScroll: true }); };
+      try { navigator.clipboard.writeText(lines).then(done, copyOld); } catch (err) { copyOld(); }
+      function copyOld() { var ta = document.createElement('textarea'); ta.value = lines; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (x) {} ta.remove(); done(); }
+    }
+    if (f._honey && f._honey.value) return;
+    var btn = f.querySelector('button[type=submit]'), label = btn.querySelector('span'), old = label.textContent;
+    btn.disabled = true; label.textContent = t('p.sending');
+    fetch('https://formsubmit.co/ajax/' + D.contact.email, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ _subject: 'Trip request — ' + f.name.value.trim(), _template: 'box', _captcha: 'false', name: f.name.value.trim(), contact: f.contact.value.trim(), request: lines })
+    }).then(function (r) { return r.json(); }).then(function (j) {
+      if (j && (j.success === 'true' || j.success === true)) { note.textContent = t('p.sent'); f.reset(); fillSelects(); }
+      else fallback();
+    }).catch(fallback).then(function () { btn.disabled = false; label.textContent = old; });
   });
 
   /* ---------- i18n apply ---------- */
