@@ -677,11 +677,17 @@
         return { l: l, el: el, m: new ml.Marker({ element: el, anchor: l.a === 'start' ? 'left' : 'center' }).setLngLat(l.ll).addTo(map) };
       });
       map.on('zoom', jmZoomClass); jmZoomClass();
+      map.on('move', function () { if (!jm.flipRaf) jm.flipRaf = requestAnimationFrame(jmFlip); });
       ['dragstart', 'zoomstart', 'rotatestart', 'pitchstart'].forEach(function (ev) { map.on(ev, function (e) { if (e.originalEvent && jm.playing) jmStop(true); }); });
       jmSetTour(jm.cur, false);
       jm.ready = true;
       if (jm.visible && !jm.played) jmStart();
     });
+  }
+  function jmFlip() {
+    jm.flipRaf = 0; if (!jm.map || !jm.pins) return;
+    var W = jm.stage.clientWidth;
+    jm.pins.forEach(function (p) { var l = $('.jm-l', p.el), x = jm.map.project(p.ll).x; p.el.classList.toggle('flip', x + 24 + (l ? l.offsetWidth : 0) > W - 10); });
   }
   function jmZoomClass() { if (jm.map) jm.stage.classList.toggle('jm-far', jm.map.getZoom() < 6.6); }
   function jmTabs() {
@@ -718,10 +724,11 @@
         wrap.addEventListener('click', function () { jmGoStop(i); });
         wrap.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jmGoStop(i); } });
       }
-      return { i: i, el: $('.jm-pin', wrap), m: new ml.Marker({ element: wrap, anchor: 'left', offset: [ub ? -9 : -14, 0] }).setLngLat(R.ll[i]).addTo(map) };
+      return { i: i, el: $('.jm-pin', wrap), ll: R.ll[i], m: new ml.Marker({ element: wrap, anchor: 'center' }).setLngLat(R.ll[i]).addTo(map) };
     }).filter(Boolean);
     R.stops.forEach(function (r) { if (r.img) { var im = new Image(); im.decoding = 'async'; im.src = 'img/' + r.img + '.webp'; } });
     if (play && jm.visible && !reduce) jmPlay(); else jmShowAll(true);
+    jmFlip();
   }
   function jmProgress(g) {
     if (!jm.map) return;

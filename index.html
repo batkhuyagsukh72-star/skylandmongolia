@@ -59,7 +59,7 @@
   </div>
 </div>
 
-<a class="skip" href="#destinations">Skip to content</a>
+<a class="skip" href="#journey-map">Skip to content</a>
 
 <!-- ============ HEADER ============ -->
 <header class="hdr" id="hdr">
@@ -129,6 +129,23 @@
       </label>
       <button class="finder-go" type="submit"><svg><use href="#i-search"/></svg><span class="sr" data-i18n="f.go">Search</span></button>
     </form>
+  </div>
+</section>
+
+<!-- ============ JOURNEY MAP (3D) ============ -->
+<section class="jmap" id="journey-map" aria-labelledby="jm-h">
+  <div class="wrap">
+    <div class="jm-head center">
+      <h2 id="jm-h" class="h2" data-i18n="jm.title" data-reveal>Fly the route in 3D</h2>
+      <p class="lead" data-i18n="jm.lead" data-reveal>Real Mongolian terrain, stop by stop. Pick a tour and watch the journey unfold.</p>
+      <div class="jm-tabs" role="tablist" aria-labelledby="jm-h"></div>
+    </div>
+    <div class="jm-stage">
+      <div class="jm-map" role="region" aria-label="3D map of the tour route"></div>
+      <div class="jm-card" aria-hidden="true"><div class="jm-ph"><img alt="" width="800" height="600" decoding="async"></div><div class="jm-ct"><small></small><b></b><p></p></div></div>
+      <div class="jm-ctl"><button class="rmap-zoom jm-view" type="button" hidden><svg><use href="#i-zout"/></svg><span></span></button><button class="rmap-replay jm-replay" type="button" hidden><svg><use href="#i-play"/></svg><span data-i18n="rm.replay">Replay</span></button></div>
+    </div>
+    <ol class="rmap-stops jm-stops"></ol>
   </div>
 </section>
 
