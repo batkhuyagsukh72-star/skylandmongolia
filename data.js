@@ -159,16 +159,93 @@ window.SKY = {
   months: { en: ['Any time', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
             mn: ['Хэзээ ч болно', '1-р сар', '2-р сар', '3-р сар', '4-р сар', '5-р сар', '6-р сар', '7-р сар', '8-р сар', '9-р сар', '10-р сар', '11-р сар', '12-р сар'] },
 
+
+  /* Real itineraries from Skyland's own website (skylandmongolia.com, WordPress version) */
+  tours: [
+    { id: 'gobi7', days: 7, popular: true,
+      name: { en: '7-Day Gobi Tour', mn: 'Говийн 7 хоногийн аялал' },
+      lead: { en: 'The legendary Gobi: granite cliffs, painted canyons, an ice gorge, singing dunes and the Flaming Cliffs, with nights in nomad gers.',
+              mn: 'Домогт Говь: боржин хад, өнгө алаг хясаа, мөстэй хавцал, дуулдаг элс, Баянзаг, малчин айлын гэрт хоноглоно.' },
+      plan: [
+        { t: { en: 'Ulaanbaatar → Baga Gazriin Chuluu', mn: 'Улаанбаатар → Бага газрын чулуу' },
+          d: { en: 'Granite rock formations rise from the plain in Dundgovi, 240 km from the city. Hike between the cliffs and visit a gorge with temple ruins and Jargalant cave.',
+               mn: 'Дундговийн тал дундаас сүндэрлэх боржин хадан цогцолбор, хотоос 240 км зайтай. Хадны дундуур явган аялж, сүмийн туурьтай хавцал, Жаргалант агуйгаар орно.' },
+          s: { en: 'Nomad family ger or tent', mn: 'Малчин айлын гэр эсвэл майхан' } },
+        { t: { en: 'Baga Gazriin Chuluu → Tsagaan Suvarga', mn: 'Бага газрын чулуу → Цагаан суварга' },
+          d: { en: 'The White Stupa: 60 m cliffs of coloured clay on an ancient seabed. Walk the rim and photograph the layers in the evening light.',
+               mn: 'Эртний далайн ёроол байсан 60 м өндөр, өнгө алаг шаварлаг хясаа. Хясааны дагуу алхаж, үдшийн гэрэлд зураг авна.' },
+          s: { en: 'Nomad family ger or tent', mn: 'Малчин айлын гэр эсвэл майхан' } },
+        { t: { en: 'Tsagaan Suvarga → Yolyn Am', mn: 'Цагаан суварга → Ёлын ам' },
+          d: { en: 'A deep, narrow gorge in Gobi Gurvan Saikhan National Park that holds its ice into early summer. Look out for ibex and bearded vultures.',
+               mn: 'Говь Гурван Сайхан байгалийн цогцолборт газрын гүн, нарийн хавцал. Зуны эхэн хүртэл мөсөө хадгалдаг. Янгир, ёл шувуу харах боломжтой.' },
+          s: { en: 'Local guesthouse', mn: 'Орон нутгийн зочид буудал' } },
+        { t: { en: 'Yolyn Am → Khongor sand dunes', mn: 'Ёлын ам → Хонгорын элс' },
+          d: { en: 'One of Mongolia’s largest dune fields, where the sand “sings” in the wind. Climb the highest dune for sunset and ride a camel.',
+               mn: 'Салхинд “дуулдаг” Монголын хамгийн том элсний нэг. Хамгийн өндөр манхан дээр гарч нар жаргахыг харж, тэмээ унана.' },
+          s: { en: 'Nomad family ger or tent', mn: 'Малчин айлын гэр эсвэл майхан' } },
+        { t: { en: 'Khongor → Flaming Cliffs (Bayanzag)', mn: 'Хонгорын элс → Баянзаг' },
+          d: { en: 'Where the world’s first dinosaur egg nest was found in 1922. The red cliffs glow at sunset among saxaul trees.',
+               mn: '1922 онд дэлхийд анх удаа үлэг гүрвэлийн өндөгний үүр олдсон газар. Нар жаргахад улаан хясаа заг модны дунд гэрэлтэнэ.' },
+          s: { en: 'Tourist camp by the cliffs', mn: 'Хясааны ойролцоох жуулчны бааз' } },
+        { t: { en: 'Bayanzag → Zorgol Khairkhan', mn: 'Баянзаг → Зорголхайрхан' },
+          d: { en: 'A lone red-granite mountain in Tuv province. Spend the evening with a herder family and join their daily work if you like.',
+               mn: 'Төв аймгийн ганц бие улаан боржин уул. Малчин айлд хонож, хүсвэл өдөр тутмын ажилд нь туслана.' },
+          s: { en: 'Herder family ger', mn: 'Малчин айлын гэр' } },
+        { t: { en: 'Zorgol Khairkhan → Ulaanbaatar', mn: 'Зорголхайрхан → Улаанбаатар' },
+          d: { en: 'A morning hike around the mountain, then the drive back to the city.',
+               mn: 'Өглөө уулын орчмоор алхаад хот руу буцна.' } }
+      ] },
+    { id: 'mini5', days: 5,
+      name: { en: '5-Day Mini Gobi & Karakorum', mn: 'Бага говь ба Хархорум, 5 хоног' },
+      lead: { en: 'A short loop through central Mongolia: mini dunes, the Orkhon waterfall, Erdene Zuu monastery and wild takhi horses.',
+              mn: 'Төв Монголоор хийх богино тойрог: Элсэн тасархай, Орхоны хүрхрээ, Эрдэнэ Зуу хийд, тахь.' },
+      plan: [
+        { t: { en: 'Ulaanbaatar → Elsen Tasarkhai', mn: 'Улаанбаатар → Элсэн тасархай' },
+          d: { en: 'Pickup from your hotel at 9 am, about 290 km on paved road. A camel ride and a walk on the mini dunes where the steppe meets the taiga.',
+               mn: 'Өглөө 9 цагт зочид буудлаас тань авна, засмал замаар 290 орчим км. Тал, тайга нийлсэн бага элсэнд тэмээ унаж, алхана.' },
+          s: { en: 'Nomad family ger', mn: 'Малчин айлын гэр' } },
+        { t: { en: 'Elsen Tasarkhai → Orkhon waterfall', mn: 'Элсэн тасархай → Орхоны хүрхрээ' },
+          d: { en: 'Ulaan Tsutgalan drops into a 22 m volcanic gorge, best after the summer rains in late July and August. Horse riding with a nearby herder family.',
+               mn: 'Улаан цутгалан 22 м гүн галт уулын хавцал руу унадаг. 7-р сарын сүүл, 8-р сард хамгийн сайхан. Ойролцоох малчин айлынхаар морь унана.' },
+          s: { en: 'Same herder family', mn: 'Мөн тэр малчин айлд' } },
+        { t: { en: 'Orkhon → Erdene Zuu, Kharkhorin', mn: 'Орхоны хүрхрээ → Эрдэнэ Зуу, Хархорин' },
+          d: { en: 'Mongolia’s earliest surviving Buddhist monastery, part of the Orkhon Valley World Heritage site. Watch the monks’ chanting ceremony.',
+               mn: 'Монголын хамгийн эртний буддын хийд, Орхоны хөндийн дэлхийн өвд багтдаг. Ламын хурал үзнэ.' },
+          s: { en: 'Guesthouse in town', mn: 'Сумын төвийн зочид буудал' } },
+        { t: { en: 'Kharkhorin → Khustai National Park', mn: 'Хархорин → Хустайн нуруу' },
+          d: { en: 'Home of the takhi, the only true wild horse. See them at dusk along with marmots, argali and red deer.',
+               mn: 'Дэлхийн цорын ганц жинхэнэ зэрлэг адуу болох тахийн нутаг. Үдшийн бүрийд тахь, тарвага, аргаль, буга харна.' },
+          s: { en: 'Tent near the park', mn: 'Байгалийн цогцолборын ойролцоо майханд' } },
+        { t: { en: 'Khustai → Ulaanbaatar', mn: 'Хустай → Улаанбаатар' },
+          d: { en: 'A morning walk on the Moltsog Els dunes, then back to the city.',
+               mn: 'Өглөө Молцог элсээр алхаад хот руу буцна.' } }
+      ] }
+  ],
+  moreTours: [
+    { en: '11-Day Central Mongolia', mn: 'Төв Монгол, 11 хоног' },
+    { en: '22-Day Across Mongolia: Gobi, Khuvsgul and the reindeer herders', mn: 'Монголоор бүтэн тойрох 22 хоног: Говь, Хөвсгөл, цаатан' },
+    { en: 'Western Mongolia & the Eagle Hunters', mn: 'Баруун Монгол ба бүргэдчид' }
+  ],
+  /* Testimonials as published on Skyland's own website — confirm with the client before launch */
+  reviews: [
+    { r: 5, q: 'An unforgettable five-day journey through the Gobi Desert. Our guide’s deep knowledge of Mongolian culture and landscapes made every moment meaningful and seamless.', who: 'John Cummins, UK' },
+    { r: 5, q: 'Professional, responsive, and deeply connected to Mongolia. Everything was thoughtfully arranged, making the journey both smooth and memorable.', who: 'Veronica Jean, USA' },
+    { r: 5, q: 'An authentic and enriching Gobi tour from start to finish. Highly recommended for anyone seeking a real Mongolian experience.', who: 'Zoe' },
+    { r: 4.5, q: 'It was incredible to spend days in these places.', who: 'Gianluca, Italy' }
+  ],
+  contact: { phone: '+976 9503 0466', phoneRaw: '+97695030466', email: 'skylandmongolia@gmail.com' },
+
   links: {
     instagram: 'https://www.instagram.com/skyland.mongolia',
     dm: 'https://ig.me/m/skyland.mongolia',
-    facebook: 'https://www.facebook.com/share/1cWDRS8x6k/',
+    facebook: 'https://www.facebook.com/mongoliantraveltuvshin',
+    youtube: 'https://www.youtube.com/@enhtuvshin7355',
     vlog: 'https://www.instagram.com/tuvshin.tmz'
   },
 
   t: {
     en: {
-      'nav.dest': 'Destinations', 'nav.journeys': 'Journeys', 'nav.why': 'Why Skyland', 'nav.plan': 'Plan a trip', 'nav.contact': 'Contact',
+      'nav.dest': 'Destinations', 'nav.journeys': 'Journeys', 'nav.why': 'Why Skyland', 'nav.plan': 'Plan a trip', 'nav.tours': 'Tours', 'nav.contact': 'Contact',
       'cta.plan': 'Plan my trip', 'menu': 'Menu', 'close': 'Close',
       'hero.kicker': 'Journeys under the eternal blue sky', 'hero.word': 'MONGOLIA',
       'hero.sub': 'Private trips to the Gobi, the Altai and the lakes of the north — planned by people who travel them.',
@@ -176,6 +253,11 @@ window.SKY = {
       'f.anywhere': 'Anywhere in Mongolia', 'f.anystyle': 'Any style', 'f.person': 'person', 'f.persons': 'people',
       'dest.title': 'Places worth the journey', 'dest.lead': 'Twenty corners of Mongolia, from singing dunes to glacier peaks. Tap a place to read more, or add it to your trip.',
       'dest.all': 'See all places', 'dest.less': 'Back to slider', 'dest.best': 'Best', 'dest.add': 'Add to trip', 'dest.added': 'In your trip', 'dest.more': 'Read more', 'dest.plan': 'Plan this trip',
+      'tr.title': 'Our tours, day by day', 'tr.lead': 'Two of our most requested routes, exactly as we run them. Dates, pace and comfort can all be changed for you.',
+      'tr.day': 'Day', 'tr.days': 'days', 'tr.stay': 'Overnight', 'tr.popular': 'Most popular', 'tr.book': 'Request this tour', 'tr.more': 'Also on request',
+      'rv.title': 'What travellers say', 'rv.lead': 'From travellers who explored Mongolia with us.',
+      'dc.title': 'Or reach us directly', 'dc.phone': 'Phone', 'dc.email': 'Email', 'dc.office': 'Office', 'dc.hours': 'Hours', 'dc.copy': 'Copy', 'dc.copied': 'Copied',
+      'dc.addr': '1-101 Selbe, 20th khoroo, Sukhbaatar district, Ulaanbaatar', 'p.mail': 'Send by email', 'toast.tour': 'Tour added to your request',
       'j.title': 'Signature journeys', 'j.lead': 'Routes that link our favourite places. Pick one and we’ll shape it around your dates, pace and budget.', 'j.custom': 'Build my own', 'j.places': 'places', 'j.add': 'Add route',
       's.title': 'Travel your way',
       'why.title': 'Why Skyland', 'why.lead': 'Mongolia is vast and roads are few. The difference between a good trip and an unforgettable one is who plans it.',
@@ -191,13 +273,13 @@ window.SKY = {
       'plan.title': 'Plan your trip', 'plan.route': 'Your route', 'plan.empty': 'Add places from the list and watch your route appear on the map.',
       'plan.from': 'from Ulaanbaatar', 'plan.count1': 'place', 'plan.countN': 'places', 'plan.clear': 'Clear',
       'p.name': 'Your name', 'p.contact': 'Email or WhatsApp', 'p.when': 'Travel month', 'p.who': 'Travellers', 'p.msg': 'Anything else we should know?',
-      'p.send': 'Send request', 'p.note': 'We’ll open our Instagram chat with your request copied — just paste and send.',
-      'p.done': 'Your request is copied. Open our Instagram chat below and paste it.', 'p.req': 'Please add your name and a way to reach you.',
+      'p.send': 'Send request', 'p.open': 'Open Instagram chat', 'p.note': 'We’ll copy your request so you can send it through Instagram chat or by email.',
+      'p.done': 'Your request is copied. Send it through Instagram chat or by email below.', 'p.req': 'Please add your name and a way to reach you.',
       'toast.added': 'added to your trip', 'toast.route': 'places added to your trip',
       'foot.rights': 'All rights reserved', 'foot.top': 'Back to top'
     },
     mn: {
-      'nav.dest': 'Газрууд', 'nav.journeys': 'Аяллууд', 'nav.why': 'Яагаад бид', 'nav.plan': 'Төлөвлөх', 'nav.contact': 'Холбоо барих',
+      'nav.dest': 'Газрууд', 'nav.journeys': 'Аяллууд', 'nav.why': 'Яагаад бид', 'nav.plan': 'Төлөвлөх', 'nav.tours': 'Хөтөлбөр', 'nav.contact': 'Холбоо барих',
       'cta.plan': 'Аялал захиалах', 'menu': 'Цэс', 'close': 'Хаах',
       'hero.kicker': 'Мөнх хөх тэнгэрийн дор аялал', 'hero.word': 'МОНГОЛ',
       'hero.sub': 'Говь, Алтай, хойд нутгийн нуурууд руу хувийн аялал — тэдгээр замаар өөрсдөө явдаг хүмүүсийн төлөвлөсөн.',
@@ -205,6 +287,11 @@ window.SKY = {
       'f.anywhere': 'Монголын хаана ч', 'f.anystyle': 'Ямар ч', 'f.person': 'хүн', 'f.persons': 'хүн',
       'dest.title': 'Очих ёстой газрууд', 'dest.lead': 'Дуут манханаас мөсөн оргил хүртэл Монголын хорин үзэсгэлэнт газар. Дарж дэлгэрэнгүй уншаад, аялалдаа нэмээрэй.',
       'dest.all': 'Бүх газрыг харах', 'dest.less': 'Слайдер руу буцах', 'dest.best': 'Тохиромжтой', 'dest.add': 'Аялалд нэмэх', 'dest.added': 'Аялалд байна', 'dest.more': 'Дэлгэрэнгүй', 'dest.plan': 'Энэ аяллыг төлөвлөх',
+      'tr.title': 'Аяллууд өдөр өдрөөр', 'tr.lead': 'Хамгийн их захиалдаг хоёр маршрут маань яг явдгаараа. Огноо, хэмнэл, тав тухыг танд тааруулж өөрчилнө.',
+      'tr.day': 'Өдөр', 'tr.days': 'хоног', 'tr.stay': 'Хоноглох', 'tr.popular': 'Хамгийн эрэлттэй', 'tr.book': 'Энэ аяллыг захиалах', 'tr.more': 'Захиалгаар',
+      'rv.title': 'Аялагчид юу гэж хэлсэн бэ', 'rv.lead': 'Бидэнтэй хамт Монголоор аялсан хүмүүсийн сэтгэгдэл.',
+      'dc.title': 'Эсвэл шууд холбогдоорой', 'dc.phone': 'Утас', 'dc.email': 'Имэйл', 'dc.office': 'Оффис', 'dc.hours': 'Цагийн хуваарь', 'dc.copy': 'Хуулах', 'dc.copied': 'Хуулагдлаа',
+      'dc.addr': 'Улаанбаатар, Сүхбаатар дүүрэг, 20-р хороо, Сэлбэ 1-101', 'p.mail': 'Имэйлээр илгээх', 'toast.tour': 'Аялал хүсэлтэд нэмэгдлээ',
       'j.title': 'Онцлох аяллууд', 'j.lead': 'Бидний дуртай газруудыг холбосон маршрутууд. Нэгийг сонгоход таны огноо, хэмнэл, төсөвт тааруулна.', 'j.custom': 'Өөрөө зохиох', 'j.places': 'газар', 'j.add': 'Маршрут нэмэх',
       's.title': 'Өөрийнхөөрөө аялаарай',
       'why.title': 'Яагаад Skyland', 'why.lead': 'Монгол уудам, зам цөөн. Сайн аялал, мартагдашгүй аялал хоёрын ялгаа нь хэн төлөвлөсөнд байдаг.',
@@ -220,8 +307,8 @@ window.SKY = {
       'plan.title': 'Аяллаа төлөвлөх', 'plan.route': 'Таны маршрут', 'plan.empty': 'Жагсаалтаас газар нэмэхэд таны маршрут газрын зураг дээр гарч ирнэ.',
       'plan.from': 'Улаанбаатараас', 'plan.count1': 'газар', 'plan.countN': 'газар', 'plan.clear': 'Цэвэрлэх',
       'p.name': 'Таны нэр', 'p.contact': 'Имэйл эсвэл WhatsApp', 'p.when': 'Аялах сар', 'p.who': 'Хүний тоо', 'p.msg': 'Өөр бидэнд хэлэх зүйл байна уу?',
-      'p.send': 'Хүсэлт илгээх', 'p.note': 'Таны хүсэлтийг хуулна — манай Instagram чатад буулгаад илгээгээрэй.', 'p.open': 'Instagram чат нээх',
-      'p.done': 'Хүсэлт хуулагдлаа. Доорх Instagram чатыг нээгээд буулгаарай.', 'p.req': 'Нэр болон холбогдох хаягаа бичнэ үү.',
+      'p.send': 'Хүсэлт илгээх', 'p.note': 'Таны хүсэлтийг хуулна. Instagram чатаар эсвэл имэйлээр илгээгээрэй.', 'p.open': 'Instagram чат нээх',
+      'p.done': 'Хүсэлт хуулагдлаа. Доорх Instagram чат эсвэл имэйлээр илгээгээрэй.', 'p.req': 'Нэр болон холбогдох хаягаа бичнэ үү.',
       'toast.added': 'аялалд нэмэгдлээ', 'toast.route': 'газар аялалд нэмэгдлээ',
       'foot.rights': 'Бүх эрх хуулиар хамгаалагдсан', 'foot.top': 'Дээш буцах'
     }
