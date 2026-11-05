@@ -300,11 +300,21 @@
   });
 
   /* ---------- gallery ---------- */
+  var glOpen = false, GL_FIRST = 11;
   function renderGallery() {
-    $('#glGrid').innerHTML = D.gallery.map(function (g) {
-      return '<figure class="gl' + (g.w ? ' gl-w' : '') + (g.tall ? ' gl-t' : '') + '"><img src="img/' + g.img + '.webp" alt="' + esc(L(g)) + '" loading="lazy" decoding="async"><figcaption>' + esc(L(g)) + '</figcaption></figure>';
+    $('#glGrid').innerHTML = D.gallery.map(function (g, i) {
+      return '<figure class="gl' + (g.w ? ' gl-w' : '') + (g.tall ? ' gl-t' : '') + '"' + (!glOpen && i >= GL_FIRST ? ' hidden' : '') + '><img src="img/' + g.img + '.webp" alt="' + esc(L(g)) + '" loading="lazy" decoding="async"><figcaption>' + esc(L(g)) + '</figcaption></figure>';
+    }).join('');
+    var b = $('#glMore'); b.textContent = (glOpen ? t('gl.less') : t('gl.more') + ' (' + D.gallery.length + ')'); b.setAttribute('aria-expanded', glOpen);
+    $('#rvPhotos').innerHTML = D.travellers.map(function (g) {
+      return '<figure class="rvp"><img src="img/' + g.img + '.webp" alt="' + esc(L(g)) + '" loading="lazy" decoding="async"><figcaption>' + esc(L(g)) + '</figcaption></figure>';
     }).join('');
   }
+  $('#glMore').addEventListener('click', function () {
+    glOpen = !glOpen; renderGallery();
+    if (!glOpen) goTo('#gallery');
+    if (window.ScrollTrigger) setTimeout(function () { ScrollTrigger.refresh(); }, 100);
+  });
 
   /* ---------- reviews ---------- */
   function stars(r) { var h = ''; for (var i = 1; i <= 5; i++) h += '<i class="' + (r >= i ? 'on' : r >= i - .5 ? 'half' : '') + '"></i>'; return '<span class="stars" role="img" aria-label="' + r + ' / 5">' + h + '</span>'; }
