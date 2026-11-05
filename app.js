@@ -263,6 +263,28 @@
   /* ---------- real tours, day by day ---------- */
   var tourSel = D.tours[0].id;
   function esc(x) { return String(x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function money(n) { return '$' + n.toLocaleString('en-US'); }
+  function tourInfo(tr) {
+    var h = '<div class="tour-info">';
+    if (tr.price) {
+      h += '<div class="ti-price"><h3>' + esc(t('tr.price')) + '</h3><table class="ptable"><tbody>' + tr.price.map(function (r) {
+        return '<tr><th scope="row">' + (r[0] === 1 ? esc(t('tr.solo')) : esc(t('tr.group')) + ' ' + r[0]) + '</th><td><b>' + money(r[1] * tr.days) + '</b><small>' + esc(t('tr.total')) + '</small></td><td class="pd">' + money(r[1]) + ' ' + esc(t('tr.perday')) + '</td></tr>';
+      }).join('') + '</tbody></table><p class="ti-dep">' + esc(t('tr.deposit')) + '</p></div>';
+    } else {
+      h += '<div class="ti-price"><h3>' + esc(t('tr.price')) + '</h3><p class="ti-q">' + esc(t('tr.priceq')) + '</p><p class="ti-dep">' + esc(t('tr.deposit')) + '</p></div>';
+    }
+    if (tr.inc) {
+      h += '<div class="ti-inc"><h3>' + esc(t('tr.inc')) + '</h3><ul class="ilist">' + L(tr.inc).map(function (x) { return '<li><svg><use href="#i-check"/></svg>' + esc(x) + '</li>'; }).join('') + '</ul>' +
+        (tr.exc ? '<h3>' + esc(t('tr.exc')) + '</h3><ul class="ilist ex">' + L(tr.exc).map(function (x) { return '<li><svg><use href="#i-close"/></svg>' + esc(x) + '</li>'; }).join('') + '</ul>' : '') + '</div>';
+    }
+    h += '</div>';
+    if (D.packing) {
+      h += '<details class="pack"><summary>' + esc(t('tr.pack')) + '<svg><use href="#i-plus"/></svg></summary><div class="pack-in">' + D.packing.map(function (g) {
+        return '<div><h4>' + esc(L(g.t)) + '</h4><ul>' + L(g.i).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
+      }).join('') + '</div><p class="pack-note">' + esc(t('tr.packnote')) + '</p></details>';
+    }
+    return h;
+  }
   function renderTours() {
     $('#tourTabs').innerHTML = D.tours.map(function (tr) {
       var on = tr.id === tourSel;
@@ -275,8 +297,8 @@
     $('#tourPanel').innerHTML = '<p class="tour-lead">' + esc(L(tr.lead)) + '</p><ol class="tour-days">' + tr.plan.map(function (d, i) {
       return '<li class="tday"><span class="tday-n"><small>' + esc(t('tr.day')) + '</small><b>' + (i + 1) + '</b></span><div class="tday-b"><h3>' + esc(L(d.t)) + '</h3><p>' + esc(L(d.d)) + '</p>' +
         (d.img ? '<figure class="tday-img"><img src="img/' + d.img + '.webp" alt="' + esc(L(d.t)) + '" width="1600" height="720" loading="lazy" decoding="async"></figure>' : '') +
-        (d.s ? '<p class="tday-s"><svg><use href="#i-toono"/></svg><span>' + esc(t('tr.stay')) + ': ' + esc(L(d.s)) + '</span></p>' : '') + '</div></li>';
-    }).join('') + '</ol><div class="tour-actions"><button class="btn btn-ink tour-book" type="button" data-book="' + tr.id + '">' + esc(t('tr.book')) + ' <svg><use href="#i-arrow"/></svg></button>' +
+        ((d.s || d.m) ? '<p class="tday-s"><svg><use href="#i-toono"/></svg><span>' + (d.s ? esc(t('tr.stay')) + ': ' + esc(L(d.s)) : '') + (d.s && d.m ? ' · ' : '') + (d.m ? esc(t('tr.meals')) + ': ' + d.m.split(' ').map(function (k) { return esc(t('tr.' + k)); }).join(', ') : '') + '</span></p>' : '') + '</div></li>';
+    }).join('') + '</ol>' + tourInfo(tr) + '<div class="tour-actions"><button class="btn btn-ink tour-book" type="button" data-book="' + tr.id + '">' + esc(t('tr.book')) + ' <svg><use href="#i-arrow"/></svg></button>' +
       (tr.film ? '<a class="tour-film" href="' + tr.film + '" target="_blank" rel="noopener"><span class="play"><svg><use href="#i-play"/></svg></span>' + esc(t('tr.film')) + '</a>' : '') + '</div>';
     $('#moreTours').innerHTML = D.moreTours.map(function (m) {
       return '<li><h3>' + esc(L(m.name)) + '</h3><p>' + esc(L(m.d)) + '</p>' +

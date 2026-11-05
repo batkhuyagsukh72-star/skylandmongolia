@@ -303,6 +303,30 @@ html.js.split .hero-word,html.fallback .hero-word{visibility:visible}
 .tday-b .tday-s{display:flex;align-items:center;gap:8px;margin-top:10px;font:600 11px/1.3 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
 .tday-s svg{width:18px;height:18px;flex:none;color:var(--azure)}
 .tour-book svg{width:18px;height:18px}
+.tour-info{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(20px,3vw,40px);margin:0 0 30px;padding:clamp(20px,2.6vw,32px);border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.55)}
+.tour-info h3{font:600 11px/1.2 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);margin:0 0 14px}
+.ptable{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.ptable th,.ptable td{padding:10px 0;border-bottom:1px solid var(--line);text-align:left;vertical-align:baseline}
+.ptable th{font:500 14px/1.3 var(--sans);color:var(--ink);padding-right:12px}
+.ptable td b{font:400 24px/1 var(--serif);color:var(--ink)}
+.ptable td small{display:block;font-size:11px;color:var(--ink-2);margin-top:3px}
+.ptable td.pd{font-size:13px;color:var(--ink-2);text-align:right;white-space:nowrap}
+.ti-dep,.ti-q{font-size:14px;line-height:1.55;color:var(--ink-2);margin:14px 0 0}
+.ti-q{color:var(--ink);font:400 20px/1.35 var(--serif);margin-top:0}
+.ilist{list-style:none;margin:0 0 20px;padding:0;display:grid;gap:8px}
+.ilist li{display:flex;gap:10px;font-size:14px;line-height:1.45}
+.ilist svg{width:16px;height:16px;flex:none;margin-top:2px;color:var(--azure)}
+.ilist.ex{margin-bottom:0}.ilist.ex li{color:var(--ink-2)}.ilist.ex svg{color:var(--ink-2)}
+.pack{margin:0 0 30px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.pack summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;min-height:56px;font:400 22px/1.2 var(--serif)}
+.pack summary::-webkit-details-marker{display:none}
+.pack summary svg{width:18px;height:18px;transition:transform .3s var(--ease)}
+.pack[open] summary svg{transform:rotate(45deg)}
+.pack-in{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:18px 28px;padding:4px 0 10px}
+.pack h4{font:600 11px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px}
+.pack ul{margin:0;padding:0 0 0 16px;font-size:14px;line-height:1.6;color:var(--ink-2)}
+.pack-note{font-size:13px;color:var(--ink-2);margin:6px 0 18px}
+@media (max-width:820px){ .tour-info{grid-template-columns:minmax(0,1fr)} }
 .tour-actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px 26px}
 .tour-film{display:inline-flex;align-items:center;gap:12px;font:600 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);text-decoration:none;min-height:44px}
 .tour-film .play{width:44px;height:44px;border-radius:999px;border:1px solid var(--line);display:grid;place-items:center;background:rgba(255,255,255,.6);transition:background .3s var(--ease),color .3s,border-color .3s}
