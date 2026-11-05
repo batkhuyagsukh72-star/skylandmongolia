@@ -263,6 +263,130 @@
   /* ---------- real tours, day by day ---------- */
   var tourSel = D.tours[0].id;
   function esc(x) { return String(x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  /* ---------- tour route map (animated) ---------- */
+  function routeMap(tr) {
+    if (!tr.route) return '';
+    return '<figure class="rmap" data-tour="' + tr.id + '"><figcaption class="rmap-h">' + esc(t('rm.title')) + '</figcaption>' +
+      '<div class="rmap-stage"><svg class="rmap-svg" role="img" aria-label="' + esc(t('rm.title') + ': ' + tr.route.filter(function (r) { return r.d; }).map(function (r) { return L(D.mapNames[r.id]); }).join(', ')) + '"></svg>' +
+      '<svg class="rmap-inset" viewBox="-10 -10 1020 540" aria-hidden="true"><path d="' + M.d + '"/><rect class="rmap-box"/></svg>' +
+      '<div class="rmap-card" aria-hidden="true"><img alt="" width="400" height="300"><p><small></small><b></b></p></div>' +
+      '<button class="rmap-replay" type="button" hidden><svg><use href="#i-play"/></svg>' + esc(t('rm.replay')) + '</button></div></figure>';
+  }
+  function cr(pts) { /* closed Catmull-Rom → cubic segments */
+    var n = pts.length, segs = [];
+    for (var i = 0; i < n - 1; i++) {
+      var p0 = pts[(i - 1 + n - 1) % (n - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[(i + 2) % (n - 1)];
+      var c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      segs.push('M' + p1.map(f1).join(' ') + 'C' + c1.map(f1).join(' ') + ',' + c2.map(f1).join(' ') + ',' + p2.map(f1).join(' '));
+    }
+    return segs;
+  }
+  function dayLbl(d) { return t(/[–-]/.test(d) ? 'rm.days' : 'rm.day') + ' ' + d; }
+  function f1(v) { return Math.round(v * 10) / 10; }
+  function drawRouteMap(fig, animate) {
+    var tr = D.tours.filter(function (x) { return x.id === fig.dataset.tour; })[0]; if (!tr) return;
+    var stage = $('.rmap-stage', fig), svg = $('.rmap-svg', fig), card = $('.rmap-card', fig), replay = $('.rmap-replay', fig);
+    var W = stage.clientWidth || 800, ar = W < 620 ? 4 / 5 : 16 / 9, H = W / ar;
+    stage.style.aspectRatio = W < 620 ? '4 / 5' : '16 / 9';
+    var pts = tr.route.map(function (r) { return r.id === 'ub' ? M.ub : M.pins[r.id]; });
+    var xs = pts.map(function (p) { return p[0]; }), ys = pts.map(function (p) { return p[1]; });
+    var minX = Math.min.apply(0, xs), maxX = Math.max.apply(0, xs), minY = Math.min.apply(0, ys), maxY = Math.max.apply(0, ys);
+    var cx = (minX + maxX) / 2, cy = (minY + maxY) / 2, sw = (maxX - minX), sh = (maxY - minY);
+    var padX = W < 620 ? 2.75 : 1.75, padY = W < 620 ? 1.6 : 1.4;
+    var vw = Math.max(sw * padX, sh * padY * ar, 150), vh = vw / ar;
+    var vx = cx - vw / 2, vy = cy - vh / 2 + (W < 620 ? vh * 0.06 : 0);
+    var k = W / vw, u = function (px) { return f1(px / k); };
+    svg.setAttribute('viewBox', [vx, vy, vw, vh].map(f1).join(' '));
+    var box = $('.rmap-box', fig); box.setAttribute('x', f1(vx)); box.setAttribute('y', f1(vy)); box.setAttribute('width', f1(vw)); box.setAttribute('height', f1(vh));
+    var pid = 'rmd-' + tr.id, segs = cr(pts), stops = tr.route;
+    var h = '<defs><pattern id="' + pid + '" width="' + u(9) + '" height="' + u(9) + '" patternUnits="userSpaceOnUse"><circle cx="' + u(1.5) + '" cy="' + u(1.5) + '" r="' + u(0.9) + '" class="rm-dot"/></pattern></defs>' +
+      '<path class="rm-land" d="' + M.d + '" style="stroke-width:' + u(1.2) + '"/><path class="rm-tex" d="' + M.d + '" fill="url(#' + pid + ')"/>' +
+      '<path class="rm-track" d="' + segs.join('') + '" style="stroke-width:' + u(2) + ';stroke-dasharray:' + u(2) + ' ' + u(7) + '"/>';
+    segs.forEach(function (d) { h += '<path class="rm-seg" d="' + d + '" style="stroke-width:' + u(3.4) + '"/>'; });
+    h += '<circle class="rm-car" r="' + u(6) + '" style="stroke-width:' + u(3) + '" cx="' + M.ub[0] + '" cy="' + M.ub[1] + '"/>';
+    var n = 0;
+    stops.forEach(function (r, i) {
+      if (r.id === 'ub' && i > 0) return;
+      var p = pts[i], name = L(D.mapNames[r.id]);
+      if (r.id === 'ub') {
+        h += '<g class="rm-pin rm-ub" data-i="0"><rect x="' + f1(p[0] - u(7)) + '" y="' + f1(p[1] - u(7)) + '" width="' + u(14) + '" height="' + u(14) + '" transform="rotate(45 ' + p[0] + ' ' + p[1] + ')" style="stroke-width:' + u(2.5) + '"/>' +
+          '<text x="' + f1(p[0] + u(14)) + '" y="' + f1(p[1] - u(10)) + '" style="font-size:' + u(13) + 'px;stroke-width:' + u(4) + '"><tspan class="rm-n">' + esc(name) + '</tspan><tspan class="rm-d" x="' + f1(p[0] + u(14)) + '" dy="' + u(14) + '" style="font-size:' + u(10.5) + 'px">' + esc(t('rm.start')) + '</tspan></text></g>';
+        return;
+      }
+      n++;
+      var pos = r.pos || 'r', tx = p[0], ty = p[1], an = 'middle';
+      if (pos === 'r') { tx += u(15); ty -= u(2); an = 'start'; } else if (pos === 'l') { tx -= u(15); ty -= u(2); an = 'end'; } else if (pos === 't') { ty -= u(30); } else { ty += u(26); }
+      h += '<g class="rm-pin" data-i="' + i + '" tabindex="0" role="button" aria-label="' + esc(dayLbl(r.d) + ': ' + name) + '">' +
+        '<circle class="rm-halo" cx="' + p[0] + '" cy="' + p[1] + '" r="' + u(15) + '"/><circle class="rm-core" cx="' + p[0] + '" cy="' + p[1] + '" r="' + u(10) + '" style="stroke-width:' + u(2.5) + '"/>' +
+        '<text class="rm-num" x="' + p[0] + '" y="' + f1(p[1] + u(4)) + '" text-anchor="middle" style="font-size:' + u(11) + 'px">' + n + '</text>' +
+        '<text class="rm-lbl" x="' + f1(tx) + '" y="' + f1(ty) + '" text-anchor="' + an + '" style="font-size:' + u(13) + 'px;stroke-width:' + u(4) + '"><tspan class="rm-n">' + esc(name) + '</tspan><tspan class="rm-d" x="' + f1(tx) + '" dy="' + u(14) + '" style="font-size:' + u(10.5) + 'px">' + esc(dayLbl(r.d)) + '</tspan></text></g>';
+    });
+    svg.innerHTML = h;
+    /* keep labels inside the frame: flip to the other side of the pin when they would be cut off */
+    $$('.rm-pin text:not(.rm-num)', svg).forEach(function (tx) {
+      var bb = tx.getBBox(), m = u(8), g = tx.parentNode, i = +g.dataset.i, p = pts[i], off = u(i ? 15 : 14), nx = null, an = null;
+      if (bb.x + bb.width > vx + vw - m) { nx = p[0] - off; an = 'end'; }
+      else if (bb.x < vx + m) { nx = p[0] + off; an = 'start'; }
+      if (nx === null) return;
+      tx.setAttribute('x', f1(nx)); tx.setAttribute('text-anchor', an); $$('tspan[x]', tx).forEach(function (ts) { ts.setAttribute('x', f1(nx)); });
+    });
+    var segEls = $$('.rm-seg', svg), car = $('.rm-car', svg), pins = $$('.rm-pin', svg);
+    segEls.forEach(function (el) { var L0 = el.getTotalLength(); el.dataset.len = L0; el.style.strokeDasharray = L0 + ' ' + L0; el.style.strokeDashoffset = L0; });
+    function showCard(i) {
+      var r = stops[i]; if (!r || !r.img) { card.classList.remove('on'); return; }
+      var p = pts[i], left = (p[0] - vx) / vw, top = (p[1] - vy) / vh, img = $('img', card);
+      img.src = 'img/' + r.img + '.webp'; $('small', card).textContent = dayLbl(r.d); $('b', card).textContent = L(D.mapNames[r.id]);
+      var cw = card.offsetWidth || 170, ch = card.offsetHeight || 150, gap = 26;
+      var x = left > 0.5 ? left * W - gap - cw : left * W + gap, y = Math.min(Math.max(top * H - ch / 2, 10), H - ch - 10);
+      card.style.transform = ''; card.style.left = Math.round(Math.max(8, Math.min(x, W - cw - 8))) + 'px'; card.style.top = Math.round(y) + 'px';
+      card.classList.add('on');
+    }
+    function finalState() {
+      segEls.forEach(function (el) { el.style.strokeDashoffset = 0; });
+      pins.forEach(function (g) { g.classList.add('on'); }); car.style.opacity = 0; card.classList.remove('on'); replay.hidden = false;
+    }
+    pins.forEach(function (g) {
+      var i = +g.dataset.i; if (!i) return;
+      var on = function () { if (fig.dataset.playing !== '1') showCard(i); }, off = function () { if (fig.dataset.playing !== '1') card.classList.remove('on'); };
+      g.addEventListener('mouseenter', on); g.addEventListener('focus', on); g.addEventListener('mouseleave', off); g.addEventListener('blur', off);
+      g.addEventListener('click', function () { if (fig.dataset.playing !== '1') { card.classList.contains('on') ? card.classList.remove('on') : showCard(i); } });
+    });
+    if (!animate || reduce || !window.gsap) { finalState(); return; }
+    if (fig._tl) fig._tl.kill();
+    fig.dataset.playing = '1'; replay.hidden = true; card.classList.remove('on');
+    pins.forEach(function (g) { g.classList.remove('on'); });
+    var tl = gsap.timeline({ onComplete: function () { fig.dataset.playing = '0'; card.classList.remove('on'); car.style.opacity = 0; replay.hidden = false; } });
+    fig._tl = tl;
+    tl.add(function () { pins[0].classList.add('on'); }, 0.1).set(car, { opacity: 1 }, 0.3);
+    var pinByIdx = {}; pins.forEach(function (g) { pinByIdx[g.dataset.i] = g; });
+    segEls.forEach(function (el, si) {
+      var len = +el.dataset.len, dur = Math.min(Math.max(len / 70, 0.7), 1.8), st = { v: 0 };
+      tl.to(st, { v: 1, duration: dur, ease: 'power1.inOut', onUpdate: function () {
+        el.style.strokeDashoffset = len * (1 - st.v);
+        var pt = el.getPointAtLength(len * st.v); car.setAttribute('cx', pt.x); car.setAttribute('cy', pt.y);
+      } }, '+=0.15');
+      var to = si + 1;
+      tl.add(function () {
+        if (pinByIdx[to]) pinByIdx[to].classList.add('on');
+        if (stops[to] && stops[to].img) showCard(to); else card.classList.remove('on');
+      });
+      if (stops[to] && stops[to].img) tl.to({}, { duration: 1.1 });
+    });
+  }
+  var rmObs = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting && !e.target.dataset.played) { e.target.dataset.played = '1'; drawRouteMap(e.target, true); } });
+  }, { threshold: 0.45 }) : null;
+  function initRouteMap(fig) {
+    if (!fig) return;
+    drawRouteMap(fig, false);
+    if (rmObs && !reduce) { $$('.rm-seg', fig).forEach(function (el) { el.style.strokeDashoffset = el.dataset.len; }); $$('.rm-pin', fig).forEach(function (g) { g.classList.remove('on'); }); $('.rmap-replay', fig).hidden = true; rmObs.observe(fig); }
+    $('.rmap-replay', fig).addEventListener('click', function () { drawRouteMap(fig, true); });
+  }
+  var rmW = window.innerWidth;
+  window.addEventListener('resize', function () {
+    if (Math.abs(window.innerWidth - rmW) < 40) return; rmW = window.innerWidth;
+    $$('.rmap').forEach(function (fig) { if (fig._tl) fig._tl.kill(); fig.dataset.playing = '0'; drawRouteMap(fig, false); });
+  });
   function money(n) { return '$' + n.toLocaleString('en-US'); }
   function tourInfo(tr) {
     var h = '<div class="tour-info">';
@@ -298,8 +422,9 @@
       return '<li class="tday"><span class="tday-n"><small>' + esc(t('tr.day')) + '</small><b>' + (i + 1) + '</b></span><div class="tday-b"><h3>' + esc(L(d.t)) + '</h3><p>' + esc(L(d.d)) + '</p>' +
         (d.img ? '<figure class="tday-img"><img src="img/' + d.img + '.webp" alt="' + esc(L(d.t)) + '" width="1600" height="720" loading="lazy" decoding="async"></figure>' : '') +
         ((d.s || d.m) ? '<p class="tday-s"><svg><use href="#i-toono"/></svg><span>' + (d.s ? esc(t('tr.stay')) + ': ' + esc(L(d.s)) : '') + (d.s && d.m ? ' · ' : '') + (d.m ? esc(t('tr.meals')) + ': ' + d.m.split(' ').map(function (k) { return esc(t('tr.' + k)); }).join(', ') : '') + '</span></p>' : '') + '</div></li>';
-    }).join('') + '</ol>' + tourInfo(tr) + '<div class="tour-actions"><button class="btn btn-ink tour-book" type="button" data-book="' + tr.id + '">' + esc(t('tr.book')) + ' <svg><use href="#i-arrow"/></svg></button>' +
+    }).join('') + '</ol>' + routeMap(tr) + tourInfo(tr) + '<div class="tour-actions"><button class="btn btn-ink tour-book" type="button" data-book="' + tr.id + '">' + esc(t('tr.book')) + ' <svg><use href="#i-arrow"/></svg></button>' +
       (tr.film ? '<a class="tour-film" href="' + tr.film + '" target="_blank" rel="noopener"><span class="play"><svg><use href="#i-play"/></svg></span>' + esc(t('tr.film')) + '</a>' : '') + '</div>';
+    initRouteMap($('#tourPanel .rmap'));
     $('#moreTours').innerHTML = D.moreTours.map(function (m) {
       return '<li><h3>' + esc(L(m.name)) + '</h3><p>' + esc(L(m.d)) + '</p>' +
         (m.film ? '<a class="mt-film" href="' + m.film + '" target="_blank" rel="noopener" aria-label="' + esc(t('tr.watch') + ': ' + L(m.name)) + '"><svg><use href="#i-play"/></svg>' + esc(t('tr.watch')) + '</a>' : '') + '</li>';

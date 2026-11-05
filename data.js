@@ -194,6 +194,8 @@ window.SKY = {
         { m: 'B L', t: { en: 'Tsagaan Suvarga → Ulaanbaatar', mn: 'Цагаан суварга → Улаанбаатар' },
           d: { en: 'Drive back to Ulaanbaatar.', mn: 'Улаанбаатар руу буцна.' } }
       ],
+      route: [{ id: 'ub' }, { id: 'baga', d: '1', pos: 'r', img: 'old/gobi-ibex' }, { id: 'yolyn', d: '2', pos: 'b', img: 'old/yolyn-am-ice' }, { id: 'khongor', d: '3–4', pos: 'l', img: 'old/khongor-dunes' },
+               { id: 'bayanzag', d: '5', pos: 't', img: 'old/bayanzag' }, { id: 'tsagaan', d: '6', pos: 'r', img: 'old/tsagaan-suvarga' }, { id: 'ub', d: '7' }],
       price: [[1, 420], [2, 230], [3, 190], [4, 160], [5, 140], [6, 125]],
       inc: { en: ['Driver, car and fuel', 'English-speaking guide', 'Breakfast, lunch and dinner, with a traditional khorkhog hot-stone barbecue one evening', 'Drinking water every day', 'National park entrance fees', 'Camel riding', 'All accommodation: nomad families, guesthouses and tourist camps'],
              mn: ['Жолооч, машин, шатахуун', 'Англи хэлтэй хөтөч', 'Өглөө, өдөр, оройн хоол, нэг орой уламжлалт хорхог', 'Өдөр бүр ундны ус', 'Байгалийн цогцолборт газрын хураамж', 'Тэмээ унах', 'Бүх хоноглолт: малчин айл, зочид буудал, жуулчны бааз'] },
@@ -203,6 +205,8 @@ window.SKY = {
       name: { en: '5-Day Mini Gobi & Karakorum', mn: 'Бага говь ба Хархорум, 5 хоног' },
       lead: { en: 'A short loop through central Mongolia: mini dunes, the Orkhon waterfall, Erdene Zuu monastery and wild takhi horses.',
               mn: 'Төв Монголоор хийх богино тойрог: Элсэн тасархай, Орхоны хүрхрээ, Эрдэнэ Зуу хийд, тахь.' },
+      route: [{ id: 'ub' }, { id: 'elsen', d: '1', pos: 't', img: 'old/elsen-tasarkhai' }, { id: 'orkhon', d: '2', pos: 'l', img: 'old/orkhon-waterfall' }, { id: 'erdenezuu', d: '3', pos: 'b', img: 'old/erdene-zuu' },
+               { id: 'khustai', d: '4', pos: 'b', img: 'old/tr-khustai' }, { id: 'ub', d: '5' }],
       plan: [
         { img: 'old/elsen-tasarkhai', t: { en: 'Ulaanbaatar → Elsen Tasarkhai', mn: 'Улаанбаатар → Элсэн тасархай' },
           d: { en: 'Pickup from your hotel at 9 am, about 290 km on paved road. A camel ride and a walk on the mini dunes where the steppe meets the taiga.',
@@ -259,6 +263,13 @@ window.SKY = {
     { img: 'old/tr-khustai', en: 'Khustai National Park', mn: 'Хустайн нуруу' },
     { img: 'old/tr-chinggis-statue', en: 'At the Chinggis Khaan statue', mn: 'Чингис хааны хөшөөнд' }
   ],
+  /* Names for the route maps */
+  mapNames: {
+    ub: { en: 'Ulaanbaatar', mn: 'Улаанбаатар' }, baga: { en: 'Baga Gazriin Chuluu', mn: 'Бага газрын чулуу' }, yolyn: { en: 'Yolyn Am', mn: 'Ёлын ам' },
+    khongor: { en: 'Khongor dunes', mn: 'Хонгорын элс' }, bayanzag: { en: 'Flaming Cliffs', mn: 'Баянзаг' }, tsagaan: { en: 'Tsagaan Suvarga', mn: 'Цагаан суварга' },
+    elsen: { en: 'Elsen Tasarkhai', mn: 'Элсэн тасархай' }, orkhon: { en: 'Orkhon waterfall', mn: 'Орхоны хүрхрээ' }, erdenezuu: { en: 'Erdene Zuu', mn: 'Эрдэнэ Зуу' },
+    khustai: { en: 'Khustai park', mn: 'Хустайн нуруу' }
+  },
   /* Packing list from the client's tour PDF */
   packing: [
     { t: { en: 'Clothing', mn: 'Хувцас' }, i: { en: ['Waterproof jacket', 'Warm fleece or down jacket', 'Thermal base layers', 'T-shirts and long-sleeve shirts', 'Hiking pants', 'Comfortable clothes for evenings', 'Sun hat'], mn: ['Ус нэвтрэхгүй хүрэм', 'Дулаан флийс эсвэл хөвөнтэй хүрэм', 'Дулаан дотуур хувцас', 'Футболк, урт ханцуйтай цамц', 'Явган аяллын өмд', 'Оройд өмсөх эвтэйхэн хувцас', 'Нарны малгай'] } },
@@ -316,7 +327,7 @@ window.SKY = {
       'why.1t': 'Locally owned and operated', 'why.1': 'Run by Mongolians, with Mongolian drivers and guides. Our founder travels and films the country for his vlog, so he knows these places first-hand.',
       'why.2t': 'Authentic nomadic family experiences', 'why.2': 'Nights with herder families along the route: share their tea, join the day’s work and sleep in their ger.',
       'why.3t': 'Custom and private tours', 'why.3': 'Private trips built around what you want to see, at your pace — no fixed bus tours, no rushing past the view.',
-      'tr.film': 'Watch the tour film', 'tr.meals': 'Meals', 'tr.B': 'breakfast', 'tr.L': 'lunch', 'tr.D': 'dinner', 'tr.price': 'Price per person', 'tr.group': 'Group of', 'tr.solo': 'Solo traveller', 'tr.perday': 'per day', 'tr.total': 'for the whole tour', 'tr.priceq': 'Price on request: tell us your dates and group size.', 'tr.inc': 'Included', 'tr.exc': 'Not included', 'tr.deposit': 'A 10% deposit confirms your tour. The rest can be paid before the tour starts or when you arrive in Mongolia. Payment is by international bank transfer; we send the details with your confirmation.', 'tr.pack': 'What to pack', 'tr.packnote': 'Temperatures can change a lot in a single day, so dress in layers.', 'dc.wa': 'WhatsApp', 'tr.watch': 'Watch', 'social.film': 'Mongolia film',
+      'tr.film': 'Watch the tour film', 'rm.title': 'The route on the map', 'rm.replay': 'Replay', 'rm.start': 'Start and finish', 'rm.days': 'Days', 'rm.day': 'Day', 'tr.meals': 'Meals', 'tr.B': 'breakfast', 'tr.L': 'lunch', 'tr.D': 'dinner', 'tr.price': 'Price per person', 'tr.group': 'Group of', 'tr.solo': 'Solo traveller', 'tr.perday': 'per day', 'tr.total': 'for the whole tour', 'tr.priceq': 'Price on request: tell us your dates and group size.', 'tr.inc': 'Included', 'tr.exc': 'Not included', 'tr.deposit': 'A 10% deposit confirms your tour. The rest can be paid before the tour starts or when you arrive in Mongolia. Payment is by international bank transfer; we send the details with your confirmation.', 'tr.pack': 'What to pack', 'tr.packnote': 'Temperatures can change a lot in a single day, so dress in layers.', 'dc.wa': 'WhatsApp', 'tr.watch': 'Watch', 'social.film': 'Mongolia film',
       'steps.title': 'Plan your trip in three steps',
       'step.1t': 'Pick your places', 'step.1': 'Add destinations from the list above, or simply tell us the trip you dream of.',
       'step.2t': 'Get your route', 'step.2': 'We send a day-by-day plan with drives, ger camps and a clear price.',
@@ -351,7 +362,7 @@ window.SKY = {
       'why.1t': 'Монголчууд эзэмшиж, өөрсдөө ажиллуулдаг', 'why.1': 'Монгол жолооч, хөтөчтэй. Үүсгэн байгуулагч маань Монголоор аялж влог хийдэг тул эдгээр газрыг өөрийн биеэр мэднэ.',
       'why.2t': 'Малчин айлын жинхэнэ амьдрал', 'why.2': 'Замдаа малчин айлд хоноглож, цайг нь ууж, өдрийн ажилд нь оролцож, гэрт нь унтана.',
       'why.3t': 'Хувийн, танд тохирсон аялал', 'why.3': 'Таны үзэхийг хүссэн зүйлд тулгуурласан, таны хэмнэлээр явах хувийн аялал — тогтмол автобусны тур, яаруу аялал байхгүй.',
-      'tr.film': 'Аяллын бичлэг үзэх', 'tr.meals': 'Хоол', 'tr.B': 'өглөө', 'tr.L': 'өдөр', 'tr.D': 'орой', 'tr.price': 'Нэг хүний үнэ', 'tr.group': 'Бүлэгт', 'tr.solo': 'Ганцаараа', 'tr.perday': 'өдөрт', 'tr.total': 'бүх аялал', 'tr.priceq': 'Үнийг хүсэлтээр: огноо, хүний тоогоо бичээрэй.', 'tr.inc': 'Багтсан', 'tr.exc': 'Багтаагүй', 'tr.deposit': 'Нийт үнийн 10% урьдчилгаагаар аялал баталгаажна. Үлдэгдлийг аялал эхлэхээс өмнө эсвэл Монголд ирэхдээ төлж болно. Олон улсын банкны шилжүүлгээр төлнө, дансны мэдээллийг баталгаажуулах үед илгээнэ.', 'tr.pack': 'Юу авч явах вэ', 'tr.packnote': 'Нэг өдрийн дотор агаарын хэм их өөрчлөгддөг тул давхарлаж хувцаслаарай.', 'dc.wa': 'WhatsApp', 'tr.watch': 'Үзэх', 'social.film': 'Монголын бичлэг',
+      'tr.film': 'Аяллын бичлэг үзэх', 'rm.title': 'Маршрут газрын зураг дээр', 'rm.replay': 'Дахин үзэх', 'rm.start': 'Эхлэх, дуусах цэг', 'rm.days': 'Өдөр', 'rm.day': 'Өдөр', 'tr.meals': 'Хоол', 'tr.B': 'өглөө', 'tr.L': 'өдөр', 'tr.D': 'орой', 'tr.price': 'Нэг хүний үнэ', 'tr.group': 'Бүлэгт', 'tr.solo': 'Ганцаараа', 'tr.perday': 'өдөрт', 'tr.total': 'бүх аялал', 'tr.priceq': 'Үнийг хүсэлтээр: огноо, хүний тоогоо бичээрэй.', 'tr.inc': 'Багтсан', 'tr.exc': 'Багтаагүй', 'tr.deposit': 'Нийт үнийн 10% урьдчилгаагаар аялал баталгаажна. Үлдэгдлийг аялал эхлэхээс өмнө эсвэл Монголд ирэхдээ төлж болно. Олон улсын банкны шилжүүлгээр төлнө, дансны мэдээллийг баталгаажуулах үед илгээнэ.', 'tr.pack': 'Юу авч явах вэ', 'tr.packnote': 'Нэг өдрийн дотор агаарын хэм их өөрчлөгддөг тул давхарлаж хувцаслаарай.', 'dc.wa': 'WhatsApp', 'tr.watch': 'Үзэх', 'social.film': 'Монголын бичлэг',
       'steps.title': 'Аяллаа гурван алхмаар төлөвлө',
       'step.1t': 'Газраа сонго', 'step.1': 'Дээрх жагсаалтаас газраа нэм, эсвэл мөрөөдлийн аяллаа бидэнд хэлээрэй.',
       'step.2t': 'Маршрутаа ав', 'step.2': 'Өдөр бүрийн зам, гэр бааз, тодорхой үнэтэй төлөвлөгөө илгээнэ.',
