@@ -467,6 +467,7 @@
     function fly(tl, to, dur, pos) {
       var st = { p: 0 }, fr;
       tl.to(st, { p: 1, duration: dur, ease: 'power2.inOut', onStart: function () { fr = { x: cam.x, y: cam.y, s: cam.s }; }, onUpdate: function () {
+        if (!fr) fr = { x: cam.x, y: cam.y, s: cam.s };
         var p = st.p, s = Math.exp(Math.log(fr.s) + (Math.log(to.s) - Math.log(fr.s)) * p);
         if (Math.abs(to.s - fr.s) / fr.s > 0.05) { /* zoom about the point that stays put, like a camera dolly */
           var fx = (to.x * to.s - fr.x * fr.s) / (to.s - fr.s), fy = (to.y * to.s - fr.y * fr.s) / (to.s - fr.s);
@@ -713,7 +714,7 @@
     $$('.jm-tab', jm.tabs).forEach(function (b) { b.setAttribute('aria-selected', b.dataset.tour === id); });
     jmChips();
     if (jm.fallback) { jmFallback(); return; }
-    if (!jm.map || !jm.map.getSource('route')) return;
+    if (!jm.map || !jm.carEl || !jm.map.getSource('route')) return;
     var ml = window.maplibregl, map = jm.map, R = jm.R = jmRoute(D.tours.filter(function (x) { return x.id === id; })[0]);
     map.getSource('route').setData({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: R.line } });
     (jm.pins || []).forEach(function (p) { p.m.remove(); });
