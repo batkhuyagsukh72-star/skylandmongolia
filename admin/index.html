@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Skyland удирдлага</title>
+<link rel="icon" href="../assets/favicon.svg">
+<link rel="stylesheet" href="../fonts.css">
+<style>
+:root{--sand:#ECE3DA;--mist:#F6F1EC;--card:#FFFDFB;--ink:#131A27;--ink2:rgba(19,26,39,.66);--line:rgba(19,26,39,.14);--azure:#2C6CA6;--azure2:#E3EDF6;--ok:#2E7D4F;--warn:#B4561B;--bad:#B3261E;
+  --sans:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;--serif:'Cormorant',Georgia,serif;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--mist);color:var(--ink);font:15px/1.5 var(--sans)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-weight:600;font-size:14px;white-space:nowrap}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.pri:hover{background:#26324a}
+.btn.pri:disabled{opacity:.45;cursor:default}
+.btn.sm{min-height:32px;padding:0 12px;font-size:13px}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad)}
+.icon{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--card);display:inline-grid;place-items:center;font-size:15px;line-height:1;flex:none}
+.icon:hover{border-color:var(--ink)}
+.icon:disabled{opacity:.3;cursor:default}
+:focus-visible{outline:2px solid var(--azure);outline-offset:2px}
+
+/* login */
+.login{min-height:100svh;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));background:var(--sand)}
+.login form{width:min(380px,100%);background:var(--card);border:1px solid var(--line);border-radius:18px;padding:32px;display:grid;gap:16px}
+.login h1{font:500 34px/1.05 var(--serif);margin:0}
+.login p{margin:0;color:var(--ink2)}
+.err{color:var(--bad);font-size:14px;min-height:1.2em;margin:0}
+
+/* shell */
+.top{position:sticky;top:0;z-index:20;background:rgba(246,241,236,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1320px;margin:0 auto;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font:600 20px/1 var(--serif);letter-spacing:.06em;margin-right:8px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+@media (max-width:560px){.top-in{gap:8px}.tabs{order:9;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.status{display:none}}
+.tab{border:0;background:transparent;padding:8px 12px;border-radius:999px;font-weight:600;font-size:14px;color:var(--ink2)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.sp{flex:1}
+.status{font-size:13px;color:var(--ink2)}
+.status.dirty{color:var(--warn);font-weight:600}
+main{max-width:1320px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-right,0px)) 80px max(16px,env(safe-area-inset-left,0px))}
+h2{font:500 30px/1.1 var(--serif);margin:0 0 6px}
+.lead{color:var(--ink2);margin:0 0 20px;max-width:70ch}
+
+/* tours */
+.tours{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;align-items:start}
+.tlist{display:grid;gap:8px;position:sticky;top:76px}
+.titem{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--card);min-width:0}
+.titem.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.titem .pick{flex:1;min-width:0;border:0;background:transparent;text-align:left;padding:2px 4px;display:grid;gap:2px}
+.titem .pick b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.titem .pick small{color:var(--ink2);font-size:12px}
+.titem.off .pick b{text-decoration:line-through;color:var(--ink2)}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;padding:1px 7px;border-radius:999px;background:var(--azure2);color:var(--azure);margin-left:4px}
+.tag.grey{background:#eee;color:#666}
+.ed{display:grid;gap:18px;min-width:0}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:14px;min-width:0}
+.sec-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sec-h h3{margin:0;font-size:16px;font-weight:700}
+.sec-h p{margin:0;color:var(--ink2);font-size:13px;flex-basis:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+label.f{display:grid;gap:5px;font-size:12px;font-weight:700;letter-spacing:.03em;color:var(--ink2);min-width:0}
+label.f span.l{display:flex;gap:6px;align-items:center}
+.lng{font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:var(--sand);color:var(--ink)}
+input[type=text],input[type=number],input[type=url],input[type=password],select,textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px 11px;font-size:15px;font-weight:400;letter-spacing:0;color:var(--ink)}
+textarea{resize:vertical;min-height:84px;line-height:1.45}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--azure);box-shadow:0 0 0 3px rgba(44,108,166,.15)}
+.chk{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink)}
+.chk input{width:18px;height:18px;accent-color:var(--azure)}
+.hint{font-size:12px;color:var(--ink2);margin:0}
+.warnbox{background:#FFF4E5;border:1px solid #F3C98B;color:#7A3E00;border-radius:12px;padding:10px 14px;font-size:14px}
+
+/* price */
+.ptable{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.ptable th{font-size:12px;text-align:left;color:var(--ink2);font-weight:700;padding:4px 8px}
+.ptable td{padding:4px 8px;vertical-align:middle}
+.ptable input{max-width:140px}
+.total{font-weight:700}
+
+/* days */
+.day{border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:12px;background:#fff;min-width:0}
+.day-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.day-n{font:600 22px/1 var(--serif);min-width:64px}
+.meals{display:flex;gap:10px;flex-wrap:wrap}
+.ph{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ph img{width:120px;height:68px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--sand)}
+.ph .none{width:120px;height:68px;border-radius:8px;border:1px dashed var(--line);display:grid;place-items:center;font-size:12px;color:var(--ink2)}
+
+/* route */
+.rmap-wrap{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#d9d0c4}
+.rmap-wrap svg{display:block;width:100%;height:auto}
+.stop{display:grid;grid-template-columns:auto minmax(0,1.6fr) minmax(0,.8fr) minmax(0,.8fr) auto auto;gap:8px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.stop .n{width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.stop .n.ub{background:#fff;color:var(--ink);border:1.5px solid var(--ink)}
+.stop img{width:56px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.stop .noimg{width:56px;height:36px;border-radius:6px;border:1px dashed var(--line);font-size:10px;display:grid;place-items:center;color:var(--ink2);background:transparent}
+.mv{display:flex;gap:4px}
+
+/* places */
+.places{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:start}
+.plist{display:grid;gap:6px;max-height:70vh;overflow:auto;padding-right:4px}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.prow.on{border-color:var(--ink)}
+.prow button.pick{border:0;background:transparent;text-align:left;display:grid;padding:0}
+.prow small{color:var(--ink2)}
+.pmap{cursor:crosshair}
+
+/* photo picker */
+dialog{border:0;border-radius:18px;padding:0;width:min(980px,calc(100vw - 32px));max-height:calc(100svh - 40px);box-shadow:0 30px 80px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(19,26,39,.45)}
+.dlg{display:grid;grid-template-rows:auto 1fr;max-height:calc(100svh - 40px)}
+.dlg-h{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.dlg-h h3{margin:0;font-size:17px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));grid-auto-rows:max-content;gap:10px;padding:16px 20px;overflow:auto;min-height:0}
+.pgrid button{border:2px solid transparent;border-radius:10px;padding:0;background:var(--sand);overflow:hidden;height:100px;position:relative}
+.pgrid button img{width:100%;height:100%;object-fit:cover;display:block}
+.pgrid button.cur{border-color:var(--azure)}
+.pgrid button span{position:absolute;left:0;right:0;bottom:0;font-size:10px;background:rgba(0,0,0,.55);color:#fff;padding:2px 6px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pgrid h4{grid-column:1/-1;margin:6px 0 0;font-size:13px;color:var(--ink2)}
+
+/* requests & history */
+.req{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;gap:6px}
+.req-h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.req-h b{font-size:16px}
+.req-h small{color:var(--ink2)}
+.req dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:2px 12px;margin:0;font-size:14px}
+.req dt{color:var(--ink2)}
+.req dd{margin:0;overflow-wrap:anywhere}
+.hrow{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);flex-wrap:wrap}
+.hrow small{color:var(--ink2)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:600;z-index:100;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100vw - 32px)}
+.toast.bad{background:var(--bad)}
+.empty{color:var(--ink2);padding:24px;text-align:center;border:1px dashed var(--line);border-radius:14px}
+
+@media (max-width:900px){
+  .tours,.places{grid-template-columns:1fr}
+  .tlist{position:static}
+  .grid4{grid-template-columns:1fr 1fr}
+  .stop{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"n p mv" "d s img"}
+  .stop .n{grid-area:n}.stop .s-place{grid-area:p}.stop .s-days{grid-area:d}.stop .s-pos{grid-area:s}.stop .s-img{grid-area:img}.stop .mv{grid-area:mv}
+}
+@media (max-width:560px){
+  .grid2{grid-template-columns:1fr}
+  .sec{padding:16px}
+  .brand{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- sign in -->
+<section class="login" id="login">
+  <form id="loginForm" autocomplete="on">
+    <h1>Skyland удирдлага</h1>
+    <p>Аялал, үнэ, зураг, маршрутаа эндээс засна.</p>
+    <label class="f"><span class="l">Нууц үг</span><input type="password" name="password" id="pw" autocomplete="current-password" required></label>
+    <button class="btn pri" type="submit" id="loginBtn">Нэвтрэх</button>
+    <p class="err" id="loginErr" aria-live="polite"></p>
+  </form>
+</section>
+
+<!-- app -->
+<div id="app" hidden>
+  <header class="top"><div class="top-in">
+    <span class="brand">SKYLAND</span>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="tours" aria-selected="true">Аяллууд</button>
+      <button class="tab" role="tab" data-tab="places" aria-selected="false">Газрууд</button>
+      <button class="tab" role="tab" data-tab="requests" aria-selected="false">Захиалгууд</button>
+      <button class="tab" role="tab" data-tab="history" aria-selected="false">Өмнөх хувилбар</button>
+    </nav>
+    <span class="sp"></span>
+    <span class="status" id="status" aria-live="polite"></span>
+    <a class="btn sm ghost" href="../" target="_blank" rel="noopener">Сайт харах ↗</a>
+    <button class="btn pri" id="saveBtn" disabled>Хадгалах</button>
+    <button class="btn sm ghost" id="logout">Гарах</button>
+  </div></header>
+
+  <main>
+    <section data-view="tours">
+      <h2>Аяллууд</h2>
+      <p class="lead">Аяллаа сонгоод засаарай. "Хадгалах" дармагц сайтын аяллын хэсэг, газрын зураг, 3D нислэг, захиалгын форм бүгд шинэчлэгдэнэ.</p>
+      <div class="tours">
+        <aside>
+          <div class="tlist" id="tlist"></div>
+          <p style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="addTour">+ Шинэ аялал</button><button class="btn sm" id="dupTour">Хуулбарлах</button></p>
+        </aside>
+        <div class="ed" id="editor"></div>
+      </div>
+    </section>
+
+    <section data-view="places" hidden>
+      <h2>Газрууд</h2>
+      <p class="lead">Маршрутад сонгох газрууд. Шинэ газар нэмэхдээ газрын зураг дээр дарж байршлыг нь тэмдэглээд, эсвэл координатыг нь шууд бичнэ.</p>
+      <div class="places">
+        <div class="sec">
+          <div class="sec-h"><h3 id="pTitle">Газар засах</h3></div>
+          <div class="rmap-wrap"><svg id="pmap" class="pmap" viewBox="0 0 1000 520" role="img" aria-label="Монголын газрын зураг"></svg></div>
+          <div class="grid2">
+            <label class="f"><span class="l">Нэр <span class="lng">EN</span></span><input type="text" id="p-en"></label>
+            <label class="f"><span class="l">Нэр <span class="lng">МН</span></span><input type="text" id="p-mn"></label>
+            <label class="f"><span class="l">Өргөрөг (lat)</span><input type="number" step="0.0001" id="p-lat"></label>
+            <label class="f"><span class="l">Уртраг (lon)</span><input type="number" step="0.0001" id="p-lon"></label>
+          </div>
+          <p class="hint" id="p-id"></p>
+          <p style="display:flex;gap:8px;flex-wrap:wrap;margin:0"><button class="btn sm" id="pNew">+ Шинэ газар</button><button class="btn sm danger" id="pDel">Устгах</button></p>
+        </div>
+        <div><div class="plist" id="plist"></div></div>
+      </div>
+    </section>
+
+    <section data-view="requests" hidden>
+      <h2>Захиалгууд</h2>
+      <p class="lead">Сайтын формоор ирсэн сүүлийн 100 хүсэлт. Имэйлээр ч бас ирдэг.</p>
+      <div id="reqs" style="display:grid;gap:10px"></div>
+    </section>
+
+    <section data-view="history" hidden>
+      <h2>Өмнөх хувилбар</h2>
+      <p class="lead">Хадгалах бүрт өмнөх хувилбар энд үлддэг. Алдаа гаргавал хуучин хувилбараа сэргээгээрэй.</p>
+      <div id="hist" style="display:grid;gap:8px"></div>
+    </section>
+  </main>
+</div>
+
+<dialog id="pickDlg">
+  <div class="dlg">
+    <div class="dlg-h">
+      <h3>Зураг сонгох</h3><span class="sp"></span>
+      <label class="btn sm pri" style="cursor:pointer">Зураг оруулах<input type="file" id="upload" accept="image/jpeg,image/png,image/webp" hidden></label>
+      <button class="btn sm" id="pickNone">Зураггүй</button>
+      <button class="btn sm ghost" id="pickClose">Хаах</button>
+    </div>
+    <div class="pgrid" id="pgrid"></div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script src="../data.js"></script>
+<script src="../map.js"></script>
+<script>
+(function () {
+  'use strict';
+  var D = window.SKY, M = window.SKY_MAP;
+  var BASE = D.contact.api.split('/functions/')[0], KEY = D.contact.apiKey, FN = BASE + '/functions/v1/admin';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var clone = function (x) { return JSON.parse(JSON.stringify(x)); };
+  var ss = { get: function (k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set: function (k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }, del: function (k) { try { sessionStorage.removeItem(k); } catch (e) {} } };
+
+  /* ---------- map projection (same as the site) ---------- */
+  var P = M.proj, A = P[0], B = P[1], C = P[2], K = A * 180 / Math.PI;
+  function proj(lat, lon) { return [A * lon + B, C - K * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))]; }
+  function unproj(x, y) { return [(2 * Math.atan(Math.exp((C - y) / K)) - Math.PI / 2) * 180 / Math.PI, (x - B) / A]; }
+  var r4 = function (v) { return Math.round(v * 10000) / 10000; };
+  function baseMap(extra) {
+    var rl = M.relief;
+    return '<defs><clipPath id="mnc"><path d="' + M.d + '"/></clipPath></defs>' +
+      '<rect width="1000" height="520" fill="#e4dbd0"/>' +
+      '<g clip-path="url(#mnc)"><image href="../img/map/mn-relief.webp" x="' + rl[0] + '" y="' + rl[1] + '" width="' + rl[2] + '" height="' + rl[3] + '" preserveAspectRatio="none"/></g>' +
+      '<path d="' + M.d + '" fill="none" stroke="#5a4a3a" stroke-width="1.2" opacity=".7"/>' + (extra || '');
+  }
+
+  /* ---------- state ---------- */
+  var S = { token: ss.get('sky-admin'), tours: [], places: [], cur: 0, pcur: -1, dirty: { tours: false, places: false }, photos: null, uploads: [] };
+  function placeById(id) { for (var i = 0; i < S.places.length; i++) if (S.places[i].id === id) return S.places[i]; return null; }
+  function pname(id) { if (id === 'ub') return 'Улаанбаатар'; var p = placeById(id); return p ? (p.mn || p.en || id) : id + ' (олдсонгүй)'; }
+  function imgUrl(x) { return /^https?:\/\//.test(x) ? x : '../img/' + x + '.webp'; }
+  function defaultPlaces() {
+    var out = [];
+    Object.keys(M.pins).forEach(function (id) {
+      var ll = unproj(M.pins[id][0], M.pins[id][1]), dp = D.places.filter(function (x) { return x.id === id; })[0], n = D.mapNames[id] || (dp && dp.name) || {};
+      out.push({ id: id, en: n.en || id, mn: n.mn || n.en || id, lat: r4(ll[0]), lon: r4(ll[1]) });
+    });
+    return out.sort(function (a, b) { return a.en.localeCompare(b.en); });
+  }
+
+  /* ---------- api ---------- */
+  function api(action, body) {
+    return fetch(FN, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + KEY, apikey: KEY, 'x-admin-token': S.token || '' }, body: JSON.stringify(Object.assign({ action: action }, body || {})) })
+      .then(function (r) { return r.json().catch(function () { return { ok: false, error: 'HTTP ' + r.status }; }).then(function (j) { if (r.status === 401 && action !== 'login') signOut('Нэвтрэх хугацаа дууссан, дахин нэвтэрнэ үү.'); return j; }); });
+  }
+  function toast(msg, bad) {
+    var t = $('#toast'); t.textContent = msg; t.className = 'toast' + (bad ? ' bad' : ''); t.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(function () { t.hidden = true; }, bad ? 6000 : 2800);
+  }
+  var ERR = { 'wrong password': 'Нууц үг буруу байна.', 'too many attempts, wait 15 minutes': 'Олон удаа буруу оруулсан. 15 минут хүлээгээд дахин оролдоно уу.', 'ADMIN_PASSWORD is not set': 'Админ нууц үг тохируулагдаагүй байна.' };
+
+  /* ---------- sign in ---------- */
+  $('#loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = $('#loginBtn'); btn.disabled = true; btn.textContent = 'Шалгаж байна…'; $('#loginErr').textContent = '';
+    api('login', { password: $('#pw').value }).then(function (j) {
+      btn.disabled = false; btn.textContent = 'Нэвтрэх';
+      if (!j.ok) { $('#loginErr').textContent = ERR[j.error] || ('Алдаа: ' + (j.error || 'сүлжээ')); return; }
+      S.token = j.token; ss.set('sky-admin', j.token); $('#pw').value = ''; start();
+    }).catch(function () { btn.disabled = false; btn.textContent = 'Нэвтрэх'; $('#loginErr').textContent = 'Сервертэй холбогдож чадсангүй.'; });
+  });
+  function signOut(msg) {
+    S.token = null; ss.del('sky-admin'); $('#app').hidden = true; $('#login').hidden = false; $('#loginErr').textContent = msg || '';
+  }
+  $('#logout').onclick = function () {
+    if ((S.dirty.tours || S.dirty.places) && !confirmBar('Хадгалаагүй өөрчлөлт байна. Гарах уу?', function () { signOut(); })) return;
+    signOut();
+  };
+
+  /* in-page confirm (no browser dialogs) */
+  function confirmBar(msg, yes) {
+    var t = $('#toast'); t.className = 'toast'; t.hidden = false;
+    t.innerHTML = esc(msg) + ' <button class="btn sm" style="margin-left:10px" data-y>Тийм</button> <button class="btn sm ghost" style="color:#fff" data-n>Үгүй</button>';
+    clearTimeout(toast.t);
+    $('[data-y]', t).onclick = function () { t.hidden = true; yes(); };
+    $('[data-n]', t).onclick = function () { t.hidden = true; };
+    return false;
+  }
+
+  /* ---------- load ---------- */
+  function start() {
+    $('#login').hidden = true; $('#app').hidden = false;
+    setStatus('Ачаалж байна…');
+    fetch(BASE + '/rest/v1/content?select=key,data,updated_at', { headers: { apikey: KEY }, cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; })
+      .then(function (rows) {
+        var by = {}; (rows || []).forEach(function (r) { by[r.key] = r; });
+        S.places = by.places ? clone(by.places.data) : defaultPlaces();
+        S.tours = by.tours ? clone(by.tours.data) : clone(D.tours);
+        S.dirty = { tours: false, places: false };
+        S.cur = 0; renderTours(); renderPlaces();
+        setStatus(by.tours ? 'Сүүлд хадгалсан: ' + new Date(by.tours.updated_at).toLocaleString('mn-MN') : 'Одоогийн сайтын мэдээлэл ачааллаа');
+      });
+    fetch('photos.json').then(function (r) { return r.json(); }).then(function (j) { S.photos = j; }).catch(function () { S.photos = []; });
+  }
+  function setStatus(t, dirty) { var s = $('#status'); s.textContent = t; s.classList.toggle('dirty', !!dirty); }
+  function markDirty(k) { S.dirty[k] = true; $('#saveBtn').disabled = false; setStatus('Хадгалаагүй өөрчлөлттэй', true); }
+  window.addEventListener('beforeunload', function (e) { if (S.dirty.tours || S.dirty.places) { e.preventDefault(); e.returnValue = ''; } });
+
+  /* ---------- tabs ---------- */
+  $$('.tab').forEach(function (b) {
+    b.onclick = function () {
+      $$('.tab').forEach(function (x) { x.setAttribute('aria-selected', x === b); });
+      $$('[data-view]').forEach(function (v) { v.hidden = v.dataset.view !== b.dataset.tab; });
+      if (b.dataset.tab === 'requests') loadRequests();
+      if (b.dataset.tab === 'history') loadHistory();
+      if (b.dataset.tab === 'places') renderPlaces();
+    };
+  });
+
+  /* ---------- tours list ---------- */
+  function renderTours() {
+    var el = $('#tlist');
+    el.innerHTML = S.tours.map(function (t, i) {
+      return '<div class="titem' + (i === S.cur ? ' on' : '') + (t.hidden ? ' off' : '') + '">' +
+        '<button class="pick" data-i="' + i + '"><b>' + esc((t.name && (t.name.mn || t.name.en)) || 'Нэргүй аялал') + '</b><small>' + (t.days || '?') + ' хоног' +
+        (t.popular ? '<span class="tag">эрэлттэй</span>' : '') + (t.hidden ? '<span class="tag grey">нуусан</span>' : '') + '</small></button>' +
+        '<button class="icon" data-up="' + i + '" aria-label="Дээш"' + (i ? '' : ' disabled') + '>↑</button>' +
+        '<button class="icon" data-dn="' + i + '" aria-label="Доош"' + (i < S.tours.length - 1 ? '' : ' disabled') + '>↓</button></div>';
+    }).join('');
+    $$('[data-i]', el).forEach(function (b) { b.onclick = function () { S.cur = +b.dataset.i; renderTours(); }; });
+    $$('[data-up]', el).forEach(function (b) { b.onclick = function () { move(S.tours, +b.dataset.up, -1); S.cur = +b.dataset.up - 1; markDirty('tours'); renderTours(); }; });
+    $$('[data-dn]', el).forEach(function (b) { b.onclick = function () { move(S.tours, +b.dataset.dn, 1); S.cur = +b.dataset.dn + 1; markDirty('tours'); renderTours(); }; });
+    renderEditor();
+  }
+  function move(arr, i, d) { var j = i + d; if (j < 0 || j >= arr.length) return; var x = arr[i]; arr[i] = arr[j]; arr[j] = x; }
+  function uid(base) { var id = base, n = 2; while (S.tours.some(function (t) { return t.id === id; })) id = base + '-' + n++; return id; }
+  $('#addTour').onclick = function () {
+    S.tours.push({ id: uid('tour'), days: 3, name: { en: 'New tour', mn: 'Шинэ аялал' }, lead: { en: '', mn: '' },
+      plan: [{ m: 'B L D', t: { en: '', mn: '' }, d: { en: '', mn: '' }, s: { en: '', mn: '' } }],
+      route: [{ id: 'ub' }, { id: 'ub', d: '1' }], price: [[1, 0], [2, 0], [3, 0], [4, 0]],
+      inc: clone(D.tours[0].inc || { en: [], mn: [] }), exc: clone(D.tours[0].exc || { en: [], mn: [] }), hidden: true });
+    S.cur = S.tours.length - 1; markDirty('tours'); renderTours();
+    toast('Шинэ аялал нэмлээ. Бэлэн болмогц "Сайтад нуух"-ийг арилгаарай.');
+  };
+  $('#dupTour').onclick = function () {
+    var t = clone(S.tours[S.cur]); t.id = uid(t.id + '-copy'); t.hidden = true; t.popular = false;
+    if (t.name) { t.name.en += ' (copy)'; t.name.mn += ' (хуулбар)'; }
+    S.tours.splice(S.cur + 1, 0, t); S.cur++; markDirty('tours'); renderTours();
+  };
+
+  /* ---------- tour editor ---------- */
+  function fld(label, lng, path, opt) {
+    opt = opt || {};
+    var v = get(path); if (v == null) v = '';
+    var tag = opt.area ? '<textarea data-p="' + path + '" rows="' + (opt.rows || 3) + '">' + esc(v) + '</textarea>'
+      : '<input type="' + (opt.type || 'text') + '" data-p="' + path + '" value="' + esc(v) + '"' + (opt.attr || '') + '>';
+    return '<label class="f"><span class="l">' + esc(label) + (lng ? ' <span class="lng">' + lng + '</span>' : '') + '</span>' + tag + '</label>';
+  }
+  function T() { return S.tours[S.cur]; }
+  function get(path) { var o = T(); path.split('.').forEach(function (k) { o = o == null ? undefined : o[k]; }); return o; }
+  function set(path, v) {
+    var o = T(), ks = path.split('.');
+    for (var i = 0; i < ks.length - 1; i++) { if (o[ks[i]] == null || typeof o[ks[i]] !== 'object') o[ks[i]] = /^\d+$/.test(ks[i + 1]) ? [] : {}; o = o[ks[i]]; }
+    o[ks[ks.length - 1]] = v;
+  }
+  function renderEditor() {
+    var t = T(), ed = $('#editor');
+    if (!t) { ed.innerHTML = '<div class="empty">Аялал алга. "+ Шинэ аялал" дарна уу.</div>'; return; }
+    var probs = problems(t);
+    ed.innerHTML =
+      (probs.length ? '<div class="warnbox">' + probs.map(esc).join('<br>') + '</div>' : '') +
+      '<div class="sec"><div class="sec-h"><h3>Үндсэн мэдээлэл</h3><span class="sp"></span>' +
+        '<label class="chk"><input type="checkbox" data-c="popular"' + (t.popular ? ' checked' : '') + '>"Хамгийн эрэлттэй" шошго</label>' +
+        '<label class="chk"><input type="checkbox" data-c="hidden"' + (t.hidden ? ' checked' : '') + '>Сайтад нуух</label></div>' +
+        '<div class="grid2">' + fld('Аяллын нэр', 'EN', 'name.en') + fld('Аяллын нэр', 'МН', 'name.mn') +
+        fld('Товч танилцуулга', 'EN', 'lead.en', { area: 1 }) + fld('Товч танилцуулга', 'МН', 'lead.mn', { area: 1 }) + '</div>' +
+        '<div class="grid4">' + fld('Хоногийн тоо', '', 'days', { type: 'number', attr: ' min="1" max="60"' }) +
+          '<label class="f"><span class="l">Код (URL-д)</span><input type="text" data-id value="' + esc(t.id) + '" pattern="[a-z0-9-]+"></label>' +
+          '<label class="f" style="grid-column:span 2"><span class="l">YouTube бичлэг (заавал биш)</span><input type="url" data-p="film" value="' + esc(t.film || '') + '" placeholder="https://youtube.com/…"></label></div>' +
+      '</div>' +
+      priceSec(t) + daysSec(t) + routeSec(t) + incSec(t) +
+      '<div class="sec"><div class="sec-h"><h3>Аялал устгах</h3><p>Түр нуух бол дээрх "Сайтад нуух"-ийг ашиглаарай. Устгасан ч "Өмнөх хувилбар"-аас сэргээж болно.</p></div>' +
+        '<p style="margin:0"><button class="btn sm danger" id="delTour">Энэ аяллыг устгах</button></p></div>';
+    bindEditor();
+  }
+  function problems(t) {
+    var out = [];
+    (t.route || []).forEach(function (s, i) { if (s.id !== 'ub' && !placeById(s.id)) out.push('Маршрутын ' + (i + 1) + '-р зогсоолын газар олдсонгүй: ' + s.id); });
+    if ((t.route || []).length < 2) out.push('Маршрут дор хаяж 2 зогсоолтой байх ёстой.');
+    if ((t.plan || []).length !== +t.days) out.push('Хоногийн тоо ' + t.days + ', харин өдрийн хөтөлбөр ' + (t.plan || []).length + ' өдөр байна.');
+    if (!(t.price || []).length) out.push('Үнэ оруулаагүй байна. Сайт "Үнийг асууна уу" гэж харуулна.');
+    return out;
+  }
+  function priceSec(t) {
+    var rows = (t.price || []).map(function (p, i) {
+      return '<tr><td><input type="number" min="1" max="30" data-pr="' + i + '.0" value="' + esc(p[0]) + '"></td>' +
+        '<td><input type="number" min="0" step="5" data-pr="' + i + '.1" value="' + esc(p[1]) + '"></td>' +
+        '<td class="total" data-tot="' + i + '">$' + (p[1] * (+t.days || 0)).toLocaleString('en-US') + ' / хүн</td>' +
+        '<td><button class="icon" data-prdel="' + i + '" aria-label="Мөр устгах">✕</button></td></tr>';
+    }).join('');
+    return '<div class="sec"><div class="sec-h"><h3>Үнэ</h3><p>Нэг хүний нэг өдрийн үнэ ($). Нийт дүнг сайт автоматаар бодно.</p></div>' +
+      '<div style="overflow-x:auto"><table class="ptable"><thead><tr><th>Хүний тоо</th><th>$ / хүн / өдөр</th><th>Аяллын нийт</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '<p style="margin:0"><button class="btn sm" id="prAdd">+ Мөр нэмэх</button></p></div>';
+  }
+  function daysSec(t) {
+    var days = (t.plan || []).map(function (d, i) {
+      var m = d.m || '';
+      return '<div class="day"><div class="day-h"><span class="day-n">' + (i + 1) + '-р өдөр</span><span class="sp" style="flex:1"></span>' +
+        '<button class="icon" data-dup="' + i + '" aria-label="Дээш">↑</button><button class="icon" data-ddn="' + i + '" aria-label="Доош">↓</button>' +
+        '<button class="icon" data-ddel="' + i + '" aria-label="Өдөр устгах">✕</button></div>' +
+        '<div class="grid2">' + fld('Гарчиг', 'EN', 'plan.' + i + '.t.en') + fld('Гарчиг', 'МН', 'plan.' + i + '.t.mn') +
+        fld('Тайлбар', 'EN', 'plan.' + i + '.d.en', { area: 1, rows: 4 }) + fld('Тайлбар', 'МН', 'plan.' + i + '.d.mn', { area: 1, rows: 4 }) +
+        fld('Хоноглох газар', 'EN', 'plan.' + i + '.s.en') + fld('Хоноглох газар', 'МН', 'plan.' + i + '.s.mn') + '</div>' +
+        '<div class="day-h"><span class="meals">' + ['B', 'L', 'D'].map(function (k) {
+          return '<label class="chk"><input type="checkbox" data-meal="' + i + '" value="' + k + '"' + (m.indexOf(k) >= 0 ? ' checked' : '') + '>' + { B: 'Өглөө', L: 'Өдөр', D: 'Орой' }[k] + '</label>';
+        }).join('') + '</span><span class="sp" style="flex:1"></span>' +
+        '<span class="ph">' + (d.img ? '<img src="' + esc(imgUrl(d.img)) + '" alt="">' : '<span class="none">Зураггүй</span>') +
+        '<button class="btn sm" data-dimg="' + i + '">Зураг солих</button></span></div></div>';
+    }).join('');
+    return '<div class="sec"><div class="sec-h"><h3>Өдрийн хөтөлбөр</h3><p>Өдөр бүрийн гарчиг, тайлбар, хоол, хоноглолт, зураг.</p></div>' + days +
+      '<p style="margin:0"><button class="btn sm" id="dAdd">+ Өдөр нэмэх</button></p></div>';
+  }
+  function routeSec(t) {
+    var opts = S.places.slice().sort(function (a, b) { return (a.mn || a.en).localeCompare(b.mn || b.en); });
+    var n = 0;
+    var stops = (t.route || []).map(function (s, i) {
+      var ub = s.id === 'ub'; if (!ub) n++;
+      return '<div class="stop"><span class="n' + (ub ? ' ub' : '') + '">' + (ub ? 'УБ' : n) + '</span>' +
+        '<select class="s-place" data-sp="' + i + '" aria-label="Газар"><option value="ub"' + (ub ? ' selected' : '') + '>Улаанбаатар (эхлэх, дуусах)</option>' +
+          opts.map(function (p) { return '<option value="' + esc(p.id) + '"' + (p.id === s.id ? ' selected' : '') + '>' + esc(p.mn || p.en) + '</option>'; }).join('') +
+          (!ub && !placeById(s.id) ? '<option selected value="' + esc(s.id) + '">' + esc(s.id) + ' (олдсонгүй)</option>' : '') + '</select>' +
+        '<input class="s-days" type="text" data-sd="' + i + '" value="' + esc(s.d || '') + '" placeholder="Өдөр: 3 эсвэл 4–5" aria-label="Өдөр">' +
+        '<select class="s-pos" data-spos="' + i + '" aria-label="Нэрийн байрлал">' + [['', 'Нэр: авто'], ['r', 'Нэр: баруун'], ['l', 'Нэр: зүүн'], ['t', 'Нэр: дээр'], ['b', 'Нэр: доор']].map(function (o) {
+          return '<option value="' + o[0] + '"' + ((s.pos || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>' +
+        '<button class="s-img ' + (s.img ? '' : 'noimg') + '" data-simg="' + i + '" aria-label="Зураг" style="padding:0;border:0;background:none">' + (s.img ? '<img src="' + esc(imgUrl(s.img)) + '" alt="">' : '<span class="noimg">+ зураг</span>') + '</button>' +
+        '<span class="mv"><button class="icon" data-sup="' + i + '" aria-label="Дээш">↑</button><button class="icon" data-sdn="' + i + '" aria-label="Доош">↓</button><button class="icon" data-sdel="' + i + '" aria-label="Устгах">✕</button></span></div>';
+    }).join('');
+    return '<div class="sec"><div class="sec-h"><h3>Маршрут</h3><p>Газрын зураг, 3D нислэг энэ дарааллаар зурагдана. Ихэвчлэн Улаанбаатараас эхэлж Улаанбаатарт дуусна. Зурагтай зогсоол дээр нислэгийн үеэр карт гарна. Жагсаалтад байхгүй газрыг "Газрууд" хэсэгт нэмнэ.</p></div>' +
+      '<div class="rmap-wrap"><svg viewBox="0 0 1000 520" id="tmap" role="img" aria-label="Маршрутын урьдчилсан харагдац"></svg></div>' +
+      '<div style="display:grid;gap:8px">' + stops + '</div>' +
+      '<p style="margin:0"><button class="btn sm" id="sAdd">+ Зогсоол нэмэх</button></p></div>';
+  }
+  function routeSvg(t) {
+    var pts = (t.route || []).map(function (s) { var p = s.id === 'ub' ? M.ub : (placeById(s.id) ? proj(placeById(s.id).lat, placeById(s.id).lon) : null); return p; }).filter(Boolean);
+    var line = pts.length > 1 ? '<polyline points="' + pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" opacity=".9"/><polyline points="' + pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '" fill="none" stroke="#2C6CA6" stroke-width="2.6" stroke-linejoin="round"/>' : '';
+    var n = 0, dots = (t.route || []).map(function (s, i) {
+      if (s.id === 'ub' && i > 0) return '';
+      var p = s.id === 'ub' ? M.ub : (placeById(s.id) ? proj(placeById(s.id).lat, placeById(s.id).lon) : null); if (!p) return '';
+      if (s.id === 'ub') return '<rect x="' + (p[0] - 6) + '" y="' + (p[1] - 6) + '" width="12" height="12" transform="rotate(45 ' + p[0] + ' ' + p[1] + ')" fill="#fff" stroke="#131A27" stroke-width="2"/>';
+      n++;
+      return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="9" fill="#131A27" stroke="#fff" stroke-width="2"/><text x="' + p[0] + '" y="' + (p[1] + 3.5) + '" font-size="10" font-weight="700" fill="#fff" text-anchor="middle" font-family="Manrope,sans-serif">' + n + '</text>' +
+        '<text x="' + (p[0] + 13) + '" y="' + (p[1] + 4) + '" font-size="12" font-weight="700" fill="#131A27" stroke="#fff" stroke-width="3" paint-order="stroke" font-family="Manrope,sans-serif">' + esc(pname(s.id)) + '</text>';
+    }).join('');
+    return baseMap(line + dots);
+  }
+  function incSec(t) {
+    var ta = function (k, lng) { return '<label class="f"><span class="l">' + (k === 'inc' ? 'Багтсан' : 'Багтаагүй') + ' <span class="lng">' + lng + '</span></span><textarea rows="6" data-list="' + k + '.' + (lng === 'EN' ? 'en' : 'mn') + '">' + esc(((t[k] || {})[lng === 'EN' ? 'en' : 'mn'] || []).join('\n')) + '</textarea></label>'; };
+    return '<div class="sec"><div class="sec-h"><h3>Үнэд багтсан ба багтаагүй</h3><p>Мөр бүрт нэг зүйл бичнэ.</p></div><div class="grid2">' + ta('inc', 'EN') + ta('inc', 'МН') + ta('exc', 'EN') + ta('exc', 'МН') + '</div></div>';
+  }
+  function bindEditor() {
+    var ed = $('#editor'), t = T();
+    var tm = $('#tmap', ed); if (tm) tm.innerHTML = routeSvg(t);
+    $$('[data-p]', ed).forEach(function (el) {
+      el.addEventListener('input', function () {
+        var v = el.type === 'number' ? (el.value === '' ? '' : +el.value) : el.value;
+        if (el.dataset.p === 'film' && !v) delete t.film; else set(el.dataset.p, v);
+        markDirty('tours');
+        if (el.dataset.p === 'days') $$('[data-tot]', ed).forEach(function (c) { var p = t.price[+c.dataset.tot]; c.textContent = '$' + (p[1] * (+t.days || 0)).toLocaleString('en-US') + ' / хүн'; });
+        if (/^name\./.test(el.dataset.p)) { var b = $$('#tlist .titem')[S.cur]; if (b) $('b', b).textContent = t.name.mn || t.name.en; }
+      });
+    });
+    var idEl = $('[data-id]', ed);
+    idEl.addEventListener('change', function () {
+      var v = idEl.value.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+      if (!v || S.tours.some(function (x, i) { return i !== S.cur && x.id === v; })) { toast('Код давхцаж эсвэл хоосон байна.', true); idEl.value = t.id; return; }
+      t.id = v; idEl.value = v; markDirty('tours');
+    });
+    $$('[data-c]', ed).forEach(function (el) { el.onchange = function () { if (el.checked) t[el.dataset.c] = true; else delete t[el.dataset.c]; markDirty('tours'); renderTours(); }; });
+    $$('[data-pr]', ed).forEach(function (el) {
+      el.addEventListener('input', function () { var k = el.dataset.pr.split('.'); t.price[+k[0]][+k[1]] = +el.value || 0; markDirty('tours');
+        var c = $('[data-tot="' + k[0] + '"]', ed); c.textContent = '$' + (t.price[+k[0]][1] * (+t.days || 0)).toLocaleString('en-US') + ' / хүн'; });
+    });
+    $$('[data-prdel]', ed).forEach(function (b) { b.onclick = function () { t.price.splice(+b.dataset.prdel, 1); markDirty('tours'); renderEditor(); }; });
+    $('#prAdd', ed).onclick = function () { t.price = t.price || []; var last = t.price[t.price.length - 1]; t.price.push([last ? last[0] + 1 : 1, last ? last[1] : 0]); markDirty('tours'); renderEditor(); };
+    $$('[data-meal]', ed).forEach(function (el) {
+      el.onchange = function () { var i = +el.dataset.meal; t.plan[i].m = $$('[data-meal="' + i + '"]', ed).filter(function (x) { return x.checked; }).map(function (x) { return x.value; }).join(' '); if (!t.plan[i].m) delete t.plan[i].m; markDirty('tours'); };
+    });
+    $$('[data-dup]', ed).forEach(function (b) { b.onclick = function () { move(t.plan, +b.dataset.dup, -1); markDirty('tours'); renderEditor(); }; });
+    $$('[data-ddn]', ed).forEach(function (b) { b.onclick = function () { move(t.plan, +b.dataset.ddn, 1); markDirty('tours'); renderEditor(); }; });
+    $$('[data-ddel]', ed).forEach(function (b) { b.onclick = function () { confirmBar((+b.dataset.ddel + 1) + '-р өдрийг устгах уу?', function () { t.plan.splice(+b.dataset.ddel, 1); markDirty('tours'); renderEditor(); }); }; });
+    $('#dAdd', ed).onclick = function () { t.plan.push({ m: 'B L D', t: { en: '', mn: '' }, d: { en: '', mn: '' }, s: { en: '', mn: '' } }); markDirty('tours'); renderEditor(); };
+    $$('[data-dimg]', ed).forEach(function (b) { b.onclick = function () { var i = +b.dataset.dimg; pick(t.plan[i].img, function (v) { if (v) t.plan[i].img = v; else delete t.plan[i].img; markDirty('tours'); renderEditor(); }); }; });
+    $$('[data-sp]', ed).forEach(function (el) { el.onchange = function () { t.route[+el.dataset.sp].id = el.value; markDirty('tours'); renderEditor(); }; });
+    $$('[data-sd]', ed).forEach(function (el) { el.addEventListener('input', function () { var s = t.route[+el.dataset.sd]; if (el.value) s.d = el.value.replace(/-/g, '–'); else delete s.d; markDirty('tours'); }); });
+    $$('[data-spos]', ed).forEach(function (el) { el.onchange = function () { var s = t.route[+el.dataset.spos]; if (el.value) s.pos = el.value; else delete s.pos; markDirty('tours'); }; });
+    $$('[data-simg]', ed).forEach(function (b) { b.onclick = function () { var s = t.route[+b.dataset.simg]; pick(s.img, function (v) { if (v) s.img = v; else delete s.img; markDirty('tours'); renderEditor(); }); }; });
+    $$('[data-sup]', ed).forEach(function (b) { b.onclick = function () { move(t.route, +b.dataset.sup, -1); markDirty('tours'); renderEditor(); }; });
+    $$('[data-sdn]', ed).forEach(function (b) { b.onclick = function () { move(t.route, +b.dataset.sdn, 1); markDirty('tours'); renderEditor(); }; });
+    $$('[data-sdel]', ed).forEach(function (b) { b.onclick = function () { t.route.splice(+b.dataset.sdel, 1); markDirty('tours'); renderEditor(); }; });
+    $('#sAdd', ed).onclick = function () { var last = t.route[t.route.length - 1]; var ins = last && last.id === 'ub' ? t.route.length - 1 : t.route.length; t.route.splice(ins, 0, { id: S.places[0].id, d: '' }); markDirty('tours'); renderEditor(); };
+    $$('[data-list]', ed).forEach(function (el) { el.addEventListener('input', function () { var k = el.dataset.list.split('.'); t[k[0]] = t[k[0]] || { en: [], mn: [] }; t[k[0]][k[1]] = el.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean); markDirty('tours'); }); });
+    $('#delTour', ed).onclick = function () {
+      confirmBar('"' + (t.name.mn || t.name.en) + '" аяллыг устгах уу?', function () { S.tours.splice(S.cur, 1); S.cur = Math.max(0, S.cur - 1); markDirty('tours'); renderTours(); });
+    };
+  }
+
+  /* ---------- photo picker ---------- */
+  var pickCb = null;
+  function pick(cur, cb) {
+    pickCb = cb; var g = $('#pgrid');
+    var draw = function () {
+      var b = function (x) { return '<button type="button" data-ph="' + esc(x) + '"' + (x === cur ? ' class="cur"' : '') + '><img src="' + esc(imgUrl(x)) + '" alt="" loading="lazy"><span>' + esc(/^https?:/.test(x) ? x.split('/').pop() : x) + '</span></button>'; };
+      g.innerHTML = (S.uploads.length ? '<h4>Таны оруулсан зураг</h4>' + S.uploads.map(b).join('') : '') + '<h4>Сайтын зураг</h4>' + (S.photos || []).map(b).join('');
+      $$('[data-ph]', g).forEach(function (x) { x.onclick = function () { $('#pickDlg').close(); pickCb && pickCb(x.dataset.ph); }; });
+    };
+    draw();
+    api('photos').then(function (j) { if (j && j.ok) { S.uploads = j.items; draw(); } });
+    $('#pickDlg').showModal();
+  }
+  $('#pickClose').onclick = function () { $('#pickDlg').close(); };
+  $('#pickNone').onclick = function () { $('#pickDlg').close(); pickCb && pickCb(''); };
+  $('#upload').onchange = function () {
+    var f = this.files[0]; this.value = ''; if (!f) return;
+    toast('Зураг бэлдэж байна…');
+    shrink(f, 1600, 0.84).then(function (b64) { toast('Хуулж байна…'); return api('upload', { name: f.name, type: 'image/jpeg', b64: b64 }); })
+      .then(function (j) {
+        if (!j || !j.ok) { toast('Зураг оруулж чадсангүй: ' + ((j && j.error) || ''), true); return; }
+        S.uploads.unshift(j.url); toast('Зураг орлоо'); $('#pickDlg').close(); pickCb && pickCb(j.url);
+      }).catch(function () { toast('Зургийг уншиж чадсангүй.', true); });
+  };
+  function shrink(file, max, q) {
+    return new Promise(function (res, rej) {
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function () {
+        var s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)), w = Math.round(img.naturalWidth * s), h = Math.round(img.naturalHeight * s);
+        var c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', q).split(',')[1]);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(); };
+      img.src = url;
+    });
+  }
+
+  /* ---------- places ---------- */
+  function usedIn(id) { return S.tours.filter(function (t) { return (t.route || []).some(function (s) { return s.id === id; }); }).map(function (t) { return t.name.mn || t.name.en; }); }
+  function renderPlaces() {
+    var list = S.places.slice().map(function (p, i) { return { p: p, i: i }; }).sort(function (a, b) { return (a.p.mn || a.p.en).localeCompare(b.p.mn || b.p.en); });
+    $('#plist').innerHTML = list.map(function (o) {
+      var u = usedIn(o.p.id).length;
+      return '<div class="prow' + (o.i === S.pcur ? ' on' : '') + '"><button class="pick" data-pi="' + o.i + '"><b>' + esc(o.p.mn || o.p.en) + '</b><small>' + esc(o.p.en) + ' · ' + o.p.lat + ', ' + o.p.lon + '</small></button><small>' + (u ? u + ' аялалд' : 'ашиглаагүй') + '</small></div>';
+    }).join('');
+    $$('[data-pi]').forEach(function (b) { b.onclick = function () { S.pcur = +b.dataset.pi; renderPlaces(); }; });
+    var p = S.places[S.pcur];
+    $('#pTitle').textContent = p ? (p.mn || p.en) : 'Газар сонгох';
+    ['en', 'mn', 'lat', 'lon'].forEach(function (k) { var el = $('#p-' + k); el.value = p ? p[k] : ''; el.disabled = !p; });
+    $('#pDel').disabled = !p;
+    $('#p-id').textContent = p ? 'Код: ' + p.id + (usedIn(p.id).length ? ' · Ашигласан: ' + usedIn(p.id).join(', ') : '') : 'Жагсаалтаас газар сонгох эсвэл "+ Шинэ газар" дарна уу.';
+    drawPmap();
+  }
+  function drawPmap() {
+    var dots = S.places.map(function (p, i) {
+      var q = proj(p.lat, p.lon), on = i === S.pcur;
+      return '<circle cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="' + (on ? 8 : 4.5) + '" fill="' + (on ? '#2C6CA6' : '#131A27') + '" stroke="#fff" stroke-width="' + (on ? 2.5 : 1.5) + '"/>' +
+        (on ? '<text x="' + (q[0] + 12) + '" y="' + (q[1] + 4) + '" font-size="13" font-weight="700" fill="#131A27" stroke="#fff" stroke-width="3" paint-order="stroke" font-family="Manrope,sans-serif">' + esc(p.mn || p.en) + '</text>' : '');
+    }).join('');
+    var u = M.ub;
+    $('#pmap').innerHTML = baseMap('<rect x="' + (u[0] - 5) + '" y="' + (u[1] - 5) + '" width="10" height="10" transform="rotate(45 ' + u[0] + ' ' + u[1] + ')" fill="#fff" stroke="#131A27" stroke-width="2"/>' + dots);
+  }
+  $('#pmap').addEventListener('pointerdown', function (e) {
+    var p = S.places[S.pcur]; if (!p) { toast('Эхлээд газар сонгох эсвэл "+ Шинэ газар" дарна уу.'); return; }
+    var svg = this, pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    var q = pt.matrixTransform(svg.getScreenCTM().inverse()), ll = unproj(q.x, q.y);
+    p.lat = r4(ll[0]); p.lon = r4(ll[1]); markDirty('places'); renderPlaces(); if (S.tours.length) renderEditor();
+  });
+  ['en', 'mn', 'lat', 'lon'].forEach(function (k) {
+    $('#p-' + k).addEventListener('input', function () {
+      var p = S.places[S.pcur]; if (!p) return;
+      p[k] = (k === 'lat' || k === 'lon') ? (+this.value || 0) : this.value; markDirty('places');
+      if (k === 'lat' || k === 'lon') drawPmap(); else { $('#pTitle').textContent = p.mn || p.en; }
+    });
+    $('#p-' + k).addEventListener('change', function () { renderPlaces(); });
+  });
+  $('#pNew').onclick = function () {
+    var id = 'place', n = 1; while (placeById(id + n)) n++; id = id + n;
+    S.places.push({ id: id, en: 'New place', mn: 'Шинэ газар', lat: 47.0, lon: 104.0 }); S.pcur = S.places.length - 1; markDirty('places'); renderPlaces();
+    $('#p-mn').focus(); $('#p-mn').select();
+    toast('Газрын зураг дээр дарж байршлыг тэмдэглээрэй.');
+  };
+  $('#pDel').onclick = function () {
+    var p = S.places[S.pcur]; if (!p) return;
+    var u = usedIn(p.id); if (u.length) { toast('Энэ газар ' + u.join(', ') + ' аялалд ашиглагдаж байна. Эхлээд маршрутаас хасна уу.', true); return; }
+    confirmBar('"' + (p.mn || p.en) + '" газрыг устгах уу?', function () { S.places.splice(S.pcur, 1); S.pcur = -1; markDirty('places'); renderPlaces(); });
+  };
+
+  /* ---------- save ---------- */
+  $('#saveBtn').onclick = function () {
+    var bad = []; S.tours.forEach(function (t) { if (t.hidden) return; problems(t).forEach(function (p) { if (/олдсонгүй|2 зогсоол/.test(p)) bad.push((t.name.mn || t.name.en) + ': ' + p); }); });
+    if (bad.length) { toast(bad[0], true); return; }
+    var btn = this; btn.disabled = true; setStatus('Хадгалж байна…');
+    var jobs = [];
+    if (S.dirty.places) jobs.push(function () { return api('save', { key: 'places', data: S.places }); });
+    if (S.dirty.tours || S.dirty.places) jobs.push(function () { return api('save', { key: 'tours', data: S.tours }); });
+    jobs.reduce(function (p, job) { return p.then(function (r) { if (r && !r.ok) return r; return job(); }); }, Promise.resolve(null))
+      .then(function (r) {
+        if (r && r.ok) { S.dirty = { tours: false, places: false }; setStatus('Хадгаллаа · ' + new Date().toLocaleTimeString('mn-MN')); toast('Хадгаллаа. Сайт дээр шууд харагдана.'); }
+        else { btn.disabled = false; setStatus('Хадгалж чадсангүй', true); toast('Хадгалж чадсангүй: ' + ((r && r.error) || 'сүлжээ'), true); }
+      }).catch(function () { btn.disabled = false; setStatus('Хадгалж чадсангүй', true); toast('Сервертэй холбогдож чадсангүй.', true); });
+  };
+  document.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); if (!$('#saveBtn').disabled) $('#saveBtn').click(); } });
+
+  /* ---------- requests ---------- */
+  function loadRequests() {
+    var el = $('#reqs'); el.innerHTML = '<div class="empty">Ачаалж байна…</div>';
+    api('requests').then(function (j) {
+      if (!j.ok) { el.innerHTML = '<div class="empty">Ачаалж чадсангүй.</div>'; return; }
+      if (!j.items.length) { el.innerHTML = '<div class="empty">Одоогоор хүсэлт ирээгүй байна.</div>'; return; }
+      var L = { name: 'Нэр', contact: 'Холбоо барих', month: 'Сар', travellers: 'Хүний тоо', style: 'Төрөл', tour: 'Аялал', places: 'Газрууд', note: 'Тэмдэглэл', lang: 'Хэл' };
+      el.innerHTML = j.items.map(function (r) {
+        return '<article class="req"><div class="req-h"><b>' + esc(r.name) + '</b><small>' + new Date(r.created_at).toLocaleString('mn-MN') + (r.mailed ? ' · имэйл илгээсэн' : ' · <span style="color:var(--warn)">имэйл очоогүй</span>') + '</small></div><dl>' +
+          ['contact', 'tour', 'month', 'travellers', 'style', 'places', 'note', 'lang'].filter(function (k) { return r[k]; }).map(function (k) { return '<dt>' + L[k] + '</dt><dd>' + esc(r[k]) + '</dd>'; }).join('') + '</dl></article>';
+      }).join('');
+    });
+  }
+
+  /* ---------- history ---------- */
+  function loadHistory() {
+    var el = $('#hist'); el.innerHTML = '<div class="empty">Ачаалж байна…</div>';
+    Promise.all([api('history', { key: 'tours' }), api('history', { key: 'places' })]).then(function (rs) {
+      var items = [];
+      rs.forEach(function (j, k) { (j.items || []).forEach(function (x) { x.key = k ? 'places' : 'tours'; items.push(x); }); });
+      items.sort(function (a, b) { return b.id - a.id; });
+      if (!items.length) { el.innerHTML = '<div class="empty">Одоогоор өмнөх хувилбар алга. Анх хадгалсны дараа энд гарч ирнэ.</div>'; return; }
+      el.innerHTML = items.map(function (x) {
+        return '<div class="hrow"><b>' + (x.key === 'tours' ? 'Аяллууд' : 'Газрууд') + '</b><small>' + new Date(x.saved_at).toLocaleString('mn-MN') + ' хүртэлх хувилбар' + (x.note ? ' · ' + esc(x.note) : '') + '</small><span style="flex:1"></span><button class="btn sm" data-rs="' + x.id + '">Сэргээх</button></div>';
+      }).join('');
+      $$('[data-rs]', el).forEach(function (b) {
+        b.onclick = function () {
+          confirmBar('Энэ хувилбарыг сэргээх үү? Одоогийнх нь мөн хадгалагдана.', function () {
+            api('restore', { id: +b.dataset.rs }).then(function (j) {
+              if (!j.ok) { toast('Сэргээж чадсангүй', true); return; }
+              toast('Сэргээлээ'); start(); loadHistory();
+            });
+          });
+        };
+      });
+    });
+  }
+
+  if (S.token) start();
+})();
+</script>
+</body>
+</html>

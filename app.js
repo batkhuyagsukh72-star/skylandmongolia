@@ -1,6 +1,7 @@
 /* Azure Skyland Mongolia — interactions & motion */
-(function () {
+function skyBoot() {
   'use strict';
+  var imgUrl = function (x) { return /^https?:\/\//.test(x) ? x : 'img/' + x + '.webp'; };
   var D = window.SKY, M = window.SKY_MAP;
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
@@ -438,7 +439,7 @@
     }
     function showCard(i) {
       var r = stops[i]; if (!r || !r.img) { hideCard(); return; }
-      $('img', card).src = 'img/' + r.img + '.webp'; $('small', card).textContent = dayLbl(r.d); $('b', card).textContent = L(D.mapNames[r.id]);
+      $('img', card).src = imgUrl(r.img); $('small', card).textContent = dayLbl(r.d); $('b', card).textContent = L(D.mapNames[r.id]);
       curCard = i; posCard(i); card.classList.add('on'); mark(i);
     }
     function hideCard() { curCard = -1; card.classList.remove('on'); mark(-1); }
@@ -732,7 +733,7 @@
       }
       return { i: i, el: $('.jm-pin', wrap), ll: R.ll[i], m: new ml.Marker({ element: wrap, anchor: 'center' }).setLngLat(R.ll[i]).addTo(map) };
     }).filter(Boolean);
-    R.stops.forEach(function (r) { if (r.img) { var im = new Image(); im.decoding = 'async'; im.src = 'img/' + r.img + '.webp'; } });
+    R.stops.forEach(function (r) { if (r.img) { var im = new Image(); im.decoding = 'async'; im.src = imgUrl(r.img); } });
     if (play && jm.visible && !reduce) jmPlay(); else jmShowAll(true);
     jmFlip();
   }
@@ -751,7 +752,7 @@
   function jmCard(i) {
     var R = jm.R, r = R && R.stops[i], c = jm.card;
     if (!r || !r.img) { c.classList.remove('on'); jmMark(-1); return; }
-    var img = $('img', c); img.src = 'img/' + r.img + '.webp';
+    var img = $('img', c); img.src = imgUrl(r.img);
     $('small', c).textContent = dayLbl(r.d); $('b', c).textContent = L(D.mapNames[r.id]); $('p', c).textContent = dayTitle(R.tr, r.d);
     c.classList.remove('on'); void c.offsetWidth; c.classList.add('on'); jmMark(i);
   }
@@ -897,7 +898,7 @@
     $('#tourPanel').setAttribute('aria-labelledby', 'tt-' + tr.id);
     $('#tourPanel').innerHTML = '<p class="tour-lead">' + esc(L(tr.lead)) + '</p><ol class="tour-days">' + tr.plan.map(function (d, i) {
       return '<li class="tday"><span class="tday-n"><small>' + esc(t('tr.day')) + '</small><b>' + (i + 1) + '</b></span><div class="tday-b"><h3>' + esc(L(d.t)) + '</h3><p>' + esc(L(d.d)) + '</p>' +
-        (d.img ? '<figure class="tday-img"><img src="img/' + d.img + '.webp" alt="' + esc(L(d.t)) + '" width="1600" height="720" loading="lazy" decoding="async"></figure>' : '') +
+        (d.img ? '<figure class="tday-img"><img src="' + imgUrl(d.img) + '" alt="' + esc(L(d.t)) + '" width="1600" height="720" loading="lazy" decoding="async"></figure>' : '') +
         ((d.s || d.m) ? '<p class="tday-s"><svg><use href="#i-toono"/></svg><span>' + (d.s ? esc(t('tr.stay')) + ': ' + esc(L(d.s)) : '') + (d.s && d.m ? ' · ' : '') + (d.m ? esc(t('tr.meals')) + ': ' + d.m.split(' ').map(function (k) { return esc(t('tr.' + k)); }).join(', ') : '') + '</span></p>' : '') + '</div></li>';
     }).join('') + '</ol>' + routeMap(tr) + tourInfo(tr) + '<div class="tour-actions"><button class="btn btn-ink tour-book" type="button" data-book="' + tr.id + '">' + esc(t('tr.book')) + ' <svg><use href="#i-arrow"/></svg></button>' +
       (tr.film ? '<a class="tour-film" href="' + tr.film + '" target="_blank" rel="noopener"><span class="play"><svg><use href="#i-play"/></svg></span>' + esc(t('tr.film')) + '</a>' : '') + '</div>';
@@ -1205,4 +1206,45 @@
   }
   if (document.readyState === 'complete' || document.readyState === 'interactive') motion();
   else document.addEventListener('DOMContentLoaded', motion);
+}
+
+/* ---------- content edited in /admin (Supabase "content" table), with the bundled data as fallback ---------- */
+(function () {
+  var D = window.SKY, M = window.SKY_MAP, booted = false, CK = 'sky-content-v1';
+  function boot() { if (booted) return; booted = true; skyBoot(); }
+  function proj(lat, lon) {
+    var p = M.proj, A = p[0], B = p[1], C = p[2], K = A * 180 / Math.PI;
+    return [A * lon + B, C - K * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))];
+  }
+  function apply(rows) {
+    (rows || []).forEach(function (r) {
+      if (r.key === 'places' && Array.isArray(r.data)) r.data.forEach(function (p) {
+        if (!p || !p.id || !isFinite(p.lat) || !isFinite(p.lon)) return;
+        M.pins[p.id] = proj(+p.lat, +p.lon); D.mapNames[p.id] = { en: p.en || p.id, mn: p.mn || p.en || p.id };
+      });
+    });
+    (rows || []).forEach(function (r) {
+      if (r.key !== 'tours' || !Array.isArray(r.data)) return;
+      var ok = r.data.filter(function (t) {
+        return t && t.id && !t.hidden && t.name && Array.isArray(t.plan) && Array.isArray(t.route) && t.route.length > 1 &&
+          t.route.every(function (s) { return s.id === 'ub' || M.pins[s.id]; });
+      });
+      if (ok.length) D.tours = ok;
+    });
+  }
+  var cached = null;
+  try { cached = JSON.parse(localStorage.getItem(CK) || 'null'); } catch (e) {}
+  if (cached) { try { apply(cached); } catch (e) {} }
+  var c = D.contact || {}, base = (c.api || '').split('/functions/')[0];
+  if (!base || !window.fetch || !M.proj) { boot(); return; }
+  var timer = setTimeout(boot, cached ? 900 : 2500);
+  fetch(base + '/rest/v1/content?select=key,data,updated_at', { headers: { apikey: c.apiKey } })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (rows) {
+      if (!rows) return;
+      try { localStorage.setItem(CK, JSON.stringify(rows)); } catch (e) {}
+      if (!booted) { try { apply(rows); } catch (e) {} }
+    })
+    .catch(function () {})
+    .then(function () { clearTimeout(timer); boot(); });
 })();
