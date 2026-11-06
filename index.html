@@ -72,6 +72,7 @@
     <a href="#journeys" data-i18n="nav.journeys">Journeys</a>
     <a href="#why" data-i18n="nav.why">Why Skyland</a>
     <a href="#tours" data-i18n="nav.tours">Tours</a>
+    <a href="#cars" data-i18n="nav.cars">Car rental</a>
     <a href="#plan" data-i18n="nav.contact">Contact</a>
   </nav>
   <div class="hdr-right">
@@ -88,6 +89,7 @@
     <a href="#journeys" data-i18n="nav.journeys">Journeys</a>
     <a href="#why" data-i18n="nav.why">Why Skyland</a>
     <a href="#tours" data-i18n="nav.tours">Tours</a>
+    <a href="#cars" data-i18n="nav.cars">Car rental</a>
     <a href="#plan" data-i18n="nav.contact">Contact</a>
   </nav>
   <div class="mnav-foot">
@@ -194,6 +196,37 @@
   </div>
 </section>
 
+<!-- ============ CAR RENTAL ============ -->
+<section class="cars" id="cars" aria-labelledby="car-h">
+  <div class="wrap">
+    <div class="cars-grid">
+      <div class="cars-media" data-reveal>
+        <figure class="cm cm-main"><img src="img/car/cayenne-drift.webp" srcset="img/car/cayenne-drift-800.webp 800w, img/car/cayenne-drift.webp 1600w" sizes="(max-width:900px) 100vw, 55vw" alt="" data-i18n-alt="car.alt1" width="1600" height="1067" loading="lazy" decoding="async"></figure>
+        <figure class="cm"><img src="img/car/touareg-dunes-800.webp" alt="" data-i18n-alt="car.alt2" width="800" height="470" loading="lazy" decoding="async"></figure>
+        <figure class="cm"><img src="img/car/interior-800.webp" alt="" data-i18n-alt="car.alt3" width="800" height="495" loading="lazy" decoding="async"></figure>
+        <figure class="cm"><img src="img/car/fleet-800.webp" alt="" data-i18n-alt="car.alt4" width="800" height="600" loading="lazy" decoding="async"></figure>
+      </div>
+      <div class="cars-copy">
+        <h2 id="car-h" class="h2" data-i18n="car.title" data-reveal>SUV 4×4 car rental</h2>
+        <p class="lead" data-i18n="car.lead" data-reveal>Comfortable four-wheel-drive SUVs from Ulaanbaatar, with one of our drivers or on your own.</p>
+        <p class="car-price" data-reveal><span data-i18n="car.from">From</span> <b>€120</b><span data-i18n="car.day"> per day</span></p>
+        <div class="car-opts" data-reveal>
+          <div class="car-opt"><h3 data-i18n="car.o1t">With a driver</h3><p data-i18n="car.o1"></p></div>
+          <div class="car-opt"><h3 data-i18n="car.o2t">Self-drive</h3><p data-i18n="car.o2"></p></div>
+        </div>
+        <ul class="car-feat" data-reveal>
+          <li data-i18n="car.f1">4WD</li><li data-i18n="car.f2"></li><li data-i18n="car.f3"></li><li data-i18n="car.f4"></li><li data-i18n="car.f5"></li><li data-i18n="car.f6"></li><li data-i18n="car.f7"></li>
+        </ul>
+        <div class="car-inc" data-reveal>
+          <div><h4 data-i18n="car.inc">Included</h4><ul><li data-i18n="car.i1"></li><li data-i18n="car.i2"></li><li data-i18n="car.i3"></li></ul></div>
+          <div><h4 data-i18n="car.exc">Not included</h4><ul><li data-i18n="car.e1"></li><li data-i18n="car.e2"></li><li data-i18n="car.e3"></li></ul></div>
+        </div>
+        <a class="btn btn-ink" href="#plan" id="carCta" data-reveal><span data-i18n="car.cta">Request a car</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ STYLES ============ -->
 <section class="styles" id="styles" aria-labelledby="s-h">
   <div class="wrap center">
@@ -246,6 +279,13 @@
     <div class="gl-head">
       <h2 id="gl-h" class="h2" data-i18n="gl.title" data-reveal>From our journeys</h2>
       <p class="lead" data-i18n="gl.lead" data-reveal>Photos from Skyland trips across Mongolia.</p>
+    </div>
+    <div class="reels" id="reels" data-reveal>
+      <figure class="reel"><video muted loop playsinline preload="none" poster="video/altai.webp" data-src="video/altai.mp4" aria-label="Altai Tavan Bogd"></video><button class="reel-snd" type="button" aria-pressed="false" data-i18n-aria="gl.sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="snd-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="snd-off" d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></figure>
+      <figure class="reel"><video muted loop playsinline preload="none" poster="video/khongor.webp" data-src="video/khongor.mp4" aria-label="Khongor Sand Dunes"></video><button class="reel-snd" type="button" aria-pressed="false" data-i18n-aria="gl.sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="snd-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="snd-off" d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></figure>
+      <figure class="reel"><video muted loop playsinline preload="none" poster="video/dunes.webp" data-src="video/dunes.mp4" aria-label="Singing Sand Dunes"></video><button class="reel-snd" type="button" aria-pressed="false" data-i18n-aria="gl.sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="snd-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="snd-off" d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></figure>
+      <figure class="reel"><video muted loop playsinline preload="none" poster="video/tuvkhun.webp" data-src="video/tuvkhun.mp4" aria-label="Tuvkhun Monastery"></video><button class="reel-snd" type="button" aria-pressed="false" data-i18n-aria="gl.sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="snd-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="snd-off" d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></figure>
+      <figure class="reel"><video muted loop playsinline preload="none" poster="video/mongolia.webp" data-src="video/mongolia.mp4" aria-label="Mongolia"></video><button class="reel-snd" type="button" aria-pressed="false" data-i18n-aria="gl.sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="snd-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="snd-off" d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></figure>
     </div>
     <div class="gl-grid" id="glGrid"></div>
     <div class="center gl-more-wrap"><button class="btn btn-ghost" type="button" id="glMore" aria-expanded="false" aria-controls="glGrid"></button></div>
@@ -339,6 +379,7 @@
       <a href="#destinations" data-i18n="nav.dest">Destinations</a>
       <a href="#journeys" data-i18n="nav.journeys">Journeys</a>
       <a href="#tours" data-i18n="nav.tours">Tours</a>
+      <a href="#cars" data-i18n="nav.cars">Car rental</a>
       <a class="pill" href="#plan" data-i18n="cta.plan">Plan my trip</a>
       <a href="#why" data-i18n="nav.why">Why Skyland</a>
       <a href="#plan" data-i18n="nav.contact">Contact</a>

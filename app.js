@@ -865,6 +865,27 @@ function skyBoot() {
     }
   }
   jmInit();
+
+  /* ---------- short videos: play muted while on screen, one sound at a time ---------- */
+  (function () {
+    var vids = $$('#reels video'); if (!vids.length) return;
+    function load(v) { if (!v.src && v.dataset.src) v.src = v.dataset.src; }
+    function play(v) { load(v); var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+    if ('IntersectionObserver' in window && !reduce) {
+      var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.intersectionRatio >= 0.6) play(e.target); else e.target.pause(); }); }, { threshold: [0, 0.6] });
+      vids.forEach(function (v) { io.observe(v); });
+    }
+    vids.forEach(function (v) {
+      v.addEventListener('click', function () { if (v.paused) play(v); else v.pause(); });
+      var b = v.parentNode.querySelector('.reel-snd');
+      b.addEventListener('click', function () {
+        var on = v.muted;
+        vids.forEach(function (o) { o.muted = true; var ob = o.parentNode.querySelector('.reel-snd'); ob.setAttribute('aria-pressed', 'false'); });
+        if (on) { v.muted = false; play(v); }
+        b.setAttribute('aria-pressed', String(on));
+      });
+    });
+  })();
   function money(n) { return '$' + n.toLocaleString('en-US'); }
   function tourInfo(tr) {
     var h = '<div class="tour-info">';
@@ -1018,6 +1039,9 @@ function skyBoot() {
   function applyLang(first) {
     root.lang = lang === 'mn' ? 'mn' : 'en';
     $$('[data-i18n]').forEach(function (el) { if (el.classList.contains('hero-word')) return; el.textContent = t(el.getAttribute('data-i18n')); });
+    $$('[data-i18n-alt]').forEach(function (el) { el.alt = t(el.getAttribute('data-i18n-alt')); });
+    $$('[data-i18n-aria]').forEach(function (el) { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria'))); });
+    var cc = $('#carCta'); if (cc && !cc._b) { cc._b = 1; cc.addEventListener('click', function () { var ps = $('#p-style'); if (ps) ps.value = t('car.style'); }); }
     $$('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.lang === lang); });
     renderTabs(); renderCards(); renderJourneys(); renderTours(); jmLang(); renderGallery(); renderReviews(); renderTiles(); fillSelects(); syncTrip();
     if (!first) { splitWord(); if (window.ScrollTrigger) { ScrollTrigger.refresh(); } }
