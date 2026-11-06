@@ -712,3 +712,9 @@ html.fallback .loader-in,html.loaded .loader-in{opacity:1}
 .reel-snd[aria-pressed=true] .snd-off{display:none}
 @media (max-width:900px){.reels{grid-auto-columns:40%}}
 @media (max-width:520px){.reels{grid-auto-columns:64%}}
+
+/* 3D map: tour colours and the other routes */
+.jm-dot{width:10px;height:10px;border-radius:50%;background:var(--tc,var(--azure));box-shadow:0 0 0 2px rgba(255,255,255,.9);flex:none}
+.jm-tab[aria-selected="true"] .jm-dot{box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+.jm-tip{position:absolute;left:0;top:0;z-index:6;pointer-events:none;background:var(--ink);color:#fff;font:600 13px/1.2 var(--sans);padding:7px 11px;border-radius:8px;opacity:0;transition:opacity .15s;white-space:nowrap}
+.jm-tip.on{opacity:1}

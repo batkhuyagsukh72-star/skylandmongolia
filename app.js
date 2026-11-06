@@ -557,6 +557,20 @@ function skyBoot() {
   function angd(to, from) { return ((to - from + 540) % 360) - 180; }
   function hasGL() { try { var c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } }
   function jmTours() { return D.tours.filter(function (x) { return x.route; }); }
+  var JM_PAL = ['#2C6CA6', '#D9822B', '#2E8B57', '#C0392B', '#7B4FA3', '#B8860B', '#1F8A9E', '#D35D8F', '#5D6D2F', '#8C5A3C'];
+  function jmCol(id) { var ts = jmTours(), i = 0; ts.forEach(function (x, k) { if (x.id === id) i = k; }); return JM_PAL[i % JM_PAL.length]; }
+  function rgba(hex, a) { var n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')'; }
+  /* the other tours, drawn at once in their own colours when the map shows the whole country */
+  function jmOthers(show) {
+    var map = jm.map; if (!map || !map.getSource('others')) return;
+    if (show) {
+      map.getSource('others').setData({ type: 'FeatureCollection', features: jmTours().filter(function (x) { return x.id !== jm.cur; }).map(function (x) {
+        return { type: 'Feature', properties: { id: x.id, c: jmCol(x.id), n: L(x.name) }, geometry: { type: 'LineString', coordinates: jmRoute(x).line } };
+      }) });
+    }
+    ['others-case', 'others'].forEach(function (l) { map.setPaintProperty(l, 'line-opacity', show ? (l === 'others' ? 0.9 : 0.85) : 0); });
+    jm.othersOn = !!show; jm.stage.classList.toggle('jm-all', !!show);
+  }
   function dayTitle(tr, d) { var p = tr.plan && tr.plan[parseInt(d, 10) - 1]; return p ? L(p.t) : ''; }
   function jmRoute(tr) {
     var stops = tr.route, pts = stops.map(function (r) { return r.id === 'ub' ? M.ub : M.pins[r.id]; }), n = pts.length, N = 44;
@@ -605,7 +619,8 @@ function skyBoot() {
         aimag: { type: 'geojson', data: fc('MultiLineString', rings(M.aimag)) },
         border: { type: 'geojson', data: fc('MultiLineString', mn), attribution: 'Natural Earth' },
         mask: { type: 'geojson', data: fc('Polygon', [[[55, 15], [155, 15], [155, 70], [55, 70], [55, 15]]].concat(mn)) },
-        route: { type: 'geojson', lineMetrics: true, data: fc('LineString', [[106.9, 47.9], [106.91, 47.91]]) }
+        route: { type: 'geojson', lineMetrics: true, data: fc('LineString', [[106.9, 47.9], [106.91, 47.91]]) },
+        others: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } }
       },
       layers: [
         { id: 'bg', type: 'background', paint: { 'background-color': '#EEE6DC' } },
@@ -618,6 +633,8 @@ function skyBoot() {
         { id: 'mask', type: 'fill', source: 'mask', paint: { 'fill-color': '#EEE6DC', 'fill-opacity': 0.6 } },
         { id: 'aimag', type: 'line', source: 'aimag', paint: { 'line-color': '#FFFFFF', 'line-width': 0.9, 'line-opacity': 0.6 } },
         { id: 'border', type: 'line', source: 'border', layout: { 'line-join': 'round' }, paint: { 'line-color': '#131A27', 'line-width': 1.6, 'line-opacity': 0.7 } },
+        { id: 'others-case', type: 'line', source: 'others', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#FFFFFF', 'line-width': 5.5, 'line-opacity': 0, 'line-opacity-transition': { duration: 700, delay: 0 } } },
+        { id: 'others', type: 'line', source: 'others', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['get', 'c'], 'line-width': 3, 'line-opacity': 0, 'line-opacity-transition': { duration: 700, delay: 0 } } },
         { id: 'plan', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': 'rgba(19,26,39,.55)', 'line-width': 2, 'line-dasharray': [0.6, 2.4] } },
         { id: 'drawn-case', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-width': 8, 'line-gradient': 'rgba(255,255,255,0)' } },
         { id: 'drawn', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-width': 4, 'line-gradient': 'rgba(44,108,166,0)' } }
@@ -686,6 +703,9 @@ function skyBoot() {
       map.on('zoom', jmZoomClass); jmZoomClass();
       map.on('move', function () { if (!jm.flipRaf) jm.flipRaf = requestAnimationFrame(jmFlip); });
       ['dragstart', 'zoomstart', 'rotatestart', 'pitchstart'].forEach(function (ev) { map.on(ev, function (e) { if (e.originalEvent && jm.playing) jmStop(true); }); });
+      map.on('mousemove', 'others', function (e) { var f = e.features && e.features[0]; map.getCanvas().style.cursor = 'pointer'; jmTip(f ? f.properties.n : '', e.point); });
+      map.on('mouseleave', 'others', function () { map.getCanvas().style.cursor = ''; jmTip('', null); });
+      map.on('click', 'others', function (e) { var f = e.features && e.features[0]; if (f) { jmTip('', null); jmSetTour(f.properties.id, true); } });
       jmSetTour(jm.cur, false);
       jm.ready = true;
       if (jm.visible && !jm.played) jmStart();
@@ -699,7 +719,7 @@ function skyBoot() {
   function jmZoomClass() { if (jm.map) jm.stage.classList.toggle('jm-far', jm.map.getZoom() < 6.6); }
   function jmTabs() {
     jm.tabs.innerHTML = jmTours().map(function (tr) {
-      return '<button class="jm-tab" type="button" role="tab" data-tour="' + tr.id + '" aria-selected="' + (tr.id === jm.cur) + '"><b>' + tr.days + '</b><small>' + esc(t('tr.days')) + '</small>' + esc(L(tr.name).replace(/^\d+-Day\s*/, '').replace(/\s*\d+\s*хоногийн\s*/i, ' ').replace(/,?\s*\d+\s*хоног\s*$/i, '').trim()) + '</button>';
+      return '<button class="jm-tab" type="button" role="tab" data-tour="' + tr.id + '" aria-selected="' + (tr.id === jm.cur) + '" style="--tc:' + jmCol(tr.id) + '"><i class="jm-dot" aria-hidden="true"></i><b>' + tr.days + '</b><small>' + esc(t('tr.days')) + '</small>' + esc(L(tr.name).replace(/^\d+-Day\s*/, '').replace(/\s*\d+\s*хоногийн\s*/i, ' ').replace(/,?\s*\d+\s*хоног\s*$/i, '').trim()) + '</button>';
     }).join('');
   }
   function jmChips() {
@@ -739,7 +759,7 @@ function skyBoot() {
   }
   function jmProgress(g) {
     if (!jm.map) return;
-    var a = 'rgba(44,108,166,1)', a0 = 'rgba(44,108,166,0)', w = 'rgba(255,255,255,.95)', w0 = 'rgba(255,255,255,0)';
+    var col = jmCol(jm.cur), a = rgba(col, 1), a0 = rgba(col, 0), w = 'rgba(255,255,255,.95)', w0 = 'rgba(255,255,255,0)';
     var gg = Math.min(Math.max(g, 0), 1);
     jm.map.setPaintProperty('drawn', 'line-gradient', gg >= 1 ? a : gg <= 0 ? a0 : ['step', ['line-progress'], a, gg, a0]);
     jm.map.setPaintProperty('drawn-case', 'line-gradient', gg >= 1 ? w : gg <= 0 ? w0 : ['step', ['line-progress'], w, gg, w0]);
@@ -795,12 +815,18 @@ function skyBoot() {
     var cam = jm.map.cameraForBounds(jm.R.bounds, { padding: 70, bearing: -6 }) || {};
     return jmCam({ center: cam.center, zoom: (cam.zoom || 6) - 0.25, pitch: 45, bearing: -6 }, dur, my);
   }
+  function jmTip(txt, pt) {
+    var tip = jm.tip; if (!tip) { tip = jm.tip = document.createElement('div'); tip.className = 'jm-tip'; tip.setAttribute('aria-hidden', 'true'); jm.stage.appendChild(tip); }
+    if (!txt || !pt) { tip.classList.remove('on'); return; }
+    tip.textContent = txt; tip.style.transform = 'translate(' + Math.round(pt.x + 14) + 'px,' + Math.round(pt.y - 12) + 'px)'; tip.classList.add('on');
+  }
+  function jmWhole(dur, my) { var cam = jm.map.cameraForBounds(MN_B, { padding: 16, bearing: 0 }) || {}; return jmCam({ center: cam.center, zoom: cam.zoom, pitch: reduce ? 0 : 20, bearing: 0 }, dur, my); }
   function jmStart() { if (jm.played || jm.playing || !jm.R) return; jm.played = true; if (reduce) { jmShowAll(true); return; } jmPlay(); }
   async function jmPlay() {
     if (!jm.map || !jm.R) return;
     var my = ++jm.tok, R = jm.R, map = jm.map;
     jm.playing = true; jm.replay.hidden = true; jm.view.hidden = true; jm.played = true;
-    map.stop(); jmHideCard(); jmProgress(0); jm.carEl.classList.remove('on'); jm.car.setLngLat(R.ll[0]);
+    map.stop(); jmHideCard(); jmOthers(false); jmProgress(0); jm.carEl.classList.remove('on'); jm.car.setLngLat(R.ll[0]);
     (jm.pins || []).forEach(function (p) { p.el.classList.remove('on'); });
     $$('button', jm.chips).forEach(function (b) { b.classList.add('dim'); });
     map.jumpTo(Object.assign(map.cameraForBounds(MN_B, { padding: 16, bearing: 0 }) || {}, { pitch: 0, bearing: 0 }));
@@ -819,8 +845,9 @@ function skyBoot() {
       }
     }
     jm.carEl.classList.remove('on');
-    await jmOverview(1800, my); if (my !== jm.tok) return;
-    jm.playing = false; jm.atRoute = true; jmCtl();
+    await jmWhole(2000, my); if (my !== jm.tok) return;
+    jmOthers(true);
+    jm.playing = false; jm.atRoute = false; jmCtl();
   }
   function jmStop(showAll) {
     jm.tok++; var was = jm.playing; jm.playing = false;
@@ -832,7 +859,7 @@ function skyBoot() {
     jmProgress(1); if (jm.carEl) jm.carEl.classList.remove('on'); jmHideCard();
     (jm.pins || []).forEach(function (p) { p.el.classList.add('on'); });
     $$('button', jm.chips).forEach(function (b) { b.classList.remove('dim'); });
-    if (moveCam) { var cam = jm.map.cameraForBounds(jm.R.bounds, { padding: 70, bearing: -6 }) || {}; jm.map.jumpTo({ center: cam.center, zoom: (cam.zoom || 6) - 0.25, pitch: reduce ? 30 : 45, bearing: -6 }); }
+    if (moveCam) { var cam = jm.map.cameraForBounds(MN_B, { padding: 16, bearing: 0 }) || {}; jm.map.jumpTo({ center: cam.center, zoom: cam.zoom, pitch: 0, bearing: 0 }); jm.atRoute = false; jmOthers(true); jmCtl(); return; }
     jm.atRoute = true; jmCtl();
   }
   function jmCtl() {
@@ -843,7 +870,7 @@ function skyBoot() {
     if (!jm.map) return;
     jmStop(true); var my = jm.tok, d = reduce ? 0 : 2000;
     jmHideCard();
-    if (jm.atRoute) { var cam = jm.map.cameraForBounds(MN_B, { padding: 16, bearing: 0 }) || {}; jmCam({ center: cam.center, zoom: cam.zoom, pitch: 0, bearing: 0 }, d, my); jm.atRoute = false; }
+    if (jm.atRoute) { jmWhole(d, my).then(function () { if (my === jm.tok) jmOthers(true); }); jm.atRoute = false; }
     else { jmOverview(d, my); jm.atRoute = true; }
     jmCtl();
   }
