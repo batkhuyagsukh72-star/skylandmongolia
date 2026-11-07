@@ -687,7 +687,7 @@ function skyBoot() {
     var ml = window.maplibregl; if (!ml) { jmFallback(); return; }
     try {
       jm.map = new ml.Map({ container: jm.box, style: jmStyle(), bounds: MN_B, fitBoundsOptions: { padding: 16 }, maxPitch: 70, maxBounds: [[66, 26], [141, 63]],
-        pixelRatio: Math.min(window.devicePixelRatio || 1, 2), cooperativeGestures: true, attributionControl: { compact: true }, locale: jmLocale(), fadeDuration: 120 });
+        pixelRatio: jmRatio(), cooperativeGestures: true, attributionControl: { compact: true }, locale: jmLocale(), fadeDuration: 120 });
     } catch (e) { jmFallback(); return; }
     var map = jm.map;
     map.addControl(new ml.NavigationControl({ visualizePitch: true }), 'top-right');
@@ -703,9 +703,16 @@ function skyBoot() {
       map.on('zoom', jmZoomClass); jmZoomClass();
       map.on('move', function () { if (!jm.flipRaf) jm.flipRaf = requestAnimationFrame(jmFlip); });
       ['dragstart', 'zoomstart', 'rotatestart', 'pitchstart'].forEach(function (ev) { map.on(ev, function (e) { if (e.originalEvent && jm.playing) jmStop(true); }); });
-      map.on('mousemove', 'others', function (e) { var f = e.features && e.features[0]; map.getCanvas().style.cursor = 'pointer'; jmTip(f ? f.properties.n : '', e.point); });
-      map.on('mouseleave', 'others', function () { map.getCanvas().style.cursor = ''; jmTip('', null); });
-      map.on('click', 'others', function (e) { var f = e.features && e.features[0]; if (f) { jmTip('', null); jmSetTour(f.properties.id, true); } });
+      /* hover names on the other routes: one throttled query, only while they are shown (a query on every mouse move is costly with 3D terrain) */
+      var hovT = 0, hovP = null;
+      function hitOther(pt) { var fs = map.queryRenderedFeatures([[pt.x - 6, pt.y - 6], [pt.x + 6, pt.y + 6]], { layers: ['others'] }); return fs && fs[0]; }
+      map.on('mousemove', function (e) {
+        if (!jm.othersOn || jm.playing) { if (hovP) { hovP = null; map.getCanvas().style.cursor = ''; jmTip('', null); } return; }
+        hovP = e.point; if (hovT) return;
+        hovT = setTimeout(function () { hovT = 0; if (!hovP) return; var f = hitOther(hovP); map.getCanvas().style.cursor = f ? 'pointer' : ''; jmTip(f ? f.properties.n : '', hovP); }, 120);
+      });
+      map.getCanvas().addEventListener('mouseleave', function () { hovP = null; map.getCanvas().style.cursor = ''; jmTip('', null); });
+      map.on('click', function (e) { if (!jm.othersOn || jm.playing) return; var f = hitOther(e.point); if (f) { jmTip('', null); jmSetTour(f.properties.id, true); } });
       jmSetTour(jm.cur, false);
       jm.ready = true;
       if (jm.visible && !jm.played) jmStart();
@@ -820,6 +827,8 @@ function skyBoot() {
     if (!txt || !pt) { tip.classList.remove('on'); return; }
     tip.textContent = txt; tip.style.transform = 'translate(' + Math.round(pt.x + 14) + 'px,' + Math.round(pt.y - 12) + 'px)'; tip.classList.add('on');
   }
+  /* keep the drawing buffer near 2 megapixels: big desktop maps at retina density made the 3D terrain stutter */
+  function jmRatio() { var r = jm.box.getBoundingClientRect(), area = Math.max(1, r.width * r.height); return Math.max(1, Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(2.0e6 / area))); }
   function jmWhole(dur, my) { var cam = jm.map.cameraForBounds(MN_B, { padding: 16, bearing: 0 }) || {}; return jmCam({ center: cam.center, zoom: cam.zoom, pitch: reduce ? 0 : 20, bearing: 0 }, dur, my); }
   function jmStart() { if (jm.played || jm.playing || !jm.R) return; jm.played = true; if (reduce) { jmShowAll(true); return; } jmPlay(); }
   async function jmPlay() {
@@ -962,6 +971,21 @@ function skyBoot() {
     if (window.gsap && !reduce) gsap.from('#tourPanel .tday', { y: 24, opacity: 0, duration: .7, stagger: .05, ease: 'power3.out' });
     $('#tt-' + tourSel).focus({ preventScroll: true });
   });
+  /* desktop: resting the mouse on a tour title selects it and starts the route drawing (no click needed) */
+  if (window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    var ttHover = 0;
+    $('#tourTabs').addEventListener('mouseover', function (e) {
+      var b = e.target.closest('[data-tour]'); clearTimeout(ttHover);
+      if (!b || b.dataset.tour === tourSel) return;
+      var id = b.dataset.tour;
+      ttHover = setTimeout(function () {
+        if (id === tourSel) return;
+        tourSel = id; renderTours();
+        if (window.gsap && !reduce) gsap.from('#tourPanel .tday', { y: 24, opacity: 0, duration: .7, stagger: .05, ease: 'power3.out' });
+      }, 220);
+    });
+    $('#tourTabs').addEventListener('mouseleave', function () { clearTimeout(ttHover); });
+  }
   $('#tourTabs').addEventListener('keydown', function (e) {
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     e.preventDefault(); var i = D.tours.findIndex(function (x) { return x.id === tourSel; });
