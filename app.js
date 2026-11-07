@@ -971,21 +971,6 @@ function skyBoot() {
     if (window.gsap && !reduce) gsap.from('#tourPanel .tday', { y: 24, opacity: 0, duration: .7, stagger: .05, ease: 'power3.out' });
     $('#tt-' + tourSel).focus({ preventScroll: true });
   });
-  /* desktop: resting the mouse on a tour title selects it and starts the route drawing (no click needed) */
-  if (window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    var ttHover = 0;
-    $('#tourTabs').addEventListener('mouseover', function (e) {
-      var b = e.target.closest('[data-tour]'); clearTimeout(ttHover);
-      if (!b || b.dataset.tour === tourSel) return;
-      var id = b.dataset.tour;
-      ttHover = setTimeout(function () {
-        if (id === tourSel) return;
-        tourSel = id; renderTours();
-        if (window.gsap && !reduce) gsap.from('#tourPanel .tday', { y: 24, opacity: 0, duration: .7, stagger: .05, ease: 'power3.out' });
-      }, 220);
-    });
-    $('#tourTabs').addEventListener('mouseleave', function () { clearTimeout(ttHover); });
-  }
   $('#tourTabs').addEventListener('keydown', function (e) {
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     e.preventDefault(); var i = D.tours.findIndex(function (x) { return x.id === tourSel; });
