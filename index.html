@@ -19,7 +19,8 @@
 <link rel="alternate" hreflang="mn" href="https://skylandmongolia.com/?lang=mn">
 <link rel="alternate" hreflang="x-default" href="https://skylandmongolia.com/">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TravelAgency", "name": "Azure Skyland Mongolia", "url": "https://skylandmongolia.com/", "logo": "https://skylandmongolia.com/assets/mark.svg", "image": "https://skylandmongolia.com/img/og.jpg", "description": "Private tours across Mongolia: the Gobi, Central Mongolia, Lake Khuvsgul and the reindeer herders, Eastern Mongolia and the Altai, plus SUV 4×4 car rental from Ulaanbaatar.", "email": "skylandmongolia@gmail.com", "address": {"@type": "PostalAddress", "addressLocality": "Ulaanbaatar", "addressCountry": "MN"}, "areaServed": {"@type": "Country", "name": "Mongolia"}, "availableLanguage": ["English", "Mongolian"], "priceRange": "$$", "sameAs": ["https://www.instagram.com/skyland.mongolia", "https://www.facebook.com/mongoliantraveltuvshin", "https://www.youtube.com/@enhtuvshin7355"]}</script>
-<meta name="theme-color" content="#ECE3DA">
+<meta name="theme-color" content="#ECE3DA" id="themeColor">
+<script>/* theme before first paint: saved choice, else the device setting */(function(){var t=null;try{t=localStorage.getItem("sky-theme")}catch(e){}if(t!=="light"&&t!=="dark")t=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";document.documentElement.setAttribute("data-theme",t);var m=document.getElementById("themeColor");if(m)m.content=t==="dark"?"#0F141D":"#ECE3DA"})();</script>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preload" as="image" href="img/hero.webp" imagesrcset="img/hero-1600.webp 1600w, img/hero.webp 2560w" imagesizes="(max-aspect-ratio: 16/9) 180vh, 100vw">
 <style>html{background:#ECE3DA}html.js:not(.loaded) body{overflow:hidden}</style>
@@ -80,6 +81,7 @@
     <a href="#plan" data-i18n="nav.contact">Contact</a>
   </nav>
   <div class="hdr-right">
+    <button class="theme-btn" type="button" id="themeBtn" data-i18n-aria="theme.toggle" aria-label="Light or dark"><svg class="ic-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><svg class="ic-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
     <div class="lang" role="group" aria-label="Language">
       <button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="mn" aria-pressed="false">МН</button>
     </div>
@@ -303,6 +305,25 @@
     <p class="lead center rv-lead" data-i18n="rv.lead" data-reveal>From travellers who explored Mongolia with us.</p>
     <div class="rv-photos" id="rvPhotos"></div>
     <div class="rv-list" id="rvList"></div>
+    <div class="rv-leave">
+      <button class="btn btn-ghost" type="button" id="rvOpen" aria-expanded="false" aria-controls="rvForm"><span data-i18n="rvf.open">Leave a review</span></button>
+      <form class="rvf" id="rvForm" hidden novalidate>
+        <div class="rvf-row">
+          <label><span data-i18n="rvf.name">Your name</span><input name="name" required maxlength="80" autocomplete="name"></label>
+          <label><span data-i18n="rvf.country">Country</span><input name="country" maxlength="60" autocomplete="country-name"></label>
+        </div>
+        <div class="rvf-row">
+          <div class="rvf-rate"><span data-i18n="rvf.rating">Your rating</span><div class="rvf-stars" role="group">
+            <button type="button" data-v="1" aria-pressed="false" aria-label="1">★</button><button type="button" data-v="2" aria-pressed="false" aria-label="2">★</button><button type="button" data-v="3" aria-pressed="false" aria-label="3">★</button><button type="button" data-v="4" aria-pressed="false" aria-label="4">★</button><button type="button" data-v="5" aria-pressed="false" aria-label="5">★</button>
+          </div><input type="hidden" name="rating" value="0"></div>
+          <label><span data-i18n="rvf.tourL">Which tour?</span><select name="tour"></select></label>
+        </div>
+        <label><span data-i18n="rvf.body">Your review</span><textarea name="body" rows="4" required maxlength="2000"></textarea></label>
+        <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+        <div class="rvf-foot"><button class="btn btn-ink" type="submit"><span data-i18n="rvf.send">Send review</span></button><p class="rvf-msg" id="rvMsg" aria-live="polite"></p></div>
+        <p class="rvf-note" data-i18n="rvf.note">Reviews appear on the site after we check them.</p>
+      </form>
+    </div>
   </div>
 </section>
 
@@ -370,6 +391,12 @@
   </div>
 </section>
 </main>
+
+<!-- ============ CHAT BUTTONS ============ -->
+<div class="chat-dock" aria-label="Chat with us">
+  <a class="chat-btn chat-ms" id="chatMs" href="https://m.me/mongoliantraveltuvshin" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.43 3.14 7.17.16.15.26.35.27.57l.05 1.78a.8.8 0 0 0 1.12.71l1.98-.87a.8.8 0 0 1 .53-.04c.91.25 1.88.38 2.91.38 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm6 7.46-2.94 4.66a1.5 1.5 0 0 1-2.17.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66a1.5 1.5 0 0 1 2.17-.4l2.34 1.75a.6.6 0 0 0 .72 0l3.16-2.4c.42-.32.97.18.69.63z"/></svg><span data-i18n="chat.ms">Messenger</span></a>
+  <a class="chat-btn chat-wa" id="chatWa" href="https://wa.me/97695030466" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.04 2a9.9 9.9 0 0 0-8.5 15l-1.4 5.1 5.24-1.38A9.92 9.92 0 1 0 12.04 2zm0 18.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.1.82.83-3.03-.2-.31a8.22 8.22 0 1 1 6.95 3.85zm4.5-6.15c-.25-.12-1.46-.72-1.69-.8-.22-.08-.39-.12-.55.13-.16.24-.63.8-.78.96-.14.16-.29.18-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.7-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.13-.55-1.33-.76-1.82-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.31-.23.24-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.73 2.64 4.2 3.7.58.25 1.04.4 1.4.52.59.19 1.12.16 1.55.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.15-1.18-.06-.1-.22-.16-.47-.29z"/></svg><span data-i18n="chat.wa">WhatsApp</span></a>
+</div>
 
 <!-- ============ FOOTER ============ -->
 <footer class="foot">

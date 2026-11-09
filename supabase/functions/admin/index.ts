@@ -1,12 +1,17 @@
 // Skyland admin API: sign in with the shared admin password, edit the site's tours and places, upload photos, read trip requests.
-// Secret (set in Supabase → Edge Functions → Secrets): ADMIN_PASSWORD.
+// Secrets (Supabase → Edge Functions → Secrets): ADMIN_PASSWORD (optional shared password), RESEND_API_KEY (login codes, review alerts),
+// ADMIN_EMAILS (optional, comma-separated; default skylandmongolia@gmail.com) — these addresses can sign in with an e-mailed code.
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are provided by Supabase automatically.
 
 const PASS = Deno.env.get("ADMIN_PASSWORD") ?? "";
 const SB_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SB_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const BUCKET = "tour-photos";
-const KEYS = ["tours", "places"];
+const KEYS = ["tours", "places", "gallery"];
+const RESEND = Deno.env.get("RESEND_API_KEY") ?? "";
+const ADMIN_EMAILS = (Deno.env.get("ADMIN_EMAILS") || "skylandmongolia@gmail.com").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+const FROM = "Azure Skyland Mongolia <hello@skylandmongolia.com>";
+const NOTIFY = "skylandmongolia@gmail.com";
 const TOKEN_HOURS = 12;
 const ORIGINS = [
   "https://skylandmongolia.com",
@@ -39,7 +44,7 @@ function db(path: string, init: RequestInit = {}) {
 const enc = new TextEncoder();
 function b64u(b: Uint8Array) { let s = ""; b.forEach((x) => (s += String.fromCharCode(x))); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
 async function hmac(msg: string) {
-  const k = await crypto.subtle.importKey("raw", enc.encode("skyland-admin|" + PASS + "|" + SB_KEY), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const k = await crypto.subtle.importKey("raw", enc.encode("skyland-admin|" + SB_KEY), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   return b64u(new Uint8Array(await crypto.subtle.sign("HMAC", k, enc.encode(msg))));
 }
 async function sha(s: string) {
@@ -56,7 +61,7 @@ async function makeToken() {
   return p + "." + (await hmac(p));
 }
 async function checkToken(t: string | null) {
-  if (!t || !PASS) return false;
+  if (!t || !SB_KEY) return false;
   const [p, s] = t.split(".");
   if (!p || !s || !same(s, await hmac(p))) return false;
   try { return JSON.parse(atob(p.replace(/-/g, "+").replace(/_/g, "/"))).exp > Date.now(); } catch { return false; }
@@ -86,16 +91,72 @@ function validPlaces(d: unknown) {
   return "";
 }
 
+function validGallery(d: unknown) {
+  if (!Array.isArray(d) || d.length > 200) return "gallery must be a list of up to 200 photos";
+  for (const g of d as Record<string, unknown>[]) if (!g || typeof g.img !== "string" || !g.img) return "every gallery item needs a photo";
+  return "";
+}
+function escH(s: unknown) { return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!)); }
+async function mail(to: string, subject: string, html: string) {
+  if (!RESEND) return false;
+  const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: "Bearer " + RESEND, "Content-Type": "application/json" }, body: JSON.stringify({ from: FROM, to: [to], subject, html }) });
+  return r.ok;
+}
+const ipOf = (req: Request) => sha(req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "?");
+
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(origin) });
   if (req.method !== "POST") return json({ ok: false, error: "method" }, 405, origin);
-  if (!PASS) return json({ ok: false, error: "ADMIN_PASSWORD is not set" }, 503, origin);
   let b: Record<string, unknown>;
   try { b = await req.json(); } catch { return json({ ok: false, error: "bad json" }, 400, origin); }
   const act = String(b.action ?? "");
 
+  /* ---- public: a traveller leaves a review (published only after approval) ---- */
+  if (act === "review-submit") {
+    if (b.website) return json({ ok: true }, 200, origin); // honeypot
+    const name = String(b.name ?? "").trim().slice(0, 80), body = String(b.body ?? "").trim().slice(0, 2000);
+    const rating = Math.round(Number(b.rating)), country = String(b.country ?? "").trim().slice(0, 60), tour = String(b.tour ?? "").trim().slice(0, 120);
+    if (name.length < 2 || body.length < 10 || !(rating >= 1 && rating <= 5)) return json({ ok: false, error: "please fill in name, rating and at least a sentence" }, 400, origin);
+    const ip = await ipOf(req), since = new Date(Date.now() - 3600e3).toISOString();
+    const r0 = await db(`reviews?select=id&ip_hash=eq.${ip}&created_at=gte.${since}`);
+    if (r0.ok && (await r0.json()).length >= 3) return json({ ok: false, error: "too many reviews from here, try later" }, 429, origin);
+    const r = await db("reviews", { method: "POST", body: JSON.stringify({ name, country: country || null, rating, body, tour: tour || null, lang: String(b.lang ?? "").slice(0, 5), ip_hash: ip }), headers: { Prefer: "return=minimal" } });
+    if (!r.ok) return json({ ok: false, error: "db " + r.status }, 500, origin);
+    await mail(NOTIFY, "New review to approve — " + name, `<p><b>${escH(name)}</b>${country ? " (" + escH(country) + ")" : ""} — ${"★".repeat(rating)}${"☆".repeat(5 - rating)}</p><p>${escH(body).replace(/\n/g, "<br>")}</p>${tour ? "<p>Tour: " + escH(tour) + "</p>" : ""}<p>Approve or delete it in the admin: <a href="https://skylandmongolia.com/admin/">skylandmongolia.com/admin</a></p>`);
+    return json({ ok: true }, 200, origin);
+  }
+
+  /* ---- public: sign in with a code e-mailed to an owner address ---- */
+  if (act === "login-start") {
+    const email = String(b.email ?? "").trim().toLowerCase();
+    if (ADMIN_EMAILS.includes(email)) {
+      const since = new Date(Date.now() - 3600e3).toISOString();
+      const r0 = await db(`admin_codes?select=id&email=eq.${encodeURIComponent(email)}&created_at=gte.${since}`);
+      if (!(r0.ok && (await r0.json()).length >= 6)) {
+        const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, "0");
+        await db("admin_codes", { method: "POST", body: JSON.stringify({ email, code_hash: await sha(email + "|" + code), expires_at: new Date(Date.now() + 10 * 60e3).toISOString() }), headers: { Prefer: "return=minimal" } });
+        await mail(email, "Skyland admin code: " + code, `<p>Your sign-in code for the Azure Skyland admin:</p><p style="font-size:28px;font-weight:700;letter-spacing:6px">${code}</p><p>It works for 10 minutes. If you did not ask for it, ignore this e-mail.</p>`);
+      }
+    }
+    return json({ ok: true }, 200, origin); // same answer for every address
+  }
+  if (act === "login-verify") {
+    const email = String(b.email ?? "").trim().toLowerCase(), code = String(b.code ?? "").replace(/\D/g, "");
+    const now = new Date().toISOString();
+    const r = await db(`admin_codes?select=id,code_hash,tries&email=eq.${encodeURIComponent(email)}&expires_at=gt.${now}&order=id.desc&limit=1`);
+    const row = r.ok ? (await r.json())[0] : null;
+    if (!row || row.tries >= 5) return json({ ok: false, error: "code expired, ask for a new one" }, 401, origin);
+    if (!same(row.code_hash, await sha(email + "|" + code))) {
+      await db(`admin_codes?id=eq.${row.id}`, { method: "PATCH", body: JSON.stringify({ tries: row.tries + 1 }), headers: { Prefer: "return=minimal" } });
+      return json({ ok: false, error: "wrong code" }, 401, origin);
+    }
+    await db(`admin_codes?id=eq.${row.id}`, { method: "PATCH", body: JSON.stringify({ tries: 99 }), headers: { Prefer: "return=minimal" } });
+    return json({ ok: true, token: await makeToken(), hours: TOKEN_HOURS, email }, 200, origin);
+  }
+
   if (act === "login") {
+    if (!PASS) return json({ ok: false, error: "ADMIN_PASSWORD is not set" }, 503, origin);
     const ip = await sha(req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "?");
     const since = new Date(Date.now() - 15 * 60e3).toISOString();
     const r = await db(`admin_login?select=at&ip_hash=eq.${ip}&ok=eq.false&at=gte.${since}`);
@@ -112,7 +173,7 @@ Deno.serve(async (req) => {
   if (act === "save") {
     const key = String(b.key ?? "");
     if (!KEYS.includes(key)) return json({ ok: false, error: "bad key" }, 400, origin);
-    const err = key === "tours" ? validTours(b.data) : validPlaces(b.data);
+    const err = key === "tours" ? validTours(b.data) : key === "places" ? validPlaces(b.data) : validGallery(b.data);
     if (err) return json({ ok: false, error: err }, 400, origin);
     if (JSON.stringify(b.data).length > 900_000) return json({ ok: false, error: "too large" }, 413, origin);
     const old = await db(`content?select=data&key=eq.${key}`);
@@ -157,6 +218,19 @@ Deno.serve(async (req) => {
     const r = await fetch(`${SB_URL}/storage/v1/object/list/${BUCKET}`, { method: "POST", body: JSON.stringify({ prefix: "uploads/", limit: 500, sortBy: { column: "created_at", order: "desc" } }), headers: svcHeaders({ "Content-Type": "application/json" }) });
     const items = r.ok ? await r.json() : [];
     return json({ ok: r.ok, items: items.filter((x: { name: string }) => x.name && !x.name.startsWith(".")).map((x: { name: string }) => `${SB_URL}/storage/v1/object/public/${BUCKET}/uploads/${x.name}`) }, 200, origin);
+  }
+
+  if (act === "reviews") {
+    const r = await db("reviews?select=id,created_at,name,country,rating,body,tour,lang,approved&order=id.desc&limit=200");
+    return json({ ok: r.ok, items: r.ok ? await r.json() : [] }, 200, origin);
+  }
+  if (act === "review-set") {
+    const r = await db(`reviews?id=eq.${Number(b.id)}`, { method: "PATCH", body: JSON.stringify({ approved: !!b.approved }), headers: { Prefer: "return=minimal" } });
+    return json({ ok: r.ok }, r.ok ? 200 : 500, origin);
+  }
+  if (act === "review-delete") {
+    const r = await db(`reviews?id=eq.${Number(b.id)}`, { method: "DELETE", headers: { Prefer: "return=minimal" } });
+    return json({ ok: r.ok }, r.ok ? 200 : 500, origin);
   }
 
   if (act === "requests") {

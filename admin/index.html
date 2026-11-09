@@ -127,6 +127,15 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
 .pgrid button span{position:absolute;left:0;right:0;bottom:0;font-size:10px;background:rgba(0,0,0,.55);color:#fff;padding:2px 6px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pgrid h4{grid-column:1/-1;margin:6px 0 0;font-size:13px;color:var(--ink2)}
 
+.glist{display:grid;gap:10px}
+.gitem{display:grid;grid-template-columns:200px minmax(0,1fr);gap:14px;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.gitem.off{opacity:.55}
+.gimg{position:relative;border:0;padding:0;border-radius:10px;overflow:hidden;background:var(--sand);height:126px;cursor:pointer}
+.gimg img{width:100%;height:100%;object-fit:cover;display:block}
+.gimg span{position:absolute;left:6px;bottom:6px;font-size:11px;font-weight:700;background:rgba(0,0,0,.6);color:#fff;padding:2px 8px;border-radius:999px}
+.gf{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-width:0;align-content:start}
+.gopt{grid-column:1/-1;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+@media (max-width:640px){.gitem{grid-template-columns:1fr}.gf{grid-template-columns:1fr}}
 /* requests & history */
 .req{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;gap:6px}
 .req-h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
@@ -159,12 +168,22 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
 
 <!-- sign in -->
 <section class="login" id="login">
-  <form id="loginForm" autocomplete="on">
+  <form id="codeForm" autocomplete="on">
     <h1>Skyland удирдлага</h1>
-    <p>Аялал, үнэ, зураг, маршрутаа эндээс засна.</p>
+    <p id="codeIntro">Бүртгэлтэй имэйлээ оруулна уу. Нэвтрэх 6 оронтой код имэйлээр очно.</p>
+    <label class="f" id="emailRow"><span class="l">Имэйл</span><input type="email" id="lemail" autocomplete="email" inputmode="email" spellcheck="false" required></label>
+    <label class="f" id="codeRow" hidden><span class="l">Имэйлээр ирсэн код</span><input type="text" id="lcode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}"></label>
+    <button class="btn pri" type="submit" id="codeBtn">Код авах</button>
+    <p class="err" id="codeErr" aria-live="polite"></p>
+    <p style="margin:0;font-size:13px"><button type="button" class="btn sm ghost" id="toPw">Нууц үгээр нэвтрэх</button> <button type="button" class="btn sm ghost" id="codeAgain" hidden>Өөр имэйл / дахин код</button></p>
+  </form>
+  <form id="loginForm" autocomplete="on" hidden>
+    <h1>Skyland удирдлага</h1>
+    <p>Нууц үгээр нэвтрэх.</p>
     <label class="f"><span class="l">Нууц үг</span><input type="password" name="password" id="pw" autocomplete="current-password" required></label>
     <button class="btn pri" type="submit" id="loginBtn">Нэвтрэх</button>
     <p class="err" id="loginErr" aria-live="polite"></p>
+    <p style="margin:0"><button type="button" class="btn sm ghost" id="toCode">Имэйл кодоор нэвтрэх</button></p>
   </form>
 </section>
 
@@ -175,6 +194,8 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
     <nav class="tabs" role="tablist">
       <button class="tab" role="tab" data-tab="tours" aria-selected="true">Аяллууд</button>
       <button class="tab" role="tab" data-tab="places" aria-selected="false">Газрууд</button>
+      <button class="tab" role="tab" data-tab="gallery" aria-selected="false">Галерей</button>
+      <button class="tab" role="tab" data-tab="reviews" aria-selected="false">Сэтгэгдэл <span class="tag" id="rvCount" hidden></span></button>
       <button class="tab" role="tab" data-tab="requests" aria-selected="false">Захиалгууд</button>
       <button class="tab" role="tab" data-tab="history" aria-selected="false">Өмнөх хувилбар</button>
     </nav>
@@ -216,6 +237,19 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
         </div>
         <div><div class="plist" id="plist"></div></div>
       </div>
+    </section>
+
+    <section data-view="gallery" hidden>
+      <h2>Галерей</h2>
+      <p class="lead">"Аяллын агшнууд" хэсгийн зургууд. Зураг нэмэх, тайлбар засах, дараалал солих, устгах. Эхний 11 зураг сайтад шууд харагдаж, бусад нь "Бүх зургийг харах" дотор гарна. "Хадгалах" дарж сайтад гаргана.</p>
+      <p style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px"><button class="btn sm" id="gAdd">+ Зураг нэмэх</button></p>
+      <div id="glist" class="glist"></div>
+    </section>
+
+    <section data-view="reviews" hidden>
+      <h2>Сэтгэгдэл</h2>
+      <p class="lead">Аялагчдын үлдээсэн сэтгэгдэл. "Нийтлэх" дарсан сэтгэгдэл л сайтад гарна. Шинэ сэтгэгдэл ирэхэд skylandmongolia@gmail.com руу имэйл очно.</p>
+      <div id="rvs" style="display:grid;gap:10px"></div>
     </section>
 
     <section data-view="requests" hidden>
@@ -289,7 +323,7 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
   /* ---------- api ---------- */
   function api(action, body) {
     return fetch(FN, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + KEY, apikey: KEY, 'x-admin-token': S.token || '' }, body: JSON.stringify(Object.assign({ action: action }, body || {})) })
-      .then(function (r) { return r.json().catch(function () { return { ok: false, error: 'HTTP ' + r.status }; }).then(function (j) { if (r.status === 401 && action !== 'login') signOut('Нэвтрэх хугацаа дууссан, дахин нэвтэрнэ үү.'); return j; }); });
+      .then(function (r) { return r.json().catch(function () { return { ok: false, error: 'HTTP ' + r.status }; }).then(function (j) { if (r.status === 401 && !/^login/.test(action)) signOut('Нэвтрэх хугацаа дууссан, дахин нэвтэрнэ үү.'); return j; }); });
   }
   function toast(msg, bad) {
     var t = $('#toast'); t.textContent = msg; t.className = 'toast' + (bad ? ' bad' : ''); t.hidden = false;
@@ -311,7 +345,7 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
     S.token = null; ss.del('sky-admin'); $('#app').hidden = true; $('#login').hidden = false; $('#loginErr').textContent = msg || '';
   }
   $('#logout').onclick = function () {
-    if ((S.dirty.tours || S.dirty.places) && !confirmBar('Хадгалаагүй өөрчлөлт байна. Гарах уу?', function () { signOut(); })) return;
+    if ((S.dirty.tours || S.dirty.places || S.dirty.gallery) && !confirmBar('Хадгалаагүй өөрчлөлт байна. Гарах уу?', function () { signOut(); })) return;
     signOut();
   };
 
@@ -335,15 +369,16 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
         var by = {}; (rows || []).forEach(function (r) { by[r.key] = r; });
         S.places = by.places ? clone(by.places.data) : defaultPlaces();
         S.tours = by.tours ? clone(by.tours.data) : clone(D.tours);
-        S.dirty = { tours: false, places: false };
-        S.cur = 0; renderTours(); renderPlaces();
+        S.gallery = by.gallery ? clone(by.gallery.data) : clone(D.gallery);
+        S.dirty = { tours: false, places: false, gallery: false };
+        S.cur = 0; renderTours(); renderPlaces(); renderGallery();
         setStatus(by.tours ? 'Сүүлд хадгалсан: ' + new Date(by.tours.updated_at).toLocaleString('mn-MN') : 'Одоогийн сайтын мэдээлэл ачааллаа');
       });
     fetch('photos.json').then(function (r) { return r.json(); }).then(function (j) { S.photos = j; }).catch(function () { S.photos = []; });
   }
   function setStatus(t, dirty) { var s = $('#status'); s.textContent = t; s.classList.toggle('dirty', !!dirty); }
   function markDirty(k) { S.dirty[k] = true; $('#saveBtn').disabled = false; setStatus('Хадгалаагүй өөрчлөлттэй', true); }
-  window.addEventListener('beforeunload', function (e) { if (S.dirty.tours || S.dirty.places) { e.preventDefault(); e.returnValue = ''; } });
+  window.addEventListener('beforeunload', function (e) { if (S.dirty.tours || S.dirty.places || S.dirty.gallery) { e.preventDefault(); e.returnValue = ''; } });
 
   /* ---------- tabs ---------- */
   $$('.tab').forEach(function (b) {
@@ -351,6 +386,8 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
       $$('.tab').forEach(function (x) { x.setAttribute('aria-selected', x === b); });
       $$('[data-view]').forEach(function (v) { v.hidden = v.dataset.view !== b.dataset.tab; });
       if (b.dataset.tab === 'requests') loadRequests();
+      if (b.dataset.tab === 'reviews') loadReviews();
+      if (b.dataset.tab === 'gallery') renderGallery();
       if (b.dataset.tab === 'history') loadHistory();
       if (b.dataset.tab === 'places') renderPlaces();
     };
@@ -639,13 +676,79 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
     var jobs = [];
     if (S.dirty.places) jobs.push(function () { return api('save', { key: 'places', data: S.places }); });
     if (S.dirty.tours || S.dirty.places) jobs.push(function () { return api('save', { key: 'tours', data: S.tours }); });
+    if (S.dirty.gallery) jobs.push(function () { return api('save', { key: 'gallery', data: S.gallery }); });
     jobs.reduce(function (p, job) { return p.then(function (r) { if (r && !r.ok) return r; return job(); }); }, Promise.resolve(null))
       .then(function (r) {
-        if (r && r.ok) { S.dirty = { tours: false, places: false }; setStatus('Хадгаллаа · ' + new Date().toLocaleTimeString('mn-MN')); toast('Хадгаллаа. Сайт дээр шууд харагдана.'); }
+        if (r && r.ok) { S.dirty = { tours: false, places: false, gallery: false }; setStatus('Хадгаллаа · ' + new Date().toLocaleTimeString('mn-MN')); toast('Хадгаллаа. Сайт дээр шууд харагдана.'); }
         else { btn.disabled = false; setStatus('Хадгалж чадсангүй', true); toast('Хадгалж чадсангүй: ' + ((r && r.error) || 'сүлжээ'), true); }
       }).catch(function () { btn.disabled = false; setStatus('Хадгалж чадсангүй', true); toast('Сервертэй холбогдож чадсангүй.', true); });
   };
   document.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); if (!$('#saveBtn').disabled) $('#saveBtn').click(); } });
+
+  /* ---------- sign in with an e-mailed code ---------- */
+  var codeStep = 1;
+  function codeReset() { codeStep = 1; $('#emailRow').hidden = false; $('#codeRow').hidden = true; $('#codeAgain').hidden = true; $('#codeBtn').textContent = 'Код авах'; $('#lcode').value = ''; $('#codeIntro').textContent = 'Бүртгэлтэй имэйлээ оруулна уу. Нэвтрэх 6 оронтой код имэйлээр очно.'; }
+  $('#toPw').onclick = function () { $('#codeForm').hidden = true; $('#loginForm').hidden = false; $('#pw').focus(); };
+  $('#toCode').onclick = function () { $('#loginForm').hidden = true; $('#codeForm').hidden = false; codeReset(); $('#lemail').focus(); };
+  $('#codeAgain').onclick = codeReset;
+  $('#codeForm').addEventListener('submit', function (e) {
+    e.preventDefault(); var em = $('#lemail').value.trim(), btn = $('#codeBtn'); $('#codeErr').textContent = '';
+    if (codeStep === 1) {
+      if (!em) return; btn.disabled = true;
+      api('login-start', { email: em }).then(function () {
+        btn.disabled = false; codeStep = 2; $('#emailRow').hidden = true; $('#codeRow').hidden = false; $('#codeAgain').hidden = false; btn.textContent = 'Нэвтрэх';
+        $('#codeIntro').textContent = em + ' хаяг бүртгэлтэй бол 6 оронтой код очлоо (Spam хавтсаа ч шалгаарай). Код 10 минут хүчинтэй.'; $('#lcode').focus();
+      }).catch(function () { btn.disabled = false; $('#codeErr').textContent = 'Сервертэй холбогдож чадсангүй.'; });
+    } else {
+      var code = $('#lcode').value.replace(/\D/g, ''); if (code.length !== 6) { $('#codeErr').textContent = '6 оронтой кодоо оруулна уу.'; return; }
+      btn.disabled = true;
+      api('login-verify', { email: em, code: code }).then(function (j) {
+        btn.disabled = false;
+        if (!j.ok) { $('#codeErr').textContent = j.error === 'wrong code' ? 'Код буруу байна.' : 'Кодын хугацаа дууссан. Шинэ код аваарай.'; return; }
+        S.token = j.token; ss.set('sky-admin', j.token); codeReset(); start();
+      }).catch(function () { btn.disabled = false; $('#codeErr').textContent = 'Сервертэй холбогдож чадсангүй.'; });
+    }
+  });
+
+  /* ---------- gallery ---------- */
+  function renderGallery() {
+    var el = $('#glist'); if (!el || !S.gallery) return;
+    el.innerHTML = S.gallery.length ? S.gallery.map(function (g, i) {
+      return '<div class="gitem' + (g.hidden ? ' off' : '') + '"><button class="gimg" data-gimg="' + i + '" aria-label="Зураг солих"><img src="' + esc(imgUrl(g.img)) + '" alt="" loading="lazy"><span>' + (i < 11 ? 'Шууд харагдана' : 'Нэмэлт') + '</span></button>' +
+        '<div class="gf"><label class="f"><span class="l">Тайлбар <span class="lng">EN</span></span><input type="text" data-gt="' + i + '.en" value="' + esc(g.en || '') + '"></label>' +
+        '<label class="f"><span class="l">Тайлбар <span class="lng">МН</span></span><input type="text" data-gt="' + i + '.mn" value="' + esc(g.mn || '') + '"></label>' +
+        '<div class="gopt"><label class="chk"><input type="checkbox" data-gw="' + i + '"' + (g.w ? ' checked' : '') + '>Өргөн</label><label class="chk"><input type="checkbox" data-gh="' + i + '"' + (g.tall ? ' checked' : '') + '>Өндөр</label><label class="chk"><input type="checkbox" data-goff="' + i + '"' + (g.hidden ? ' checked' : '') + '>Нуух</label>' +
+        '<span style="flex:1"></span><button class="icon" data-gup="' + i + '"' + (i ? '' : ' disabled') + ' aria-label="Дээш">↑</button><button class="icon" data-gdn="' + i + '"' + (i < S.gallery.length - 1 ? '' : ' disabled') + ' aria-label="Доош">↓</button><button class="icon" data-gdel="' + i + '" aria-label="Устгах">✕</button></div></div></div>';
+    }).join('') : '<div class="empty">Галерейд зураг алга. "+ Зураг нэмэх" дарна уу.</div>';
+    $$('[data-gimg]', el).forEach(function (b) { b.onclick = function () { var i = +b.dataset.gimg; pick(S.gallery[i].img, function (v) { if (!v) return; S.gallery[i].img = v; markDirty('gallery'); renderGallery(); }); }; });
+    $$('[data-gt]', el).forEach(function (x) { x.addEventListener('input', function () { var k = x.dataset.gt.split('.'); S.gallery[+k[0]][k[1]] = x.value; markDirty('gallery'); }); });
+    [['gw', 'w'], ['gh', 'tall'], ['goff', 'hidden']].forEach(function (p) {
+      $$('[data-' + p[0] + ']', el).forEach(function (x) { x.onchange = function () { var g = S.gallery[+x.dataset[p[0]]]; if (x.checked) g[p[1]] = 1; else delete g[p[1]]; markDirty('gallery'); renderGallery(); }; });
+    });
+    $$('[data-gup]', el).forEach(function (b) { b.onclick = function () { move(S.gallery, +b.dataset.gup, -1); markDirty('gallery'); renderGallery(); }; });
+    $$('[data-gdn]', el).forEach(function (b) { b.onclick = function () { move(S.gallery, +b.dataset.gdn, 1); markDirty('gallery'); renderGallery(); }; });
+    $$('[data-gdel]', el).forEach(function (b) { b.onclick = function () { var i = +b.dataset.gdel; confirmBar('Энэ зургийг галерейгаас хасах уу?', function () { S.gallery.splice(i, 1); markDirty('gallery'); renderGallery(); }); }; });
+  }
+  $('#gAdd').onclick = function () { pick('', function (v) { if (!v) return; S.gallery.unshift({ img: v, en: '', mn: '' }); markDirty('gallery'); renderGallery(); toast('Зураг нэмэгдлээ. Тайлбараа бичээд "Хадгалах" дарна уу.'); }); };
+
+  /* ---------- reviews ---------- */
+  function loadReviews() {
+    var el = $('#rvs'); el.innerHTML = '<div class="empty">Ачаалж байна…</div>';
+    api('reviews').then(function (j) {
+      if (!j.ok) { el.innerHTML = '<div class="empty">Ачаалж чадсангүй.</div>'; return; }
+      var pend = j.items.filter(function (x) { return !x.approved; }).length, c = $('#rvCount'); c.hidden = !pend; c.textContent = pend;
+      if (!j.items.length) { el.innerHTML = '<div class="empty">Одоогоор сэтгэгдэл ирээгүй байна.</div>'; return; }
+      el.innerHTML = j.items.map(function (r) {
+        return '<article class="req"><div class="req-h"><b>' + esc(r.name) + (r.country ? ' · ' + esc(r.country) : '') + '</b><small>' + '★★★★★'.slice(0, r.rating) + '☆☆☆☆☆'.slice(0, 5 - r.rating) + ' · ' + new Date(r.created_at).toLocaleString('mn-MN') +
+          (r.approved ? ' · <span style="color:var(--ok)">сайтад гарч байгаа</span>' : ' · <span style="color:var(--warn)">хүлээгдэж буй</span>') + '</small></div>' +
+          '<p style="margin:0;white-space:pre-wrap">' + esc(r.body) + '</p>' + (r.tour ? '<small style="color:var(--ink2)">Аялал: ' + esc(r.tour) + '</small>' : '') +
+          '<p style="display:flex;gap:8px;margin:6px 0 0">' + (r.approved ? '<button class="btn sm" data-rset="' + r.id + '" data-v="0">Сайтаас нуух</button>' : '<button class="btn sm pri" data-rset="' + r.id + '" data-v="1">Нийтлэх</button>') +
+          '<button class="btn sm danger" data-rdel="' + r.id + '">Устгах</button></p></article>';
+      }).join('');
+      $$('[data-rset]', el).forEach(function (b) { b.onclick = function () { b.disabled = true; api('review-set', { id: +b.dataset.rset, approved: b.dataset.v === '1' }).then(function (x) { toast(x.ok ? (b.dataset.v === '1' ? 'Нийтэллээ. Сайтад гарлаа.' : 'Сайтаас нуулаа.') : 'Алдаа гарлаа', !x.ok); loadReviews(); }); }; });
+      $$('[data-rdel]', el).forEach(function (b) { b.onclick = function () { confirmBar('Энэ сэтгэгдлийг бүр мөсөн устгах уу?', function () { api('review-delete', { id: +b.dataset.rdel }).then(function (x) { toast(x.ok ? 'Устгалаа' : 'Алдаа гарлаа', !x.ok); loadReviews(); }); }); }; });
+    });
+  }
 
   /* ---------- requests ---------- */
   function loadRequests() {
