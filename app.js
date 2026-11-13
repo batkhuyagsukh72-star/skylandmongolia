@@ -947,9 +947,9 @@ function skyBoot() {
   function tourInfo(tr) {
     var h = '<div class="tour-info">';
     if (tr.price) {
-      h += '<div class="ti-price"><h3>' + esc(t('tr.price')) + '</h3><table class="ptable"><tbody>' + tr.price.map(function (r) {
+      h += '<div class="ti-price"><h3>' + esc(t('tr.price')) + '</h3><details class="pbox"><summary><span>' + esc(t('tr.showp')) + '</span><svg aria-hidden="true"><use href="#i-plus"/></svg></summary><table class="ptable"><tbody>' + tr.price.map(function (r) {
         return '<tr><th scope="row">' + (r[0] === 1 ? esc(t('tr.solo')) : esc(t('tr.group')) + ' ' + r[0]) + '</th><td><b>' + money(r[1] * tr.days) + '</b><small>' + esc(t('tr.total')) + '</small></td><td class="pd">' + money(r[1]) + ' ' + esc(t('tr.perday')) + '</td></tr>';
-      }).join('') + '</tbody></table><p class="ti-dep">' + esc(t('tr.deposit')) + '</p></div>';
+      }).join('') + '</tbody></table><p class="ti-dep">' + esc(t('tr.deposit')) + '</p></details></div>';
     } else {
       h += '<div class="ti-price"><h3>' + esc(t('tr.price')) + '</h3><p class="ti-q">' + esc(t('tr.priceq')) + '</p><p class="ti-dep">' + esc(t('tr.deposit')) + '</p></div>';
     }
