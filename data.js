@@ -163,7 +163,7 @@ window.SKY = {
   /* Real itineraries from Skyland's own website (skylandmongolia.com, WordPress version) */
   tours: [
     /* Itinerary, prices, inclusions and deposit from the client's own "7-Day Gobi Tour" PDF (Nov 2026) */
-    { id: 'gobi7', days: 7, popular: true, film: 'https://youtube.com/shorts/_mi0AqjuEBI',
+    { id: 'gobi7', days: 7, videos: [{ video: 'video/khongor.mp4', poster: 'video/khongor.webp', t: { en: 'Khongor Sand Dunes', mn: 'Хонгорын элс' } }, { video: 'video/dunes.mp4', poster: 'video/dunes.webp', t: { en: 'Singing Sand Dunes', mn: 'Дуут манхан' } }], popular: true, film: 'https://youtube.com/shorts/_mi0AqjuEBI',
       name: { en: '7-Day Gobi Tour', mn: 'Говийн 7 хоногийн аялал' },
       lead: { en: 'The legendary Gobi: granite cliffs, an ice canyon, the singing dunes, the Flaming Cliffs and the White Stupa, with nights in nomad gers.',
               mn: 'Домогт Говь: боржин хад, мөстэй хавцал, дуут манхан, Баянзаг, Цагаан суварга, малчин айлын гэрт хоноглоно.' },
@@ -202,7 +202,7 @@ window.SKY = {
       exc: { en: ['Personal hygiene items', 'Snacks, chocolate and fruit', 'Wet wipes', 'Alcohol and soft drinks'],
              mn: ['Хувийн ариун цэврийн хэрэглэл', 'Зууш, шоколад, жимс', 'Нойтон салфетка', 'Согтууруулах болон чихэрлэг ундаа'] } },
     /* From the client's "Central Mongolia Tour (6-Day)" PDF (Nov 2026) */
-    { id: 'central6', days: 6,
+    { id: 'central6', days: 6, videos: [{ video: 'video/tuvkhun.mp4', poster: 'video/tuvkhun.webp', t: { en: 'Tuvkhun Monastery', mn: 'Төвхөн хийд' } }],
       name: { en: '6-Day Central Mongolia', mn: 'Төв Монголын 6 хоногийн аялал' },
       lead: { en: 'The heart of Mongolia in under a week: the Chinggis Khaan statue, wild takhi horses, the mini Gobi dunes, the Orkhon waterfall and Erdene Zuu monastery.',
               mn: 'Долоо хоног хүрэхгүй хугацаанд Монголын зүрх: Чингис хааны хөшөө, тахь, Элсэн тасархай, Орхоны хүрхрээ, Эрдэнэ Зуу хийд.' },
@@ -335,7 +335,7 @@ window.SKY = {
              mn: ['Хувийн ариун цэврийн хэрэглэл', 'Зууш, шоколад, жимс', 'Нойтон салфетка', 'Согтууруулах болон чихэрлэг ундаа'] } },
 
     /* From the client's "Gobi & Central Mongolia Tour (14 Days)" PDF (Nov 2026) */
-    { id: 'gobi14', days: 14,
+    { id: 'gobi14', days: 14, videos: [{ video: 'video/khongor.mp4', poster: 'video/khongor.webp', t: { en: 'Khongor Sand Dunes', mn: 'Хонгорын элс' } }, { video: 'video/dunes.mp4', poster: 'video/dunes.webp', t: { en: 'Singing Sand Dunes', mn: 'Дуут манхан' } }],
       name: { en: '14-Day Gobi & Central Mongolia', mn: 'Говь ба Төв Монгол, 14 хоног' },
       lead: { en: 'The full Gobi loop, then the green heart of the country: Ongi monastery, the Orkhon waterfall, Tsenkher hot spring, a volcano crater lake, Erdene Zuu and the wild takhi.',
               mn: 'Говийн бүтэн тойрог, дараа нь Монголын ногоон зүрх: Онгийн хийд, Орхоны хүрхрээ, Цэнхэрийн халуун рашаан, Тэрхийн цагаан нуур, Эрдэнэ Зуу, тахь.' },
@@ -407,7 +407,7 @@ window.SKY = {
              mn: ['Хувийн ариун цэврийн хэрэглэл', 'Зууш, шоколад, жимс', 'Нойтон салфетка', 'Согтууруулах болон чихэрлэг ундаа'] } },
 
     /* From the client's "Khuisiin 8 Nuur & Gobi (15 Days)" PDF (Nov 2026) */
-    { id: 'gobi15', days: 15,
+    { id: 'gobi15', days: 15, videos: [{ video: 'video/dunes.mp4', poster: 'video/dunes.webp', t: { en: 'Singing Sand Dunes', mn: 'Дуут манхан' } }],
       name: { en: '15-Day Gobi & Eight Lakes Horse Trek', mn: 'Говь ба Найман нуурын морин аялал, 15 хоног' },
       lead: { en: 'The Gobi from Baga Gazriin Chuluu to the Flaming Cliffs, then three days on horseback through the Eight Lakes of the Khangai to the Orkhon waterfall, ending in a hot spring and at Erdene Zuu.',
               mn: 'Бага газрын чулуунаас Баянзаг хүртэл Говиор, дараа нь Хангайн Найман нуураар Орхоны хүрхрээ хүртэл гурван өдөр морь унаад, халуун рашаан, Эрдэнэ Зуугаар төгсөнө.' },
@@ -469,7 +469,7 @@ window.SKY = {
              mn: ['Хувийн ариун цэврийн хэрэглэл', 'Зууш, шоколад, жимс', 'Нойтон салфетка', 'Согтууруулах болон чихэрлэг ундаа'] } },
 
     /* From the client's "Gobi, Central Mongolia & Reindeer Herders Tour (29 Days)" PDF (Nov 2026) */
-    { id: 'around29', days: 29,
+    { id: 'around29', days: 29, videos: [{ video: 'video/altai.mp4', poster: 'video/altai.webp', t: { en: 'Altai Tavan Bogd', mn: 'Алтай Таван Богд' } }, { video: 'video/tuvkhun.mp4', poster: 'video/tuvkhun.webp', t: { en: 'Tuvkhun Monastery', mn: 'Төвхөн хийд' } }, { video: 'video/mongolia.mp4', poster: 'video/mongolia.webp', t: { en: 'Mongolia', mn: 'Монгол орон' } }],
       name: { en: '29-Day Around Mongolia', mn: 'Монголоор тойрох 29 хоног' },
       lead: { en: 'The grand journey: the whole Gobi, a three-day horse trek through the Eight Lakes, hot springs and volcanoes of the Khangai, Lake Khuvsgul and the Tsaatan reindeer herders of the taiga.',
               mn: 'Их аялал: Говийн бүх үзмэр, Найман нуураар гурван өдрийн морин аялал, Хангайн халуун рашаан, галт уул, Хөвсгөл нуур, тайгын цаатнууд.' },
@@ -671,8 +671,42 @@ window.SKY = {
     vlog: 'https://www.instagram.com/tuvshin.tmz'
   },
 
+  /* Hero slideshow: changes every 3 seconds. The first photo keeps the ridge cut-out that the title sinks behind. Editable in /admin. */
+  hero: [
+    { img: 'hero', en: 'Khongor sand dunes in the Gobi with a camel caravan', mn: 'Говийн Хонгорын элс, тэмээн жин' },
+    { img: 'old/khongor-sunset', en: 'Sunset over the Khongor dunes', mn: 'Хонгорын элсний нар жаргалт' },
+    { img: 'old/orkhon-waterfall', en: 'The Orkhon waterfall', mn: 'Орхоны хүрхрээ' },
+    { img: 'old/khuvsgul', en: 'Lake Khuvsgul', mn: 'Хөвсгөл нуур' },
+    { img: 'old/tsagaan-suvarga', en: 'Tsagaan Suvarga cliffs', mn: 'Цагаан суварга' },
+    { img: 'old/erdene-zuu', en: 'Erdene Zuu Monastery', mn: 'Эрдэнэ Зуу хийд' },
+    { img: 'old/turquoise-lake', en: 'A turquoise lake in the mountains', mn: 'Уулын цэнхэр нуур' },
+    { img: 'old/bayanzag-sunset', en: 'The Flaming Cliffs at sunset', mn: 'Баянзагийн улаан хад' }
+  ],
+  /* Photos of the fixed sections, the short films, the company text, the team and the contact details. All editable in /admin. */
+  site: {
+    img: { why: 'why', why1: 'p1', why2: 'p2', why3: 'p3', steps: 'steps', social: 'social', plan: 'contact', footer: 'footer',
+      car1: 'car/cayenne-drift', car2: 'car/touareg-dunes-800', car3: 'car/interior-800', car4: 'car/fleet-800' },
+    carPrice: '€120',
+    contact: { phone: '+976 9503 0466', whatsapp: '+976 9503 0466', email: 'skylandmongolia@gmail.com', hours: '8:00 – 22:00',
+      address: { en: '1-101 Selbe, 20th khoroo, Sukhbaatar district, Ulaanbaatar', mn: 'Улаанбаатар, Сүхбаатар дүүрэг, 20-р хороо, Сэлбэ 1-101' },
+      map: '' },
+    about: {
+      title: { en: 'About us', mn: 'Бидний тухай' },
+      text: { en: 'Azure Skyland Mongolia is a Mongolian travel company based in Ulaanbaatar. We plan private trips across the country with Mongolian drivers and guides: the Gobi, the Altai, Lake Khuvsgul and the open steppe.\nOur founder travels and films Mongolia for his vlog, so the places we take you are places we know first-hand.',
+              mn: 'Azure Skyland Mongolia бол Улаанбаатарт төвтэй, монгол хүмүүсийн үүсгэн байгуулсан аялал жуулчлалын компани. Бид монгол жолооч, хөтөчтэйгөөр Говь, Алтай, Хөвсгөл нуур, уудам тал нутгаар хувийн аялал зохион байгуулдаг.\nМанай үүсгэн байгуулагч Монгол орноор аялж, влогтоо зураг авалт хийдэг тул бидний аваачих газар бүрийг бид өөрсдөө сайн мэднэ.' } },
+    team: [],
+    reels: [
+      { video: 'video/altai.mp4', poster: 'video/altai.webp', en: 'Altai Tavan Bogd', mn: 'Алтай Таван Богд' },
+      { video: 'video/khongor.mp4', poster: 'video/khongor.webp', en: 'Khongor Sand Dunes', mn: 'Хонгорын элс' },
+      { video: 'video/dunes.mp4', poster: 'video/dunes.webp', en: 'Singing Sand Dunes', mn: 'Дуут манхан' },
+      { video: 'video/tuvkhun.mp4', poster: 'video/tuvkhun.webp', en: 'Tuvkhun Monastery', mn: 'Төвхөн хийд' },
+      { video: 'video/mongolia.mp4', poster: 'video/mongolia.webp', en: 'Mongolia', mn: 'Монгол орон' }
+    ]
+  },
+
   t: {
     en: {
+      'hero.slides': 'Photos', 'lang': 'Language', 'nav.about': 'About us', 'rvf.avatar': 'Your photo (optional)', 'rvf.photos': 'Photos from your trip (up to 6)', 'rvf.addph': 'Add photos', 'rvf.remove': 'Remove', 'rvf.phmax': 'You can add up to 6 photos.', 'rvf.phbad': 'This file could not be read as a photo.', 'lb.prev': 'Previous', 'lb.next': 'Next', 'lb.open': 'Open full screen', 'tv.title': 'Videos from this tour', 'rv.photos': 'photos', 'dc.map': 'Open in Google Maps', 'team.title': 'Our team', 'gl.play': 'Play video', 
       'nav.cars': 'Car rental', 'rvf.open': 'Leave a review', 'rvf.name': 'Your name', 'rvf.country': 'Country', 'rvf.rating': 'Your rating', 'rvf.tourL': 'Which tour?', 'rvf.tour0': 'Choose (optional)', 'rvf.body': 'Your review', 'rvf.send': 'Send review', 'rvf.note': 'Reviews appear on the site after we check them.', 'rvf.needStars': 'Please choose a star rating.', 'rvf.sending': 'Sending…', 'rvf.thanks': 'Thank you! Your review will appear after we check it.', 'rvf.err': 'Could not send. Please try again, or message us on WhatsApp.',  'chat.ms': 'Messenger', 'chat.wa': 'WhatsApp', 'chat.waText': 'Hello Azure Skyland! I would like to ask about a trip.', 'theme.toggle': 'Switch light or dark mode', 'foot.privacy': 'Privacy', 'foot.terms': 'Booking terms', 'p.legal': 'By sending, you agree to our', 'p.legal2': 'privacy policy', 'car.title': 'SUV 4×4 car rental', 'car.lead': 'Comfortable four-wheel-drive SUVs from Ulaanbaatar, with one of our drivers or on your own. Ready for paved highways, Gobi sand and mountain tracks.', 'car.from': 'From', 'car.day': ' per day', 'car.o1t': 'With a driver', 'car.o1': 'A local driver who knows the roads, the weather and the families along the way. The driver’s fee is added to the daily rate.', 'car.o2t': 'Self-drive', 'car.o2': 'Take the wheel yourself. Automatic and manual cars are available, and we brief you on routes and road conditions before you leave.', 'car.f1': '4WD', 'car.f2': 'Air conditioning', 'car.f3': 'Automatic or manual', 'car.f4': 'Seat belts front and rear', 'car.f5': 'Phone charger, radio and USB', 'car.f6': 'First-aid kit', 'car.f7': 'Spare tyre', 'car.inc': 'Included', 'car.exc': 'Not included', 'car.i1': 'Vehicle insurance', 'car.i2': 'Driver’s liability insurance', 'car.i3': 'Pick-up in Ulaanbaatar', 'car.e1': 'Driver’s fee, if you want a driver', 'car.e2': 'Fuel', 'car.e3': 'Car wash', 'car.cta': 'Request a car', 'car.style': 'SUV 4×4 car rental', 'car.alt1': 'A cream 4×4 SUV kicking up sand on the steppe', 'car.alt2': 'A 4×4 SUV parked on sand under a blue sky', 'car.alt3': 'Leather interior and dashboard of a rental SUV', 'car.alt4': 'A row of cream rental SUVs', 
       'nav.dest': 'Destinations', 'nav.journeys': 'Journeys', 'nav.why': 'Why Skyland', 'nav.plan': 'Plan a trip', 'nav.tours': 'Tours', 'nav.contact': 'Contact',
       'cta.plan': 'Plan my trip', 'menu': 'Menu', 'close': 'Close',
@@ -693,7 +727,7 @@ window.SKY = {
       'why.1t': 'Locally owned and operated', 'why.1': 'Run by Mongolians, with Mongolian drivers and guides. Our founder travels and films the country for his vlog, so he knows these places first-hand.',
       'why.2t': 'Authentic nomadic family experiences', 'why.2': 'Nights with herder families along the route: share their tea, join the day’s work and sleep in their ger.',
       'why.3t': 'Custom and private tours', 'why.3': 'Private trips built around what you want to see, at your pace — no fixed bus tours, no rushing past the view.',
-      'tr.film': 'Watch the tour film', 'rm.title': 'The route on the map', 'rm.replay': 'Replay', 'rm.start': 'Start and finish', 'rm.km': 'km', 'jm.title': 'Fly the route in 3D', 'jm.lead': 'Real Mongolian terrain, stop by stop. Pick a tour and watch the journey unfold.', 'jm.route': 'Whole route', 'jm.coop.win': 'Use Ctrl + scroll to zoom the map', 'jm.coop.mac': 'Use ⌘ + scroll to zoom the map', 'jm.coop.mob': 'Use two fingers to move the map', 'jm.zin': 'Zoom in', 'jm.zout': 'Zoom out', 'jm.north': 'Reset to north', 'jm.aria': '3D map of the tour route', 'rm.zin': 'Zoom to route', 'rm.zout': 'Whole Mongolia', 'rm.days': 'Days', 'rm.day': 'Day', 'tr.meals': 'Meals', 'tr.B': 'breakfast', 'tr.L': 'lunch', 'tr.D': 'dinner', 'tr.price': 'Price per person', 'tr.showp': 'See prices', 'tr.group': 'Group of', 'tr.solo': 'Solo traveller', 'tr.perday': 'per day', 'tr.total': 'for the whole tour', 'tr.priceq': 'Price on request: tell us your dates and group size.', 'tr.inc': 'Included', 'tr.exc': 'Not included', 'tr.deposit': 'A 10% deposit confirms your tour. The rest can be paid before the tour starts or when you arrive in Mongolia. Payment is by international bank transfer; we send the details with your confirmation.', 'tr.pack': 'What to pack', 'tr.packnote': 'Temperatures can change a lot in a single day, so dress in layers.', 'dc.wa': 'WhatsApp', 'tr.watch': 'Watch', 'social.film': 'Mongolia film',
+      'tr.film': 'Watch the tour film', 'rm.title': 'The route on the map', 'rm.replay': 'Replay', 'rm.start': 'Start and finish', 'rm.km': 'km', 'jm.title': 'Our routes on the map', 'jm.lead': 'Pick a tour and watch the route draw itself, stop by stop. Tap a stop to zoom in; the other tours show in their own colours.', 'jm.route': 'Whole route', 'jm.coop.win': 'Use Ctrl + scroll to zoom the map', 'jm.coop.mac': 'Use ⌘ + scroll to zoom the map', 'jm.coop.mob': 'Use two fingers to move the map', 'jm.zin': 'Zoom in', 'jm.zout': 'Zoom out', 'jm.north': 'Reset to north', 'jm.aria': '3D map of the tour route', 'rm.zin': 'Zoom to route', 'rm.zout': 'Whole Mongolia', 'rm.days': 'Days', 'rm.day': 'Day', 'tr.meals': 'Meals', 'tr.B': 'breakfast', 'tr.L': 'lunch', 'tr.D': 'dinner', 'tr.price': 'Price per person', 'tr.showp': 'See prices', 'tr.group': 'Group of', 'tr.solo': 'Solo traveller', 'tr.perday': 'per day', 'tr.total': 'for the whole tour', 'tr.priceq': 'Price on request: tell us your dates and group size.', 'tr.inc': 'Included', 'tr.exc': 'Not included', 'tr.deposit': 'A 10% deposit confirms your tour. The rest can be paid before the tour starts or when you arrive in Mongolia. Payment is by international bank transfer; we send the details with your confirmation.', 'tr.pack': 'What to pack', 'tr.packnote': 'Temperatures can change a lot in a single day, so dress in layers.', 'dc.wa': 'WhatsApp', 'tr.watch': 'Watch', 'social.film': 'Mongolia film',
       'steps.title': 'Plan your trip in three steps',
       'step.1t': 'Pick your places', 'step.1': 'Add destinations from the list above, or simply tell us the trip you dream of.',
       'step.2t': 'Get your route', 'step.2': 'We send a day-by-day plan with drives, ger camps and a clear price.',
@@ -709,6 +743,7 @@ window.SKY = {
       'foot.rights': 'All rights reserved', 'foot.top': 'Back to top'
     },
     mn: {
+      'hero.slides': 'Зургууд', 'lang': 'Хэл', 'nav.about': 'Бидний тухай', 'rvf.avatar': 'Таны зураг (заавал биш)', 'rvf.photos': 'Аяллын зургууд (6 хүртэл)', 'rvf.addph': 'Зураг нэмэх', 'rvf.remove': 'Хасах', 'rvf.phmax': '6 хүртэл зураг нэмж болно.', 'rvf.phbad': 'Энэ файлыг зураг гэж уншиж чадсангүй.', 'lb.prev': 'Өмнөх', 'lb.next': 'Дараах', 'lb.open': 'Бүтэн дэлгэцээр үзэх', 'tv.title': 'Энэ аяллын бичлэгүүд', 'rv.photos': 'зураг', 'dc.map': 'Google Maps-д нээх', 'team.title': 'Манай хамт олон', 'gl.play': 'Бичлэг тоглуулах', 
       'nav.cars': 'Машин түрээс', 'rvf.open': 'Сэтгэгдэл үлдээх', 'rvf.name': 'Таны нэр', 'rvf.country': 'Улс', 'rvf.rating': 'Үнэлгээ', 'rvf.tourL': 'Ямар аялал?', 'rvf.tour0': 'Сонгох (заавал биш)', 'rvf.body': 'Сэтгэгдэл', 'rvf.send': 'Илгээх', 'rvf.note': 'Сэтгэгдлийг шалгасны дараа сайтад нийтэлнэ.', 'rvf.needStars': 'Одоор үнэлгээ өгнө үү.', 'rvf.sending': 'Илгээж байна…', 'rvf.thanks': 'Баярлалаа! Шалгасны дараа таны сэтгэгдэл сайтад гарна.', 'rvf.err': 'Илгээж чадсангүй. Дахин оролдох эсвэл WhatsApp-аар бичнэ үү.',  'chat.ms': 'Messenger', 'chat.wa': 'WhatsApp', 'chat.waText': 'Сайн байна уу, Azure Skyland! Аяллын талаар асуух зүйл байна.', 'theme.toggle': 'Цайвар эсвэл харанхуй горим', 'foot.privacy': 'Нууцлал', 'foot.terms': 'Захиалгын нөхцөл', 'p.legal': 'Илгээснээр та манай', 'p.legal2': 'нууцлалын бодлогыг зөвшөөрнө', 'car.title': 'SUV 4×4 машин түрээс', 'car.lead': 'Улаанбаатараас тав тухтай, дөрвөн дугуй хөтлөгчтэй SUV. Манай жолоочтой эсвэл өөрөө жолоодож болно. Засмал зам, говийн элс, уулын замд бэлэн.', 'car.from': 'Өдөрт', 'car.day': '-оос эхэлнэ', 'car.o1t': 'Жолоочтой', 'car.o1': 'Зам, цаг агаар, замын дагуух айлуудыг сайн мэддэг нутгийн жолооч. Жолоочийн хөлс өдрийн үнэ дээр нэмэгдэнэ.', 'car.o2t': 'Өөрөө жолоодох', 'car.o2': 'Жолооны ард өөрөө сууна. Автомат болон механик хурдны хайрцагтай машин бий. Гарахын өмнө маршрут, замын нөхцөлийг танилцуулна.', 'car.f1': '4WD', 'car.f2': 'Агааржуулагч', 'car.f3': 'Автомат эсвэл механик', 'car.f4': 'Урд, хойд суудлын бүс', 'car.f5': 'Утас цэнэглэгч, радио, USB', 'car.f6': 'Анхны тусламжийн хайрцаг', 'car.f7': 'Сэлбэг дугуй', 'car.inc': 'Үнэд багтсан', 'car.exc': 'Багтаагүй', 'car.i1': 'Машины даатгал', 'car.i2': 'Жолоочийн хариуцлагын даатгал', 'car.i3': 'Улаанбаатарт хүлээлгэн өгөх', 'car.e1': 'Жолоочийн хөлс (жолоочтой бол)', 'car.e2': 'Шатахуун', 'car.e3': 'Угаалга', 'car.cta': 'Машин захиалах', 'car.style': 'SUV 4×4 машин түрээс', 'car.alt1': 'Тал нутагт элс бужигнуулж буй цайвар өнгийн 4×4 SUV', 'car.alt2': 'Цэнхэр тэнгэрийн дор элсэн дээр зогсож буй 4×4 SUV', 'car.alt3': 'Түрээсийн SUV-ийн арьсан салон, самбар', 'car.alt4': 'Эгнэн зогсох цайвар өнгийн түрээсийн SUV-үүд', 
       'nav.dest': 'Газрууд', 'nav.journeys': 'Аяллууд', 'nav.why': 'Яагаад бид', 'nav.plan': 'Төлөвлөх', 'nav.tours': 'Хөтөлбөр', 'nav.contact': 'Холбоо барих',
       'cta.plan': 'Аялал захиалах', 'menu': 'Цэс', 'close': 'Хаах',
@@ -729,7 +764,7 @@ window.SKY = {
       'why.1t': 'Монголчууд эзэмшиж, өөрсдөө ажиллуулдаг', 'why.1': 'Монгол жолооч, хөтөчтэй. Үүсгэн байгуулагч маань Монголоор аялж влог хийдэг тул эдгээр газрыг өөрийн биеэр мэднэ.',
       'why.2t': 'Малчин айлын жинхэнэ амьдрал', 'why.2': 'Замдаа малчин айлд хоноглож, цайг нь ууж, өдрийн ажилд нь оролцож, гэрт нь унтана.',
       'why.3t': 'Хувийн, танд тохирсон аялал', 'why.3': 'Таны үзэхийг хүссэн зүйлд тулгуурласан, таны хэмнэлээр явах хувийн аялал — тогтмол автобусны тур, яаруу аялал байхгүй.',
-      'tr.film': 'Аяллын бичлэг үзэх', 'rm.title': 'Маршрут газрын зураг дээр', 'rm.replay': 'Дахин үзэх', 'rm.start': 'Эхлэх, дуусах цэг', 'rm.km': 'км', 'jm.title': 'Маршрутаа 3D-ээр нисэж үзээрэй', 'jm.lead': 'Монголын бодит гадаргуу дээгүүр аяллын газар бүрээр дамжина. Аяллаа сонгоод үзээрэй.', 'jm.route': 'Бүх маршрут', 'jm.coop.win': 'Томруулахдаа Ctrl дараад гүйлгэнэ үү', 'jm.coop.mac': 'Томруулахдаа ⌘ дараад гүйлгэнэ үү', 'jm.coop.mob': 'Газрын зургийг хоёр хуруугаар хөдөлгөнө үү', 'jm.zin': 'Томруулах', 'jm.zout': 'Жижигрүүлэх', 'jm.north': 'Хойд зүг рүү эргүүлэх', 'jm.aria': 'Аяллын маршрутын 3D газрын зураг', 'rm.zin': 'Ойртуулах', 'rm.zout': 'Бүх Монгол', 'rm.days': 'Өдөр', 'rm.day': 'Өдөр', 'tr.meals': 'Хоол', 'tr.B': 'өглөө', 'tr.L': 'өдөр', 'tr.D': 'орой', 'tr.price': 'Нэг хүний үнэ', 'tr.showp': 'Үнэ харах', 'tr.group': 'Бүлэгт', 'tr.solo': 'Ганцаараа', 'tr.perday': 'өдөрт', 'tr.total': 'бүх аялал', 'tr.priceq': 'Үнийг хүсэлтээр: огноо, хүний тоогоо бичээрэй.', 'tr.inc': 'Багтсан', 'tr.exc': 'Багтаагүй', 'tr.deposit': 'Нийт үнийн 10% урьдчилгаагаар аялал баталгаажна. Үлдэгдлийг аялал эхлэхээс өмнө эсвэл Монголд ирэхдээ төлж болно. Олон улсын банкны шилжүүлгээр төлнө, дансны мэдээллийг баталгаажуулах үед илгээнэ.', 'tr.pack': 'Юу авч явах вэ', 'tr.packnote': 'Нэг өдрийн дотор агаарын хэм их өөрчлөгддөг тул давхарлаж хувцаслаарай.', 'dc.wa': 'WhatsApp', 'tr.watch': 'Үзэх', 'social.film': 'Монголын бичлэг',
+      'tr.film': 'Аяллын бичлэг үзэх', 'rm.title': 'Маршрут газрын зураг дээр', 'rm.replay': 'Дахин үзэх', 'rm.start': 'Эхлэх, дуусах цэг', 'rm.km': 'км', 'jm.title': 'Манай маршрутууд газрын зураг дээр', 'jm.lead': 'Аяллаа сонгоход маршрут зогсоол бүрээр зурагдана. Зогсоол дээр дарвал ойртуулж харуулна, бусад аяллууд өөр өнгөөр харагдана.', 'jm.route': 'Бүх маршрут', 'jm.coop.win': 'Томруулахдаа Ctrl дараад гүйлгэнэ үү', 'jm.coop.mac': 'Томруулахдаа ⌘ дараад гүйлгэнэ үү', 'jm.coop.mob': 'Газрын зургийг хоёр хуруугаар хөдөлгөнө үү', 'jm.zin': 'Томруулах', 'jm.zout': 'Жижигрүүлэх', 'jm.north': 'Хойд зүг рүү эргүүлэх', 'jm.aria': 'Аяллын маршрутын 3D газрын зураг', 'rm.zin': 'Ойртуулах', 'rm.zout': 'Бүх Монгол', 'rm.days': 'Өдөр', 'rm.day': 'Өдөр', 'tr.meals': 'Хоол', 'tr.B': 'өглөө', 'tr.L': 'өдөр', 'tr.D': 'орой', 'tr.price': 'Нэг хүний үнэ', 'tr.showp': 'Үнэ харах', 'tr.group': 'Бүлэгт', 'tr.solo': 'Ганцаараа', 'tr.perday': 'өдөрт', 'tr.total': 'бүх аялал', 'tr.priceq': 'Үнийг хүсэлтээр: огноо, хүний тоогоо бичээрэй.', 'tr.inc': 'Багтсан', 'tr.exc': 'Багтаагүй', 'tr.deposit': 'Нийт үнийн 10% урьдчилгаагаар аялал баталгаажна. Үлдэгдлийг аялал эхлэхээс өмнө эсвэл Монголд ирэхдээ төлж болно. Олон улсын банкны шилжүүлгээр төлнө, дансны мэдээллийг баталгаажуулах үед илгээнэ.', 'tr.pack': 'Юу авч явах вэ', 'tr.packnote': 'Нэг өдрийн дотор агаарын хэм их өөрчлөгддөг тул давхарлаж хувцаслаарай.', 'dc.wa': 'WhatsApp', 'tr.watch': 'Үзэх', 'social.film': 'Монголын бичлэг',
       'steps.title': 'Аяллаа гурван алхмаар төлөвлө',
       'step.1t': 'Газраа сонго', 'step.1': 'Дээрх жагсаалтаас газраа нэм, эсвэл мөрөөдлийн аяллаа бидэнд хэлээрэй.',
       'step.2t': 'Маршрутаа ав', 'step.2': 'Өдөр бүрийн зам, гэр бааз, тодорхой үнэтэй төлөвлөгөө илгээнэ.',

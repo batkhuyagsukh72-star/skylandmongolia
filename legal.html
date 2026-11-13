@@ -159,14 +159,14 @@ footer{max-width:860px;margin:0 auto;padding:0 max(20px,env(safe-area-inset-righ
 (function () {
   var q = new URLSearchParams(location.search).get('lang'), saved = null;
   try { saved = localStorage.getItem('sky-lang'); } catch (e) {}
-  function set(l) {
+  function set(l, save) {
     l = l === 'mn' ? 'mn' : 'en'; document.documentElement.lang = l;
     document.querySelectorAll('[data-set]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.set === l)); });
     document.title = l === 'mn' ? 'Нууцлал ба захиалгын нөхцөл · Azure Skyland Mongolia' : 'Privacy & booking terms · Azure Skyland Mongolia';
-    try { localStorage.setItem('sky-lang', l); } catch (e) {}
+    if (save) { try { localStorage.setItem('sky-lang', l); } catch (e) {} }
   }
   set(q || saved || (navigator.language || '').slice(0, 2));
-  document.querySelectorAll('[data-set]').forEach(function (b) { b.onclick = function () { set(b.dataset.set); }; });
+  document.querySelectorAll('[data-set]').forEach(function (b) { b.onclick = function () { set(b.dataset.set, true); }; });
 })();
 </script>
 </body>

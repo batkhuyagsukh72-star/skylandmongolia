@@ -17,15 +17,21 @@
 <link rel="canonical" href="https://skylandmongolia.com/">
 <link rel="alternate" hreflang="en" href="https://skylandmongolia.com/?lang=en">
 <link rel="alternate" hreflang="mn" href="https://skylandmongolia.com/?lang=mn">
+<link rel="alternate" hreflang="ru" href="https://skylandmongolia.com/?lang=ru">
+<link rel="alternate" hreflang="zh-Hans" href="https://skylandmongolia.com/?lang=zh">
+<link rel="alternate" hreflang="ko" href="https://skylandmongolia.com/?lang=ko">
+<link rel="alternate" hreflang="ja" href="https://skylandmongolia.com/?lang=ja">
+<link rel="alternate" hreflang="de" href="https://skylandmongolia.com/?lang=de">
+<link rel="alternate" hreflang="es" href="https://skylandmongolia.com/?lang=es">
 <link rel="alternate" hreflang="x-default" href="https://skylandmongolia.com/">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TravelAgency", "name": "Azure Skyland Mongolia", "url": "https://skylandmongolia.com/", "logo": "https://skylandmongolia.com/assets/mark.svg", "image": "https://skylandmongolia.com/img/og.jpg", "description": "Private tours across Mongolia: the Gobi, Central Mongolia, Lake Khuvsgul and the reindeer herders, Eastern Mongolia and the Altai, plus SUV 4×4 car rental from Ulaanbaatar.", "email": "skylandmongolia@gmail.com", "address": {"@type": "PostalAddress", "addressLocality": "Ulaanbaatar", "addressCountry": "MN"}, "areaServed": {"@type": "Country", "name": "Mongolia"}, "availableLanguage": ["English", "Mongolian"], "priceRange": "$$", "sameAs": ["https://www.instagram.com/skyland.mongolia", "https://www.facebook.com/mongoliantraveltuvshin", "https://www.youtube.com/@enhtuvshin7355"]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "TravelAgency", "name": "Azure Skyland Mongolia", "url": "https://skylandmongolia.com/", "logo": "https://skylandmongolia.com/assets/mark.svg", "image": "https://skylandmongolia.com/img/og.jpg", "description": "Private tours across Mongolia: the Gobi, Central Mongolia, Lake Khuvsgul and the reindeer herders, Eastern Mongolia and the Altai, plus SUV 4×4 car rental from Ulaanbaatar.", "email": "skylandmongolia@gmail.com", "address": {"@type": "PostalAddress", "addressLocality": "Ulaanbaatar", "addressCountry": "MN"}, "areaServed": {"@type": "Country", "name": "Mongolia"}, "availableLanguage": ["English", "Mongolian", "Russian", "Chinese", "Korean", "Japanese", "German", "Spanish"], "priceRange": "$$", "sameAs": ["https://www.instagram.com/skyland.mongolia", "https://www.facebook.com/mongoliantraveltuvshin", "https://www.youtube.com/@enhtuvshin7355"]}</script>
 <meta name="theme-color" content="#ECE3DA" id="themeColor">
 <script>/* theme before first paint: saved choice, else the device setting */(function(){var t=null;try{t=localStorage.getItem("sky-theme")}catch(e){}if(t!=="light"&&t!=="dark")t=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";document.documentElement.setAttribute("data-theme",t);var m=document.getElementById("themeColor");if(m)m.content=t==="dark"?"#0F141D":"#ECE3DA"})();</script>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preload" as="image" href="img/hero.webp" imagesrcset="img/hero-1600.webp 1600w, img/hero.webp 2560w" imagesizes="(max-aspect-ratio: 16/9) 180vh, 100vw">
 <style>html{background:#ECE3DA}html.js:not(.loaded) body{overflow:hidden}</style>
-<link rel="stylesheet" href="fonts.css">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="fonts.css?v=20261114">
+<link rel="stylesheet" href="styles.css?v=20261114">
 <script>document.documentElement.classList.add('js');setTimeout(function(){document.documentElement.classList.add('loaded')},12000);try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm')}catch(e){}</script>
 </head>
 <body>
@@ -82,9 +88,7 @@
   </nav>
   <div class="hdr-right">
     <button class="theme-btn" type="button" id="themeBtn" data-i18n-aria="theme.toggle" aria-label="Light or dark"><svg class="ic-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><svg class="ic-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
-    <div class="lang" role="group" aria-label="Language">
-      <button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="mn" aria-pressed="false">МН</button>
-    </div>
+    <div class="lang" id="lang"><button class="lang-btn" type="button" id="langBtn" aria-haspopup="true" aria-expanded="false" aria-controls="langList"><span class="sr" data-i18n="lang">Language</span><svg class="lang-globe" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3.6 12h16.8M12 3.4c2.4 2.4 3.6 5.3 3.6 8.6s-1.2 6.2-3.6 8.6c-2.4-2.4-3.6-5.3-3.6-8.6S9.6 5.8 12 3.4z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg><span id="langCur">EN</span></button><div class="lang-list" id="langList" role="group" aria-label="Language" hidden></div></div>
     <a class="btn btn-ghost hdr-cta" href="#plan"><span data-i18n="cta.plan">Plan my trip</span><span class="trip-badge" data-trip-count hidden>0</span></a>
     <button class="burger" type="button" aria-expanded="false" aria-controls="mnav"><span></span><span></span><b class="sr" data-i18n="menu">Menu</b></button>
   </div>
@@ -96,8 +100,10 @@
     <a href="#why" data-i18n="nav.why">Why Skyland</a>
     <a href="#tours" data-i18n="nav.tours">Tours</a>
     <a href="#cars" data-i18n="nav.cars">Car rental</a>
+    <a href="#about" data-i18n="nav.about">About us</a>
     <a href="#plan" data-i18n="nav.contact">Contact</a>
   </nav>
+  <div class="mnav-langs" id="mLangs" role="group" aria-label="Language"></div>
   <div class="mnav-foot">
     <a href="https://www.instagram.com/skyland.mongolia" target="_blank" rel="noopener">Instagram</a>
     <a href="https://www.facebook.com/share/1cWDRS8x6k/" target="_blank" rel="noopener">Facebook</a>
@@ -115,6 +121,7 @@
     </h1>
     <img class="hero-fg" src="img/hero-fg.webp" srcset="img/hero-fg-1600.webp 1600w, img/hero-fg.webp 2560w" sizes="(max-aspect-ratio: 16/9) 180vh, 100vw" alt="" aria-hidden="true">
   </div>
+  <div class="hero-dots" id="heroDots" role="group" data-i18n-aria="hero.slides" aria-label="Photos"></div>
   <div class="hero-bottom">
     <p class="hero-sub" data-i18n="hero.sub">Private trips to the Gobi, the Altai and the lakes of the north — planned by people who travel them.</p>
     <form class="finder" id="finder" autocomplete="off">
@@ -140,20 +147,15 @@
   </div>
 </section>
 
-<!-- ============ JOURNEY MAP (3D) ============ -->
+<!-- ============ ROUTE MAP ============ -->
 <section class="jmap" id="journey-map" aria-labelledby="jm-h">
   <div class="wrap">
     <div class="jm-head center">
-      <h2 id="jm-h" class="h2" data-i18n="jm.title" data-reveal>Fly the route in 3D</h2>
-      <p class="lead" data-i18n="jm.lead" data-reveal>Real Mongolian terrain, stop by stop. Pick a tour and watch the journey unfold.</p>
+      <h2 id="jm-h" class="h2" data-i18n="jm.title" data-reveal>Our routes on the map</h2>
+      <p class="lead" data-i18n="jm.lead" data-reveal>Pick a tour and watch the route draw itself, stop by stop. Tap a stop to zoom in.</p>
       <div class="jm-tabs" role="tablist" aria-labelledby="jm-h"></div>
     </div>
-    <div class="jm-stage">
-      <div class="jm-map" role="region" aria-label="3D map of the tour route"></div>
-      <div class="jm-card" aria-hidden="true"><div class="jm-ph"><img alt="" width="800" height="600" decoding="async"></div><div class="jm-ct"><small></small><b></b><p></p></div></div>
-      <div class="jm-ctl"><button class="rmap-zoom jm-view" type="button" hidden><svg><use href="#i-zout"/></svg><span></span></button><button class="rmap-replay jm-replay" type="button" hidden><svg><use href="#i-play"/></svg><span data-i18n="rm.replay">Replay</span></button></div>
-    </div>
-    <ol class="rmap-stops jm-stops"></ol>
+    <div class="jm-box"></div>
   </div>
 </section>
 
@@ -207,15 +209,15 @@
   <div class="wrap">
     <div class="cars-grid">
       <div class="cars-media" data-reveal>
-        <figure class="cm cm-main"><img src="img/car/cayenne-drift.webp" srcset="img/car/cayenne-drift-800.webp 800w, img/car/cayenne-drift.webp 1600w" sizes="(max-width:900px) 100vw, 55vw" alt="" data-i18n-alt="car.alt1" width="1600" height="1067" loading="lazy" decoding="async"></figure>
-        <figure class="cm"><img src="img/car/touareg-dunes-800.webp" alt="" data-i18n-alt="car.alt2" width="800" height="470" loading="lazy" decoding="async"></figure>
-        <figure class="cm"><img src="img/car/interior-800.webp" alt="" data-i18n-alt="car.alt3" width="800" height="495" loading="lazy" decoding="async"></figure>
-        <figure class="cm"><img src="img/car/fleet-800.webp" alt="" data-i18n-alt="car.alt4" width="800" height="600" loading="lazy" decoding="async"></figure>
+        <figure class="cm cm-main"><img data-img="car1" src="img/car/cayenne-drift.webp" srcset="img/car/cayenne-drift-800.webp 800w, img/car/cayenne-drift.webp 1600w" sizes="(max-width:900px) 100vw, 55vw" alt="" data-i18n-alt="car.alt1" width="1600" height="1067" loading="lazy" decoding="async"></figure>
+        <figure class="cm"><img data-img="car2" src="img/car/touareg-dunes-800.webp" alt="" data-i18n-alt="car.alt2" width="800" height="470" loading="lazy" decoding="async"></figure>
+        <figure class="cm"><img data-img="car3" src="img/car/interior-800.webp" alt="" data-i18n-alt="car.alt3" width="800" height="495" loading="lazy" decoding="async"></figure>
+        <figure class="cm"><img data-img="car4" src="img/car/fleet-800.webp" alt="" data-i18n-alt="car.alt4" width="800" height="600" loading="lazy" decoding="async"></figure>
       </div>
       <div class="cars-copy">
         <h2 id="car-h" class="h2" data-i18n="car.title" data-reveal>SUV 4×4 car rental</h2>
         <p class="lead" data-i18n="car.lead" data-reveal>Comfortable four-wheel-drive SUVs from Ulaanbaatar, with one of our drivers or on your own.</p>
-        <p class="car-price" data-reveal><span data-i18n="car.from">From</span> <b>€120</b><span data-i18n="car.day"> per day</span></p>
+        <p class="car-price" data-reveal><span data-i18n="car.from">From</span> <b id="carPrice">€120</b><span data-i18n="car.day"> per day</span></p>
         <div class="car-opts" data-reveal>
           <div class="car-opt"><h3 data-i18n="car.o1t">With a driver</h3><p data-i18n="car.o1"></p></div>
           <div class="car-opt"><h3 data-i18n="car.o2t">Self-drive</h3><p data-i18n="car.o2"></p></div>
@@ -245,16 +247,16 @@
 <!-- ============ WHY ============ -->
 <section class="why" id="why" aria-labelledby="w-h">
   <div class="why-sky">
-    <img class="why-bg" src="img/why.webp" alt="Altai peaks rising above a sea of clouds" loading="lazy">
+    <img class="why-bg" data-img="why" src="img/why.webp" alt="Altai peaks rising above a sea of clouds" loading="lazy">
     <div class="why-cloud" aria-hidden="true"></div>
   </div>
   <div class="wrap why-head">
     <h2 id="w-h" class="h2" data-i18n="why.title" data-reveal>Why Skyland</h2>
     <p class="lead" data-i18n="why.lead" data-reveal>We believe the best way to discover Mongolia is not just by seeing it, but by living it — sharing tea with nomads, riding across the open steppe and sleeping under endless starry skies.</p>
   </div>
-  <figure class="float f1" data-speed="-0.18"><img src="img/p1.webp" width="600" height="900" alt="Travellers wrapped in a felt blanket above a ger camp" loading="lazy"></figure>
-  <figure class="float f2" data-speed="0.12"><img src="img/p2.webp" width="600" height="900" alt="A traveller holding a golden eagle with an eagle hunter" loading="lazy"></figure>
-  <figure class="float f3" data-speed="-0.08"><img src="img/p3.webp" width="600" height="900" alt="A traveller at the painted door of a ger" loading="lazy"></figure>
+  <figure class="float f1" data-speed="-0.18"><img data-img="why1" src="img/p1.webp" width="600" height="900" alt="Travellers wrapped in a felt blanket above a ger camp" loading="lazy"></figure>
+  <figure class="float f2" data-speed="0.12"><img data-img="why2" src="img/p2.webp" width="600" height="900" alt="A traveller holding a golden eagle with an eagle hunter" loading="lazy"></figure>
+  <figure class="float f3" data-speed="-0.08"><img data-img="why3" src="img/p3.webp" width="600" height="900" alt="A traveller at the painted door of a ger" loading="lazy"></figure>
   <div class="wrap why-points">
     <div class="wp wp1" data-reveal><svg class="orn"><use href="#i-toono"/></svg><h3 data-i18n="why.1t">Locally owned and operated</h3><p data-i18n="why.1">Run by Mongolians, with Mongolian drivers and guides. Our founder travels and films the country for his vlog, so he knows these places first-hand.</p></div>
     <div class="wp wp2" data-reveal><svg class="orn"><use href="#i-toono"/></svg><h3 data-i18n="why.2t">Authentic nomadic family experiences</h3><p data-i18n="why.2">Nights with herder families along the route: share their tea, join the day’s work and sleep in their ger.</p></div>
@@ -264,7 +266,7 @@
 
 <!-- ============ STEPS ============ -->
 <section class="steps" id="steps" aria-labelledby="st-h">
-  <img class="steps-bg" src="img/steps.webp" alt="A woman in an azure deel on a steppe hilltop, silk scarf in the wind" loading="lazy">
+  <img class="steps-bg" data-img="steps" src="img/steps.webp" alt="A woman in an azure deel on a steppe hilltop, silk scarf in the wind" loading="lazy">
   <div class="wrap steps-in">
     <h2 id="st-h" class="h2 center" data-i18n="steps.title" data-reveal>Plan your trip in three steps</h2>
     <ol class="steplist">
@@ -286,13 +288,7 @@
       <h2 id="gl-h" class="h2" data-i18n="gl.title" data-reveal>From our journeys</h2>
       <p class="lead" data-i18n="gl.lead" data-reveal>Photos from Skyland trips across Mongolia.</p>
     </div>
-    <div class="reels" id="reels" data-reveal>
-      <figure class="reel"><video muted loop playsinline preload="none" poster="video/altai.webp" data-src="video/altai.mp4" aria-label="Altai Tavan Bogd"></video><button class="reel-snd" type="button" aria-pressed="false" data-i18n-aria="gl.sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="snd-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="snd-off" d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></figure>
-      <figure class="reel"><video muted loop playsinline preload="none" poster="video/khongor.webp" data-src="video/khongor.mp4" aria-label="Khongor Sand Dunes"></video><button class="reel-snd" type="button" aria-pressed="false" data-i18n-aria="gl.sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="snd-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="snd-off" d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></figure>
-      <figure class="reel"><video muted loop playsinline preload="none" poster="video/dunes.webp" data-src="video/dunes.mp4" aria-label="Singing Sand Dunes"></video><button class="reel-snd" type="button" aria-pressed="false" data-i18n-aria="gl.sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="snd-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="snd-off" d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></figure>
-      <figure class="reel"><video muted loop playsinline preload="none" poster="video/tuvkhun.webp" data-src="video/tuvkhun.mp4" aria-label="Tuvkhun Monastery"></video><button class="reel-snd" type="button" aria-pressed="false" data-i18n-aria="gl.sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="snd-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="snd-off" d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></figure>
-      <figure class="reel"><video muted loop playsinline preload="none" poster="video/mongolia.webp" data-src="video/mongolia.mp4" aria-label="Mongolia"></video><button class="reel-snd" type="button" aria-pressed="false" data-i18n-aria="gl.sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="snd-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="snd-off" d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></figure>
-    </div>
+    <div class="reels" id="reels" data-reveal></div>
     <div class="gl-grid" id="glGrid"></div>
     <div class="center gl-more-wrap"><button class="btn btn-ghost" type="button" id="glMore" aria-expanded="false" aria-controls="glGrid"></button></div>
   </div>
@@ -303,7 +299,7 @@
   <div class="wrap">
     <h2 id="rv-h" class="h2 center" data-i18n="rv.title" data-reveal>What travellers say</h2>
     <p class="lead center rv-lead" data-i18n="rv.lead" data-reveal>From travellers who explored Mongolia with us.</p>
-    <div class="rv-photos" id="rvPhotos"></div>
+    <div class="rv-wall" id="rvWall"></div>
     <div class="rv-list" id="rvList"></div>
     <div class="rv-leave">
       <button class="btn btn-ghost" type="button" id="rvOpen" aria-expanded="false" aria-controls="rvForm"><span data-i18n="rvf.open">Leave a review</span></button>
@@ -319,6 +315,13 @@
           <label><span data-i18n="rvf.tourL">Which tour?</span><select name="tour"></select></label>
         </div>
         <label><span data-i18n="rvf.body">Your review</span><textarea name="body" rows="4" required maxlength="2000"></textarea></label>
+        <div class="rvf-ph">
+          <div class="rvf-av"><span class="rvf-l" data-i18n="rvf.avatar">Your photo (optional)</span>
+            <label class="rvf-drop rvf-drop-av"><input type="file" id="rvAv" accept="image/*" class="sr"><img id="rvAvPv" alt="" hidden><span class="rvf-plus"><svg aria-hidden="true"><use href="#i-user"/></svg></span></label>
+            <button type="button" class="link rvf-x" id="rvAvX" hidden data-i18n="rvf.remove">Remove</button></div>
+          <div class="rvf-trip"><span class="rvf-l"><span data-i18n="rvf.photos">Photos from your trip (up to 6)</span></span>
+            <div class="rvf-thumbs" id="rvThumbs"><label class="rvf-drop" id="rvAddPh"><input type="file" id="rvPh" accept="image/*" multiple class="sr"><span class="rvf-plus"><svg aria-hidden="true"><use href="#i-plus"/></svg><small data-i18n="rvf.addph">Add photos</small></span></label></div></div>
+        </div>
         <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
         <div class="rvf-foot"><button class="btn btn-ink" type="submit"><span data-i18n="rvf.send">Send review</span></button><p class="rvf-msg" id="rvMsg" aria-live="polite"></p></div>
         <p class="rvf-note" data-i18n="rvf.note">Reviews appear on the site after we check them.</p>
@@ -331,7 +334,7 @@
 <section class="social" aria-labelledby="so-h">
   <div class="wrap">
     <div class="social-card">
-      <img class="social-bg" src="img/social.webp" alt="Aerial view of a turquoise lake shore and larch forest" loading="lazy">
+      <img class="social-bg" data-img="social" src="img/social.webp" alt="Aerial view of a turquoise lake shore and larch forest" loading="lazy">
       <div class="social-in">
         <h2 id="so-h" class="h2" data-i18n="social.title" data-reveal>See it before you go</h2>
         <p data-i18n="social.lead" data-reveal>Follow our journeys on Instagram and Facebook, and ride along on our founder’s vlog.</p>
@@ -347,9 +350,20 @@
   </div>
 </section>
 
+<!-- ============ ABOUT / TEAM ============ -->
+<section class="about" id="about" aria-labelledby="ab-h">
+  <div class="wrap">
+    <div class="ab-head">
+      <h2 id="ab-h" class="h2" data-reveal></h2>
+      <div class="ab-text" id="abText" data-reveal></div>
+    </div>
+    <div class="team" id="team"></div>
+  </div>
+</section>
+
 <!-- ============ PLAN / CONTACT ============ -->
 <section class="plan" id="plan" aria-labelledby="pl-h">
-  <img class="plan-bg" src="img/contact.webp" alt="Ger camp beside a calm lake at blue hour" loading="lazy">
+  <img class="plan-bg" data-img="plan" src="img/contact.webp" alt="Ger camp beside a calm lake at blue hour" loading="lazy">
   <div class="wrap">
     <div class="plan-card">
       <h2 id="pl-h" class="h2 center" data-i18n="plan.title">Plan your trip</h2>
@@ -379,13 +393,8 @@
       </div>
       <div class="direct" aria-labelledby="dc-h">
         <h3 id="dc-h" data-i18n="dc.title">Or reach us directly</h3>
-        <ul class="direct-list">
-          <li><svg><use href="#i-phone"/></svg><span class="dl"><small data-i18n="dc.phone">Phone</small><a href="tel:+97695030466">+976 9503 0466</a></span><button class="copy" type="button" data-copy="+97695030466" data-i18n="dc.copy">Copy</button></li>
-          <li><svg><use href="#i-wa"/></svg><span class="dl"><small data-i18n="dc.wa">WhatsApp</small><a href="https://wa.me/97695030466" target="_blank" rel="noopener">+976 9503 0466</a></span><button class="copy" type="button" data-copy="+97695030466" data-i18n="dc.copy">Copy</button></li>
-          <li><svg><use href="#i-mail"/></svg><span class="dl"><small data-i18n="dc.email">Email</small><a href="mailto:skylandmongolia@gmail.com">skylandmongolia@gmail.com</a></span><button class="copy" type="button" data-copy="skylandmongolia@gmail.com" data-i18n="dc.copy">Copy</button></li>
-          <li><svg><use href="#i-pin"/></svg><span class="dl"><small data-i18n="dc.office">Office</small><b data-i18n="dc.addr">1-101 Selbe, 20th khoroo, Sukhbaatar district, Ulaanbaatar</b></span></li>
-          <li><svg><use href="#i-calendar"/></svg><span class="dl"><small data-i18n="dc.hours">Hours</small><b>8:00 – 22:00</b></span></li>
-        </ul>
+        <ul class="direct-list" id="directList"></ul>
+        <div class="direct-map" id="directMap"></div>
       </div>
     </div>
   </div>
@@ -408,6 +417,7 @@
       <span class="foot-sub">MONGOLIA</span>
     </a>
     <nav class="foot-nav" aria-label="Footer">
+      <a href="#about" data-i18n="nav.about">About us</a>
       <a href="#destinations" data-i18n="nav.dest">Destinations</a>
       <a href="#journeys" data-i18n="nav.journeys">Journeys</a>
       <a href="#tours" data-i18n="nav.tours">Tours</a>
@@ -423,7 +433,7 @@
       <a href="https://www.youtube.com/@enhtuvshin7355" target="_blank" rel="noopener" aria-label="YouTube"><svg><use href="#i-yt"/></svg></a>
     </div>
   </div>
-  <img class="foot-img" src="img/footer.webp" alt="" aria-hidden="true" loading="lazy">
+  <img class="foot-img" data-img="footer" src="img/footer.webp" alt="" aria-hidden="true" loading="lazy">
   <div class="foot-bar"><span>© <span id="yr">2026</span> Azure Skyland Mongolia · <span data-i18n="foot.rights">All rights reserved</span></span><span class="foot-legal"><a href="legal.html#privacy" data-i18n="foot.privacy">Privacy</a> · <a href="legal.html#terms" data-i18n="foot.terms">Booking terms</a></span><a href="#top" data-i18n="foot.top">Back to top</a></div>
 </footer>
 
@@ -446,13 +456,25 @@
   </div>
 </dialog>
 
+<!-- full-screen viewer: photos, videos, reviews -->
+<div class="lbx" id="lbx" role="dialog" aria-modal="true" aria-labelledby="lbxCap" hidden>
+  <button class="lbx-x" type="button" id="lbxClose" data-i18n-aria="close" aria-label="Close"><svg><use href="#i-close"/></svg></button>
+  <button class="lbx-nav lbx-prev" type="button" id="lbxPrev" data-i18n-aria="lb.prev" aria-label="Previous"><svg><use href="#i-arrow"/></svg></button>
+  <div class="lbx-in">
+    <figure class="lbx-fig"><div class="lbx-media" id="lbxMedia"></div><figcaption class="lbx-cap" id="lbxCap"></figcaption></figure>
+    <aside class="lbx-side" id="lbxSide" hidden></aside>
+  </div>
+  <button class="lbx-nav lbx-next" type="button" id="lbxNext" data-i18n-aria="lb.next" aria-label="Next"><svg><use href="#i-arrow"/></svg></button>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="data.js"></script>
-<script src="map.js"></script>
+<script src="data.js?v=20261114"></script>
+<script src="i18n.js?v=20261114"></script>
+<script src="map.js?v=20261114"></script>
 <script src="vendor/gsap.min.js" defer></script>
 <script src="vendor/ScrollTrigger.min.js" defer></script>
 <script src="vendor/lenis.min.js" defer></script>
-<script src="app.js" defer></script>
+<script src="app.js?v=20261114" defer></script>
 </body>
 </html>

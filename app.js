@@ -43,10 +43,21 @@ function skyBoot() {
   $$('[data-mark]').forEach(function (el, i) { el.innerHTML = markSVG(i); });
 
   /* ---------- language ---------- */
-  var lang = (new URLSearchParams(location.search).get('lang') || store.get('sky-lang') || 'en');
-  if (lang !== 'mn') lang = 'en';
+  /* eight languages; content typed in /admin has English and Mongolian, the others come from the translation table (i18n.js) and fall back to English */
+  var LANGS = D.langs || [{ id: 'en', short: 'EN', name: 'English' }, { id: 'mn', short: 'МН', name: 'Монгол' }];
+  function okLang(x) { return LANGS.some(function (l) { return l.id === x; }); }
+  var lang = D.pickLang ? D.pickLang() : (store.get('sky-lang') || 'en');
+  if (!okLang(lang) || (lang !== 'en' && lang !== 'mn' && !(D.tx && D.tx[lang]))) lang = 'en';
   function t(k) { return (D.t[lang] && D.t[lang][k]) || D.t.en[k] || k; }
-  function L(o) { return o[lang] || o.en; }
+  function tx(x) { var d = D.tx && D.tx[lang]; return (d && typeof x === 'string' && d[x.trim()]) || x; }
+  function L(o) {
+    if (o == null) return '';
+    if (typeof o === 'string') return o;
+    var v = o[lang]; if (v != null && v !== '' && !(Array.isArray(v) && !v.length)) return v;
+    var e = o.en; if (e == null || e === '') return o.mn || '';
+    if (lang === 'en' || lang === 'mn') return e;
+    return Array.isArray(e) ? e.map(tx) : tx(e);
+  }
 
   /* ---------- trip state ---------- */
   var trip = [];
@@ -210,7 +221,7 @@ function skyBoot() {
     var keep = { r: $('#f-region').value, s: $('#f-style').value, m: $('#f-month').value, w: $('#f-who').value, pm: $('#p-month').value, pw: $('#p-who').value };
     $('#f-region').innerHTML = '<option value="all">' + t('f.anywhere') + '</option>' + D.regions.slice(1).map(function (r) { return '<option value="' + r.id + '">' + L(r) + '</option>'; }).join('');
     $('#f-style').innerHTML = '<option value="">' + t('f.anystyle') + '</option>' + D.styles.map(function (s, i) { return '<option value="' + i + '">' + L(s) + '</option>'; }).join('');
-    var months = D.months[lang].map(function (m, i) { return '<option value="' + i + '">' + m + '</option>'; }).join('');
+    var months = (D.months[lang] || D.months.en).map(function (m, i) { return '<option value="' + i + '">' + m + '</option>'; }).join('');
     $('#f-month').innerHTML = months; $('#p-month').innerHTML = months;
     var who = ''; for (var i = 1; i <= 12; i++) who += '<option value="' + i + '">' + i + ' ' + (i === 1 ? t('f.person') : t('f.persons')) + (i === 12 ? '+' : '') + '</option>';
     $('#f-who').innerHTML = who; $('#p-who').innerHTML = who;
@@ -246,7 +257,7 @@ function skyBoot() {
       var d = 'M' + M.ub.join(' '); order.forEach(function (id) { d += ' L' + M.pins[id].join(' '); }); d += ' L' + M.ub.join(' ');
       s += '<path class="m-route" d="' + d + '"/>';
     }
-    s += '<g class="m-ub"><rect x="' + (M.ub[0] - 8) + '" y="' + (M.ub[1] - 8) + '" width="16" height="16" transform="rotate(45 ' + M.ub[0] + ' ' + M.ub[1] + ')"/><text x="' + (M.ub[0] + 18) + '" y="' + (M.ub[1] - 14) + '">' + (lang === 'mn' ? 'Улаанбаатар' : 'Ulaanbaatar') + '</text></g>';
+    s += '<g class="m-ub"><rect x="' + (M.ub[0] - 8) + '" y="' + (M.ub[1] - 8) + '" width="16" height="16" transform="rotate(45 ' + M.ub[0] + ' ' + M.ub[1] + ')"/><text x="' + (M.ub[0] + 18) + '" y="' + (M.ub[1] - 14) + '">' + esc(L(D.mapNames.ub || { en: 'Ulaanbaatar', mn: 'Улаанбаатар' })) + '</text></g>';
     order.forEach(function (id, i) {
       var p = M.pins[id]; if (!p) return;
       s += '<g class="m-pin on"><circle class="halo" cx="' + p[0] + '" cy="' + p[1] + '" r="' + (opts.single ? 34 : 28) + '"/><circle class="core" cx="' + p[0] + '" cy="' + p[1] + '" r="' + (opts.single ? 14 : 16) + '"/>' +
@@ -311,11 +322,12 @@ function skyBoot() {
   var MK = M.proj[0] * 180 / Math.PI;
   function pj(lon, lat) { return [M.proj[0] * lon + M.proj[1], M.proj[2] - MK * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))]; }
   function latAt(y) { return (2 * Math.atan(Math.exp((M.proj[2] - y) / MK)) - Math.PI / 2) * 180 / Math.PI; }
-  function routeMap(tr) {
-    if (!tr.route) return '';
+  function routeMap(tr, opts) {
+    if (!tr || !tr.route) return '';
+    opts = opts || {};
     var n = 0;
-    return '<figure class="rmap" data-tour="' + tr.id + '"><figcaption class="rmap-h">' + esc(t('rm.title')) + '</figcaption>' +
-      '<div class="rmap-stage"><svg class="rmap-svg" role="img" aria-label="' + esc(t('rm.title') + ': ' + tr.route.filter(function (r) { return r.d; }).map(function (r) { return L(D.mapNames[r.id]); }).join(', ')) + '"></svg>' +
+    return '<figure class="rmap' + (opts.others ? ' rmap-all' : '') + '" data-tour="' + tr.id + '"' + (opts.others ? ' data-others="1" style="--rc:' + jmCol(tr.id) + '"' : '') + '><figcaption class="rmap-h">' + esc(t('rm.title')) + '</figcaption>' +
+      '<div class="rmap-stage"><svg class="rmap-svg" role="img" aria-label="' + esc(t('rm.title') + ': ' + tr.route.filter(function (r) { return r.d; }).map(function (r) { return L(D.mapNames[r.id] || { en: r.id }); }).join(', ')) + '"></svg>' +
       '<div class="rmap-card" aria-hidden="true"><img alt="" width="400" height="300"><p><small></small><b></b></p></div>' +
       '<div class="rmap-scale" aria-hidden="true"><i></i><span></span></div>' +
       '<div class="rmap-ctl"><button class="rmap-zoom" type="button" hidden><svg><use href="#i-zin"/></svg><span></span></button>' +
@@ -323,7 +335,7 @@ function skyBoot() {
       '<ol class="rmap-stops">' + tr.route.map(function (r, i) {
         if (r.id === 'ub') return '';
         n++;
-        return '<li><button type="button" data-i="' + i + '"><b>' + n + '</b><span class="st"><span>' + esc(L(D.mapNames[r.id])) + '</span><small>' + esc(dayLbl(r.d)) + '</small></span></button></li>';
+        return '<li><button type="button" data-i="' + i + '" aria-pressed="false"><b>' + n + '</b><span class="st"><span>' + esc(L(D.mapNames[r.id] || { en: r.id })) + '</span><small>' + esc(dayLbl(r.d)) + '</small></span></button></li>';
       }).join('') + '</ol></figure>';
   }
   function cr(pts) { /* closed Catmull-Rom → cubic segments */
@@ -335,10 +347,14 @@ function skyBoot() {
     }
     return segs;
   }
-  function dayLbl(d) { return t(/[–-]/.test(d) ? 'rm.days' : 'rm.day') + ' ' + d; }
+  function dayLbl(d) { return d ? t(/[–-]/.test(d) ? 'rm.days' : 'rm.day') + ' ' + d : ''; }
   function f1(v) { return Math.round(v * 10) / 10; }
   function f3(v) { return Math.round(v * 1000) / 1000; }
   var LBL_OFF = { r: [15, -2, 'start'], l: [-15, -2, 'end'], t: [0, -30, 'middle'], b: [0, 27, 'middle'] };
+  /* every tour that can be drawn, and one colour per tour (same colour on the tabs and on the map) */
+  function jmTours() { return D.tours.filter(function (x) { return x.route && x.route.length > 1 && x.route.every(function (r) { return r.id === 'ub' || M.pins[r.id]; }); }); }
+  var JM_PAL = ['#2C6CA6', '#D9822B', '#2E8B57', '#C0392B', '#7B4FA3', '#B8860B', '#1F8A9E', '#D35D8F', '#5D6D2F', '#8C5A3C'];
+  function jmCol(id) { var i = 0; jmTours().forEach(function (x, k) { if (x.id === id) i = k; }); return JM_PAL[i % JM_PAL.length]; }
   /* mode: 'final' (everything drawn), 'wait' (map only, before it scrolls into view), 'play' */
   function drawRouteMap(fig, mode) {
     var tr = D.tours.filter(function (x) { return x.id === fig.dataset.tour; })[0]; if (!tr) return;
@@ -358,7 +374,7 @@ function skyBoot() {
     var cam = { x: end.x, y: end.y, s: end.s };
     function q(s) { var a = Math.log(s / sFull) / Math.log(sR / sFull); return 0.86 + 0.14 * Math.min(Math.max(a || 0, 0), 1); }
     /* base map */
-    var cid = 'rmc-' + tr.id, rl = M.relief, cx = M.ctx;
+    var cid = 'rmc-' + tr.id + (fig.dataset.others ? '-a' : ''), rl = M.relief, cx = M.ctx;
     var h = '<defs><clipPath id="' + cid + '"><path d="' + M.border + '"/></clipPath></defs>' +
       '<rect class="rm-sea" x="-3000" y="-3000" width="7000" height="7000"/>' +
       '<image href="img/map/mn-ctx.webp" x="' + cx[0] + '" y="' + cx[1] + '" width="' + cx[2] + '" height="' + cx[3] + '" preserveAspectRatio="none"/>' +
@@ -368,6 +384,13 @@ function skyBoot() {
         var p = pj(l.ll[0], l.ll[1]);
         return '<g class="rm-rg rm-' + l.c + '" data-x="' + f1(p[0]) + '" data-y="' + f1(p[1]) + '" data-r="' + (l.r || 0) + '"><text text-anchor="' + (l.a || 'middle') + '" dy=".35em">' + esc(L(l.t)) + '</text></g>';
       }).join('') + '</g>';
+    /* the other tours, each in its own colour, shown when the whole country is in view */
+    if (fig.dataset.others) {
+      h += '<g class="rm-oths">' + jmTours().filter(function (o) { return o.id !== tr.id; }).map(function (o) {
+        var op = o.route.map(function (r) { return r.id === 'ub' ? M.ub : M.pins[r.id]; });
+        return '<path class="rm-oth" data-tour="' + o.id + '" d="' + cr(op).join('') + '" style="stroke:' + jmCol(o.id) + '"><title>' + esc(L(o.name)) + '</title></path>';
+      }).join('') + '</g>';
+    }
     var segs = cr(pts);
     h += '<path class="rm-track" d="' + segs.join('') + '"/>';
     segs.forEach(function (d) { h += '<path class="rm-seg" d="' + d + '"/>'; });
@@ -375,7 +398,7 @@ function skyBoot() {
     var n = 0;
     stops.forEach(function (r, i) {
       if (r.id === 'ub' && i > 0) return;
-      var name = L(D.mapNames[r.id]);
+      var name = L(D.mapNames[r.id] || { en: r.id });
       if (r.id === 'ub') {
         h += '<g class="rm-pin rm-ub" data-i="0"><g class="rm-pop"><rect x="-7" y="-7" width="14" height="14" transform="rotate(45)"/>' +
           '<text class="rm-lbl"><tspan class="rm-n">' + esc(name) + '</tspan><tspan class="rm-d" dy="14">' + esc(t('rm.start')) + '</tspan></text></g></g>';
@@ -387,8 +410,8 @@ function skyBoot() {
         '<text class="rm-lbl"><tspan class="rm-n">' + esc(name) + '</tspan><tspan class="rm-d" dy="14">' + esc(dayLbl(r.d)) + '</tspan></text></g></g>';
     });
     svg.innerHTML = h;
-    var segEls = $$('.rm-seg', svg), track = $('.rm-track', svg), car = $('.rm-car', svg), pins = $$('.rm-pin', svg), rgs = $$('.rm-rg', svg);
-    var carPt = M.ub, curCard = -1, pinByIdx = {};
+    var segEls = $$('.rm-seg', svg), track = $('.rm-track', svg), car = $('.rm-car', svg), pins = $$('.rm-pin', svg), rgs = $$('.rm-rg', svg), oths = $$('.rm-oth', svg);
+    var carPt = M.ub, curCard = -1, sel = -1, flying = false, pinByIdx = {};
     pins.forEach(function (g) { pinByIdx[g.dataset.i] = g; });
     rgs.forEach(function (g) { var bb = $('text', g).getBBox(); g.dataset.hw = f1(bb.width / 2); });
     segEls.forEach(function (el) { var L0 = el.getTotalLength(); el.dataset.len = L0; el.style.strokeDasharray = L0 + ' ' + L0; el.style.strokeDashoffset = L0; });
@@ -425,6 +448,7 @@ function skyBoot() {
       pins.forEach(function (g) { var p = pts[+g.dataset.i]; g.setAttribute('transform', 'translate(' + p[0] + ' ' + p[1] + ') scale(' + f3(k * qq) + ')'); });
       placeCar(k * qq);
       segEls.forEach(function (el) { el.style.strokeWidth = f3(3.2 * k * qq); });
+      oths.forEach(function (el) { el.style.strokeWidth = f3(2.6 * k); });
       track.style.strokeWidth = f3(2 * k); track.style.strokeDasharray = f3(1.5 * k) + ' ' + f3(6.5 * k);
       rgs.forEach(function (g) {
         var x = +g.dataset.x, y = +g.dataset.y, sx = (x - vx) * s, sy = (y - vy) * s, hw = +g.dataset.hw, big = g.classList.contains('rm-big');
@@ -449,18 +473,21 @@ function skyBoot() {
     }
     function mark(i) {
       pins.forEach(function (g) { g.classList.toggle('hl', +g.dataset.i === i); });
-      chips.forEach(function (b) { b.classList.toggle('cur', +b.dataset.i === i); });
+      chips.forEach(function (b) { var on = +b.dataset.i === i; b.classList.toggle('cur', on); b.setAttribute('aria-pressed', String(on && sel === i)); });
     }
+    /* the card works with or without a photo, so every stop answers a tap */
     function showCard(i) {
-      var r = stops[i]; if (!r || !r.img) { hideCard(); return; }
-      $('img', card).src = imgUrl(r.img); $('small', card).textContent = dayLbl(r.d); $('b', card).textContent = L(D.mapNames[r.id]);
+      var r = stops[i]; if (!r || r.id === 'ub') { hideCard(); return; }
+      var im = $('img', card);
+      if (r.img) { im.hidden = false; im.src = imgUrl(r.img); card.classList.remove('noimg'); } else { im.hidden = true; im.removeAttribute('src'); card.classList.add('noimg'); }
+      $('small', card).textContent = dayLbl(r.d); $('b', card).textContent = L(D.mapNames[r.id] || { en: r.id });
       curCard = i; posCard(i); card.classList.add('on'); mark(i);
     }
-    function hideCard() { curCard = -1; card.classList.remove('on'); mark(-1); }
+    function hideCard() { curCard = -1; card.classList.remove('on'); mark(sel); }
     var lr = layout(route, false), le = mob ? lr : layout(full, true);
     function startState() {
-      cam.x = full.x; cam.y = full.y; cam.s = full.s; carPt = M.ub;
-      applyLayout(lr); svg.classList.remove('lbl-off');
+      cam.x = full.x; cam.y = full.y; cam.s = full.s; carPt = M.ub; sel = -1;
+      applyLayout(lr); svg.classList.remove('lbl-off'); svg.classList.remove('oth-on');
       segEls.forEach(function (el) { el.style.strokeDashoffset = el.dataset.len; });
       pins.forEach(function (g) { g.classList.remove('on'); }); car.style.opacity = 0; hideCard();
       chips.forEach(function (b) { b.classList.add('dim'); }); replay.hidden = true; zb.hidden = true;
@@ -468,12 +495,14 @@ function skyBoot() {
     }
     var atEnd = true;
     function setZoomBtn() {
+      zb.hidden = false;
+      if (sel >= 0) { $('use', zb).setAttribute('href', '#i-zout'); $('span', zb).textContent = t('jm.route'); return; }
       var zin = (atEnd ? end : (end === full ? route : full)) === full;
-      zb.hidden = false; $('use', zb).setAttribute('href', zin ? '#i-zin' : '#i-zout'); $('span', zb).textContent = t(zin ? 'rm.zin' : 'rm.zout');
+      $('use', zb).setAttribute('href', zin ? '#i-zin' : '#i-zout'); $('span', zb).textContent = t(zin ? 'rm.zin' : 'rm.zout');
     }
     function finalState() {
-      cam.x = end.x; cam.y = end.y; cam.s = end.s; atEnd = true; setZoomBtn();
-      applyLayout(le); svg.classList.remove('lbl-off');
+      cam.x = end.x; cam.y = end.y; cam.s = end.s; atEnd = true; sel = -1; flying = false; setZoomBtn();
+      applyLayout(le); svg.classList.remove('lbl-off'); svg.classList.add('oth-on');
       segEls.forEach(function (el) { el.style.strokeDashoffset = 0; });
       pins.forEach(function (g) { g.classList.add('on'); }); car.style.opacity = 0; hideCard();
       chips.forEach(function (b) { b.classList.remove('dim'); }); replay.hidden = false; fig.dataset.playing = '0';
@@ -491,28 +520,46 @@ function skyBoot() {
         cam.s = s; applyCam();
       } }, pos);
     }
-    var idle = function () { return fig.dataset.playing !== '1'; };
+    /* camera moves after the first drawing: a stop, the route, or the whole country */
+    function flyTo(to, after) {
+      if (fig._tl) { fig._tl.kill(); fig._tl = null; }
+      var done = function () { applyLayout(layout(cam, true)); svg.classList.remove('lbl-off'); flying = false; if (after) after(); };
+      if (!window.gsap || reduce) { cam.x = to.x; cam.y = to.y; cam.s = to.s; applyCam(); done(); return; }
+      flying = true; svg.classList.add('lbl-off');
+      var zt = gsap.timeline({ onComplete: done });
+      fig._tl = zt; fly(zt, to, 0.95, 0);
+    }
+    function stopView(i) { var p = pts[i]; return { x: p[0], y: p[1], s: Math.min(Math.max(route.s * 1.6, sFull * 2.3), sFull * 5) }; }
+    function idle() { return fig.dataset.playing !== '1'; }
+    function finishIntro() { if (!idle()) { if (fig._tl) { fig._tl.kill(); fig._tl = null; } finalState(); } }
+    function selectStop(i) {
+      finishIntro();
+      if (sel === i) { sel = -1; hideCard(); atEnd = true; setZoomBtn(); flyTo(end); return; }
+      sel = i; mark(i); setZoomBtn(); card.classList.remove('on');
+      flyTo(stopView(i), function () { if (sel === i) showCard(i); });
+    }
+    var hoverOK = finePtr.matches;
+    function preview(i) { if (hoverOK && idle() && !flying && sel < 0) showCard(i); }
+    function unpreview() { if (hoverOK && idle() && !flying && sel < 0) hideCard(); }
     pins.forEach(function (g) {
       var i = +g.dataset.i; if (!i) return;
-      g.addEventListener('mouseenter', function () { if (idle()) showCard(i); });
-      g.addEventListener('focus', function () { if (idle()) showCard(i); });
-      g.addEventListener('mouseleave', function () { if (idle()) hideCard(); });
-      g.addEventListener('blur', function () { if (idle()) hideCard(); });
-      g.addEventListener('click', function () { if (idle()) { curCard === i ? hideCard() : showCard(i); } });
+      g.addEventListener('mouseenter', function () { preview(i); });
+      g.addEventListener('mouseleave', unpreview);
+      g.addEventListener('click', function () { selectStop(i); });
+      g.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectStop(i); } });
     });
     chips.forEach(function (b) {
       var i = +b.dataset.i;
-      b.onmouseenter = b.onfocus = function () { if (idle()) showCard(i); };
-      b.onmouseleave = b.onblur = function () { if (idle()) hideCard(); };
-      b.onclick = function () { if (idle()) { curCard === i ? hideCard() : showCard(i); } };
+      b.onmouseenter = function () { preview(i); };
+      b.onmouseleave = unpreview;
+      b.onclick = function () { selectStop(i); };
     });
+    oths.forEach(function (el) { el.addEventListener('click', function () { fig.dispatchEvent(new CustomEvent('rm-tour', { detail: el.dataset.tour, bubbles: true })); }); });
     zb.onclick = function () {
-      if (!idle() || !window.gsap) return;
-      var cur = atEnd ? end : (end === full ? route : full), to = cur === full ? route : full, lay = to === full ? (mob ? layout(full, true) : le) : lr;
-      if (fig._tl) fig._tl.kill();
-      hideCard(); svg.classList.add('lbl-off'); fig.dataset.playing = '1';
-      var zt = gsap.timeline({ onComplete: function () { applyLayout(lay); svg.classList.remove('lbl-off'); fig.dataset.playing = '0'; atEnd = to === end; setZoomBtn(); } });
-      fig._tl = zt; fly(zt, to, reduce ? 0.01 : 1.2, 0);
+      finishIntro();
+      if (sel >= 0) { selectStop(sel); return; }
+      var cur = atEnd ? end : (end === full ? route : full), to = cur === full ? route : full;
+      atEnd = to === end; setZoomBtn(); flyTo(to);
     };
     if (mode === 'wait') { startState(); fig.dataset.playing = '0'; return; }
     if (mode !== 'play' || reduce || !window.gsap) { finalState(); return; }
@@ -539,18 +586,21 @@ function skyBoot() {
     tl.add(function () { hideCard(); gsap.to(car, { opacity: 0, duration: 0.3 }); if (!mob) svg.classList.add('lbl-off'); }, '+=0.15');
     if (!mob) {
       fly(tl, full, 1.2, '+=0.1');
-      tl.add(function () { applyLayout(le); svg.classList.remove('lbl-off'); });
+      tl.add(function () { applyLayout(le); svg.classList.remove('lbl-off'); svg.classList.add('oth-on'); });
       tl.to({}, { duration: 0.4 });
     }
   }
   var rmObs = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
     es.forEach(function (e) { if (e.isIntersecting && !e.target.dataset.played) { e.target.dataset.played = '1'; drawRouteMap(e.target, 'play'); } });
   }, { threshold: 0.45 }) : null;
-  function initRouteMap(fig) {
+  function initRouteMap(fig, playNow) {
     if (!fig) return;
-    var wait = rmObs && !reduce;
-    drawRouteMap(fig, wait ? 'wait' : 'final');
-    if (wait) rmObs.observe(fig);
+    if (playNow && !reduce) { fig.dataset.played = '1'; drawRouteMap(fig, 'play'); }
+    else {
+      var wait = rmObs && !reduce;
+      drawRouteMap(fig, wait ? 'wait' : 'final');
+      if (wait) rmObs.observe(fig);
+    }
     $('.rmap-replay', fig).addEventListener('click', function () { drawRouteMap(fig, 'play'); });
   }
   var rmW = window.innerWidth;
@@ -558,391 +608,191 @@ function skyBoot() {
     if (Math.abs(window.innerWidth - rmW) < 40) return; rmW = window.innerWidth;
     $$('.rmap').forEach(function (fig) { fig.dataset.playing = '0'; drawRouteMap(fig, rmObs && !reduce && !fig.dataset.played ? 'wait' : 'final'); });
   });
-  /* ---------- 3D journey map under the hero: MapLibre over real terrain; the camera drives the route and stops at each place ---------- */
+  /* ---------- route map under the hero: one tab per tour; the other tours appear in their colours when the whole country is in view ---------- */
   var jm = { sec: $('#journey-map') };
-  var GIBS = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_NextGeneration/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg';
-  var DEM = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
-  var MN_B = [[87.7, 41.55], [119.95, 52.2]];
-  function f5(v) { return Math.round(v * 1e5) / 1e5; }
-  function lonlat(p) { return [f5((p[0] - M.proj[1]) / M.proj[0]), f5(latAt(p[1]))]; }
-  function rings(d) { var out = [], re = /M([^MZ]+)(Z?)/g, m; while ((m = re.exec(d))) out.push(m[1].split('L').map(function (s) { return lonlat(s.split(',').map(Number)); })); return out; }
-  function lerp(a, b, k) { return a + (b - a) * k; }
-  function smooth(k) { k = Math.min(Math.max(k, 0), 1); return k * k * (3 - 2 * k); }
-  function angd(to, from) { return ((to - from + 540) % 360) - 180; }
-  function hasGL() { try { var c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } }
-  function jmTours() { return D.tours.filter(function (x) { return x.route; }); }
-  var JM_PAL = ['#2C6CA6', '#D9822B', '#2E8B57', '#C0392B', '#7B4FA3', '#B8860B', '#1F8A9E', '#D35D8F', '#5D6D2F', '#8C5A3C'];
-  function jmCol(id) { var ts = jmTours(), i = 0; ts.forEach(function (x, k) { if (x.id === id) i = k; }); return JM_PAL[i % JM_PAL.length]; }
-  function rgba(hex, a) { var n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')'; }
-  /* the other tours, drawn at once in their own colours when the map shows the whole country */
-  function jmOthers(show) {
-    var map = jm.map; if (!map || !map.getSource('others')) return;
-    if (show) {
-      map.getSource('others').setData({ type: 'FeatureCollection', features: jmTours().filter(function (x) { return x.id !== jm.cur; }).map(function (x) {
-        return { type: 'Feature', properties: { id: x.id, c: jmCol(x.id), n: L(x.name) }, geometry: { type: 'LineString', coordinates: jmRoute(x).line } };
-      }) });
-    }
-    ['others-case', 'others'].forEach(function (l) { map.setPaintProperty(l, 'line-opacity', show ? (l === 'others' ? 0.9 : 0.85) : 0); });
-    jm.othersOn = !!show; jm.stage.classList.toggle('jm-all', !!show);
+  function jmShort(tr) {
+    var en = String(tr.name.en || '').replace(/^\d+-Day\s*/, '').trim();
+    if (lang === 'en') return en || L(tr.name);
+    if (lang === 'mn') return L(tr.name).replace(/\s*\d+\s*хоногийн\s*/i, ' ').replace(/,?\s*\d+\s*хоног\s*$/i, '').trim();
+    var t2 = tx(en); return t2 !== en ? t2 : L(tr.name);
   }
-  function dayTitle(tr, d) { var p = tr.plan && tr.plan[parseInt(d, 10) - 1]; return p ? L(p.t) : ''; }
-  function jmRoute(tr) {
-    var stops = tr.route, pts = stops.map(function (r) { return r.id === 'ub' ? M.ub : M.pins[r.id]; }), n = pts.length, N = 44;
-    var xy = [], F = [0], segKm = [];
-    for (var i = 0; i < n - 1; i++) {
-      var p0 = pts[(i - 1 + n - 1) % (n - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[(i + 2) % (n - 1)];
-      var c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
-      for (var k = i ? 1 : 0; k <= N; k++) {
-        var u = k / N, v = 1 - u;
-        xy.push([v * v * v * p1[0] + 3 * v * v * u * c1[0] + 3 * v * u * u * c2[0] + u * u * u * p2[0], v * v * v * p1[1] + 3 * v * v * u * c1[1] + 3 * v * u * u * c2[1] + u * u * u * p2[1]]);
-      }
-      F.push(xy.length - 1);
-    }
-    var cum = [0];
-    for (var j = 1; j < xy.length; j++) cum.push(cum[j - 1] + Math.hypot(xy[j][0] - xy[j - 1][0], xy[j][1] - xy[j - 1][1]));
-    var tot = cum[cum.length - 1];
-    var ll = xy.map(lonlat), lat0 = latAt(xy[0][1]);
-    var segs = F.slice(0, -1).map(function (a, i) {
-      var km = (cum[F[i + 1]] - cum[a]) * 111.32 * Math.cos(latAt((xy[a][1] + xy[F[i + 1]][1]) / 2) * Math.PI / 180) / M.proj[0];
-      return { g0: cum[a] / tot, g1: cum[F[i + 1]] / tot, km: km };
-    });
-    var lons = ll.map(function (p) { return p[0]; }), lats = ll.map(function (p) { return p[1]; });
-    return { tr: tr, stops: stops, ll: pts.map(lonlat), line: ll, cum: cum, tot: tot, segs: segs, lat0: lat0,
-      bounds: [[Math.min.apply(0, lons), Math.min.apply(0, lats)], [Math.max.apply(0, lons), Math.max.apply(0, lats)]] };
-  }
-  function posAt(R, g) {
-    var d = g * R.tot, a = 0, b = R.cum.length - 1;
-    while (b - a > 1) { var m = (a + b) >> 1; if (R.cum[m] <= d) a = m; else b = m; }
-    var k = (d - R.cum[a]) / ((R.cum[b] - R.cum[a]) || 1);
-    return [lerp(R.line[a][0], R.line[b][0], k), lerp(R.line[a][1], R.line[b][1], k)];
-  }
-  function jmStyle() {
-    function corners(r) { var x0 = r[0], y0 = r[1], x1 = r[0] + r[2], y1 = r[1] + r[3]; return [lonlat([x0, y0]), lonlat([x1, y0]), lonlat([x1, y1]), lonlat([x0, y1])]; }
-    var mn = rings(M.border);
-    function fc(type, coords) { return { type: 'Feature', properties: {}, geometry: { type: type, coordinates: coords } }; }
-    return {
-      version: 8,
-      sources: {
-        ctx: { type: 'image', url: 'img/map/mn-ctx.webp', coordinates: corners(M.ctx) },
-        rel: { type: 'image', url: 'img/map/mn-relief.webp', coordinates: corners(M.relief) },
-        bm: { type: 'raster', tiles: [GIBS], tileSize: 256, maxzoom: 8, attribution: '<a href="https://earthdata.nasa.gov/gibs" target="_blank" rel="noopener">NASA GIBS</a>' },
-        dem: { type: 'raster-dem', tiles: [DEM], tileSize: 256, maxzoom: 11, encoding: 'terrarium', attribution: '<a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Terrain: Mapzen, AWS</a>' },
-        hs: { type: 'raster-dem', tiles: [DEM], tileSize: 256, maxzoom: 12, encoding: 'terrarium' },
-        lakes: { type: 'geojson', data: fc('MultiPolygon', rings(M.lakes).map(function (r) { return [r]; })) },
-        rivers: { type: 'geojson', data: fc('MultiLineString', rings(M.rivers)) },
-        aimag: { type: 'geojson', data: fc('MultiLineString', rings(M.aimag)) },
-        border: { type: 'geojson', data: fc('MultiLineString', mn), attribution: 'Natural Earth' },
-        mask: { type: 'geojson', data: fc('Polygon', [[[55, 15], [155, 15], [155, 70], [55, 70], [55, 15]]].concat(mn)) },
-        route: { type: 'geojson', lineMetrics: true, data: fc('LineString', [[106.9, 47.9], [106.91, 47.91]]) },
-        others: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } }
-      },
-      layers: [
-        { id: 'bg', type: 'background', paint: { 'background-color': '#EEE6DC' } },
-        { id: 'ctx', type: 'raster', source: 'ctx', paint: { 'raster-fade-duration': 0 } },
-        { id: 'rel', type: 'raster', source: 'rel', paint: { 'raster-fade-duration': 0 } },
-        { id: 'bm', type: 'raster', source: 'bm', paint: { 'raster-saturation': 0.4, 'raster-contrast': 0.16, 'raster-brightness-min': 0.05, 'raster-brightness-max': 1, 'raster-fade-duration': 250 } },
-        { id: 'hs', type: 'hillshade', source: 'hs', layout: { visibility: lite ? 'none' : 'visible' }, paint: { 'hillshade-exaggeration': 0.75, 'hillshade-shadow-color': '#3B2A1C', 'hillshade-highlight-color': '#FFF3DC', 'hillshade-accent-color': '#6B4E33', 'hillshade-illumination-direction': 315 } },
-        { id: 'lakes', type: 'fill', source: 'lakes', paint: { 'fill-color': '#7FAFD6', 'fill-outline-color': '#5C8FBF' } },
-        { id: 'rivers', type: 'line', source: 'rivers', paint: { 'line-color': '#5C8FBF', 'line-width': 1.1, 'line-opacity': 0.75 } },
-        { id: 'mask', type: 'fill', source: 'mask', paint: { 'fill-color': '#EEE6DC', 'fill-opacity': 0.6 } },
-        { id: 'aimag', type: 'line', source: 'aimag', paint: { 'line-color': '#FFFFFF', 'line-width': 0.9, 'line-opacity': 0.6 } },
-        { id: 'border', type: 'line', source: 'border', layout: { 'line-join': 'round' }, paint: { 'line-color': '#131A27', 'line-width': 1.6, 'line-opacity': 0.7 } },
-        { id: 'others-case', type: 'line', source: 'others', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#FFFFFF', 'line-width': 5.5, 'line-opacity': 0, 'line-opacity-transition': { duration: 700, delay: 0 } } },
-        { id: 'others', type: 'line', source: 'others', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ['get', 'c'], 'line-width': 3, 'line-opacity': 0, 'line-opacity-transition': { duration: 700, delay: 0 } } },
-        { id: 'plan', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': 'rgba(19,26,39,.55)', 'line-width': 2, 'line-dasharray': [0.6, 2.4] } },
-        { id: 'drawn-case', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-width': 8, 'line-gradient': 'rgba(255,255,255,0)' } },
-        { id: 'drawn', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-width': 4, 'line-gradient': 'rgba(44,108,166,0)' } }
-      ]
-    };
-  }
-  function jmInit() {
-    var sec = jm.sec; if (!sec) return;
-    jm.stage = $('.jm-stage', sec); jm.box = $('.jm-map', sec); jm.card = $('.jm-card', sec); jm.tabs = $('.jm-tabs', sec); jm.chips = $('.jm-stops', sec);
-    jm.replay = $('.jm-replay', sec); jm.view = $('.jm-view', sec);
-    jm.cur = jmTours()[0].id; jm.tok = 0; jm.playing = false; jm.atRoute = true;
-    jmTabs(); jmChips();
-    jm.tabs.addEventListener('click', function (e) { var b = e.target.closest('[data-tour]'); if (b && b.dataset.tour !== jm.cur) jmSetTour(b.dataset.tour, true); });
-    jm.replay.addEventListener('click', function () { jmPlay(); });
-    jm.view.addEventListener('click', function () { jmToggleView(); });
-    jm.chips.addEventListener('click', function (e) { var b = e.target.closest('button[data-i]'); if (b) jmGoStop(+b.dataset.i); });
-    if (!hasGL()) { jmFallback(); return; }
-    /* load the map library a little before the section, but start the flight only when most of the map is on screen */
-    var pre = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { if (e.isIntersecting && !jm.loading) { jm.loading = true; jmLoad(); pre.disconnect(); } });
-    }, { rootMargin: '700px 0px' });
-    pre.observe(jm.stage);
-    var see = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        var r = e.intersectionRatio;
-        if (r >= 0.6) { jm.visible = true; if (jm.ready && !jm.played) jmStart(); }
-        else if (r < 0.2) { jm.visible = false; if (jm.playing) { jmStop(false); jm.played = false; } }
-      });
-    }, { threshold: [0, 0.2, 0.6] });
-    see.observe(jm.stage);
-  }
-  function jmFallback() {
-    jm.fallback = true; jm.stage.classList.add('jm-flat');
-    var tr = D.tours.filter(function (x) { return x.id === jm.cur; })[0];
-    jm.box.innerHTML = routeMap(tr); var fig = $('.rmap', jm.box); if (fig) initRouteMap(fig);
-    jm.chips.hidden = true;
-  }
-  function jmLoad() {
-    var css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'vendor/maplibre/maplibre-gl.css'; document.head.appendChild(css);
-    var s = document.createElement('script'); s.src = 'vendor/maplibre/maplibre-gl.js'; s.async = true;
-    s.onload = jmCreate; s.onerror = jmFallback; document.head.appendChild(s);
-  }
-  function jmLocale() {
-    return {
-      'CooperativeGesturesHandler.WindowsHelpText': t('jm.coop.win'), 'CooperativeGesturesHandler.MacHelpText': t('jm.coop.mac'), 'CooperativeGesturesHandler.MobileHelpText': t('jm.coop.mob'),
-      'NavigationControl.ZoomIn': t('jm.zin'), 'NavigationControl.ZoomOut': t('jm.zout'), 'NavigationControl.ResetBearing': t('jm.north')
-    };
-  }
-  function jmCreate() {
-    var ml = window.maplibregl; if (!ml) { jmFallback(); return; }
-    try {
-      jm.map = new ml.Map({ container: jm.box, style: jmStyle(), bounds: MN_B, fitBoundsOptions: { padding: 16 }, maxPitch: 70, maxBounds: [[66, 26], [141, 63]],
-        pixelRatio: jmRatio(), cooperativeGestures: true, attributionControl: { compact: true }, locale: jmLocale(), fadeDuration: 120 });
-    } catch (e) { jmFallback(); return; }
-    var map = jm.map;
-    map.addControl(new ml.NavigationControl({ visualizePitch: true }), 'top-right');
-    map.on('error', function (e) { if (window.console) console.warn('map:', e && e.error && e.error.message); });
-    map.on('load', function () {
-      try { map.setTerrain({ source: 'dem', exaggeration: 2 }); } catch (e) {}
-      jm.carEl = document.createElement('div'); jm.carEl.className = 'jm-car';
-      jm.car = new ml.Marker({ element: jm.carEl }).setLngLat(lonlat(M.ub)).addTo(map);
-      jm.rg = (D.mapLabels || []).map(function (l) {
-        var el = document.createElement('div'); el.className = 'jm-rg jm-' + l.c; el.textContent = L(l.t); el.setAttribute('aria-hidden', 'true');
-        return { l: l, el: el, m: new ml.Marker({ element: el, anchor: l.a === 'start' ? 'left' : 'center' }).setLngLat(l.ll).addTo(map) };
-      });
-      map.on('zoom', jmZoomClass); jmZoomClass();
-      map.on('move', function () { if (!jm.flipRaf) jm.flipRaf = requestAnimationFrame(jmFlip); });
-      ['dragstart', 'zoomstart', 'rotatestart', 'pitchstart'].forEach(function (ev) { map.on(ev, function (e) { if (e.originalEvent && jm.playing) jmStop(true); }); });
-      /* hover names on the other routes: one throttled query, only while they are shown (a query on every mouse move is costly with 3D terrain) */
-      var hovT = 0, hovP = null;
-      function hitOther(pt) { var fs = map.queryRenderedFeatures([[pt.x - 6, pt.y - 6], [pt.x + 6, pt.y + 6]], { layers: ['others'] }); return fs && fs[0]; }
-      map.on('mousemove', function (e) {
-        if (!jm.othersOn || jm.playing) { if (hovP) { hovP = null; map.getCanvas().style.cursor = ''; jmTip('', null); } return; }
-        hovP = e.point; if (hovT) return;
-        hovT = setTimeout(function () { hovT = 0; if (!hovP) return; var f = hitOther(hovP); map.getCanvas().style.cursor = f ? 'pointer' : ''; jmTip(f ? f.properties.n : '', hovP); }, 120);
-      });
-      map.getCanvas().addEventListener('mouseleave', function () { hovP = null; map.getCanvas().style.cursor = ''; jmTip('', null); });
-      map.on('click', function (e) { if (!jm.othersOn || jm.playing) return; var f = hitOther(e.point); if (f) { jmTip('', null); jmSetTour(f.properties.id, true); } });
-      jmSetTour(jm.cur, false);
-      jm.ready = true;
-      if (jm.visible && !jm.played) jmStart();
-    });
-  }
-  function jmFlip() {
-    jm.flipRaf = 0; if (!jm.map || !jm.pins) return;
-    var W = jm.stage.clientWidth;
-    jm.pins.forEach(function (p) { var l = $('.jm-l', p.el), x = jm.map.project(p.ll).x; p.el.classList.toggle('flip', x + 24 + (l ? l.offsetWidth : 0) > W - 10); });
-  }
-  function jmZoomClass() { if (jm.map) jm.stage.classList.toggle('jm-far', jm.map.getZoom() < 6.6); }
   function jmTabs() {
     jm.tabs.innerHTML = jmTours().map(function (tr) {
-      return '<button class="jm-tab" type="button" role="tab" data-tour="' + tr.id + '" aria-selected="' + (tr.id === jm.cur) + '" style="--tc:' + jmCol(tr.id) + '"><i class="jm-dot" aria-hidden="true"></i><b>' + tr.days + '</b><small>' + esc(t('tr.days')) + '</small>' + esc(L(tr.name).replace(/^\d+-Day\s*/, '').replace(/\s*\d+\s*хоногийн\s*/i, ' ').replace(/,?\s*\d+\s*хоног\s*$/i, '').trim()) + '</button>';
+      return '<button class="jm-tab" type="button" role="tab" data-tour="' + tr.id + '" aria-selected="' + (tr.id === jm.cur) + '" style="--tc:' + jmCol(tr.id) + '"><i class="jm-dot" aria-hidden="true"></i><b>' + tr.days + '</b><small>' + esc(t('tr.days')) + '</small>' + esc(jmShort(tr)) + '</button>';
     }).join('');
   }
-  function jmChips() {
-    var tr = D.tours.filter(function (x) { return x.id === jm.cur; })[0], n = 0;
-    jm.chips.innerHTML = tr.route.map(function (r, i) {
-      if (r.id === 'ub') return '';
-      n++;
-      return '<li><button type="button" data-i="' + i + '"><b>' + n + '</b><span class="st"><span>' + esc(L(D.mapNames[r.id])) + '</span><small>' + esc(dayLbl(r.d)) + '</small></span></button></li>';
-    }).join('');
+  function jmRender(play) {
+    var tr = D.tours.filter(function (x) { return x.id === jm.cur; })[0];
+    jm.box.innerHTML = routeMap(tr, { others: true });
+    initRouteMap($('.rmap', jm.box), play);
   }
-  function jmSetTour(id, play) {
-    jm.cur = id; jmStop(false);
-    $$('.jm-tab', jm.tabs).forEach(function (b) { b.setAttribute('aria-selected', b.dataset.tour === id); });
-    jmChips();
-    if (jm.fallback) { jmFallback(); return; }
-    if (!jm.map || !jm.carEl || !jm.map.getSource('route')) return;
-    var ml = window.maplibregl, map = jm.map, R = jm.R = jmRoute(D.tours.filter(function (x) { return x.id === id; })[0]);
-    map.getSource('route').setData({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: R.line } });
-    (jm.pins || []).forEach(function (p) { p.m.remove(); });
-    var n = 0;
-    jm.pins = R.stops.map(function (r, i) {
-      if (r.id === 'ub' && i > 0) return null;
-      var wrap = document.createElement('div'), ub = r.id === 'ub';
-      if (!ub) n++;
-      wrap.className = 'jm-mk';
-      wrap.innerHTML = '<div class="jm-pin' + (ub ? ' jm-ub' : '') + '"><i>' + (ub ? '' : n) + '</i><span class="jm-l"><b>' + esc(L(D.mapNames[r.id])) + '</b><small>' + esc(ub ? t('rm.start') : dayLbl(r.d)) + '</small></span></div>';
-      if (!ub) {
-        wrap.tabIndex = 0; wrap.setAttribute('role', 'button'); wrap.setAttribute('aria-label', dayLbl(r.d) + ': ' + L(D.mapNames[r.id]));
-        wrap.addEventListener('click', function () { jmGoStop(i); });
-        wrap.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jmGoStop(i); } });
-      }
-      return { i: i, el: $('.jm-pin', wrap), ll: R.ll[i], m: new ml.Marker({ element: wrap, anchor: 'center' }).setLngLat(R.ll[i]).addTo(map) };
-    }).filter(Boolean);
-    R.stops.forEach(function (r) { if (r.img) { var im = new Image(); im.decoding = 'async'; im.src = imgUrl(r.img); } });
-    if (play && jm.visible && !reduce) jmPlay(); else jmShowAll(true);
-    jmFlip();
+  function jmSetTour(id) {
+    if (!id || id === jm.cur) return;
+    jm.cur = id; $$('.jm-tab', jm.tabs).forEach(function (b) { b.setAttribute('aria-selected', b.dataset.tour === id); });
+    jmRender(true);
   }
-  function jmProgress(g) {
-    if (!jm.map) return;
-    var col = jmCol(jm.cur), a = rgba(col, 1), a0 = rgba(col, 0), w = 'rgba(255,255,255,.95)', w0 = 'rgba(255,255,255,0)';
-    var gg = Math.min(Math.max(g, 0), 1);
-    jm.map.setPaintProperty('drawn', 'line-gradient', gg >= 1 ? a : gg <= 0 ? a0 : ['step', ['line-progress'], a, gg, a0]);
-    jm.map.setPaintProperty('drawn-case', 'line-gradient', gg >= 1 ? w : gg <= 0 ? w0 : ['step', ['line-progress'], w, gg, w0]);
+  function jmInit() {
+    if (!jm.sec) return;
+    jm.tabs = $('.jm-tabs', jm.sec); jm.box = $('.jm-box', jm.sec);
+    var ts = jmTours(); if (!ts.length) { jm.sec.hidden = true; return; }
+    jm.cur = ts[0].id;
+    jm.tabs.addEventListener('click', function (e) { var b = e.target.closest('[data-tour]'); if (b) jmSetTour(b.dataset.tour); });
+    jm.box.addEventListener('rm-tour', function (e) { jmSetTour(e.detail); });
   }
-  function jmPinOn(i, on) { (jm.pins || []).forEach(function (p) { if (p.i === i) p.el.classList.toggle('on', on); }); }
-  function jmMark(i) {
-    (jm.pins || []).forEach(function (p) { p.el.classList.toggle('act', p.i === i); });
-    $$('button', jm.chips).forEach(function (b) { b.classList.toggle('cur', +b.dataset.i === i); });
-  }
-  function jmCard(i) {
-    var R = jm.R, r = R && R.stops[i], c = jm.card;
-    if (!r || !r.img) { c.classList.remove('on'); jmMark(-1); return; }
-    var img = $('img', c); img.src = imgUrl(r.img);
-    $('small', c).textContent = dayLbl(r.d); $('b', c).textContent = L(D.mapNames[r.id]); $('p', c).textContent = dayTitle(R.tr, r.d);
-    c.classList.remove('on'); void c.offsetWidth; c.classList.add('on'); jmMark(i);
-  }
-  function jmHideCard() { jm.card.classList.remove('on'); jmMark(-1); }
-  function zOff() { return Math.log2(Math.max(jm.stage.clientWidth, 300) / 1150); }
-  function jmCloseZoom() { return 9.9 + 0.45 * zOff(); }
-  function jmDriveZoom(km, lat) { var W = jm.stage.clientWidth || 800; return Math.min(Math.max(Math.log2(156543 * Math.cos(lat * Math.PI / 180) * 0.55 * W / (km * 1000)), 5.6), 8.6); }
-  function jmHeading(a, b) { var h = Math.atan2(b[0] - a[0], (b[1] - a[1]) / Math.cos(a[1] * Math.PI / 180)) * 180 / Math.PI; if (h > 90) h -= 180; else if (h < -90) h += 180; return Math.max(-35, Math.min(35, h * 0.5)); }
-  function jmCam(o, dur, my) {
-    return new Promise(function (res) {
-      if (my !== jm.tok) return res();
-      var done = false, fin = function () { if (!done) { done = true; res(); } };
-      jm.map.once('moveend', fin); setTimeout(fin, dur + 500);
-      if (o.ease) { delete o.ease; jm.map.easeTo(Object.assign({ duration: dur, essential: true, easing: function (k) { return k; } }, o)); }
-      else jm.map.flyTo(Object.assign({ duration: dur, essential: true, curve: 1.3 }, o));
-    });
-  }
-  function jmWait(ms, my) { return new Promise(function (res) { var t0 = Date.now(); (function w() { if (my !== jm.tok || Date.now() - t0 >= ms) return res(); setTimeout(w, 60); })(); }); }
-  function jmDrive(i, my) {
-    var R = jm.R, s = R.segs[i], map = jm.map;
-    return new Promise(function (res) {
-      if (my !== jm.tok) return res();
-      var dur = Math.min(Math.max(s.km / 260, 1.2), 2) * 1000, c0 = { z: map.getZoom(), p: map.getPitch(), b: map.getBearing() };
-      var a = posAt(R, s.g0), b = posAt(R, s.g1), lat = (a[1] + b[1]) / 2, zD = jmDriveZoom(s.km, lat), zA = jmCloseZoom(), hb = jmHeading(a, b), t0 = performance.now();
-      if (jm.car) { jm.carEl.classList.add('on'); }
-      (function fr(now) {
-        if (my !== jm.tok) return res();
-        var p = Math.min((now - t0) / dur, 1), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
-        var g = lerp(s.g0, s.g1, e), pos = posAt(R, g);
-        jmProgress(g); jm.car.setLngLat(pos);
-        var z = p < 0.68 ? lerp(c0.z, zD, smooth(p / 0.32)) : lerp(zD, zA, smooth((p - 0.68) / 0.32));
-        var pt = p < 0.68 ? lerp(c0.p, 50, smooth(p / 0.32)) : lerp(50, 60, smooth((p - 0.68) / 0.32));
-        var br = c0.b + angd(hb, c0.b) * smooth(p / 0.7);
-        map.jumpTo({ center: pos, zoom: z, pitch: pt, bearing: br });
-        if (p < 1) requestAnimationFrame(fr); else res();
-      })(t0);
-    });
-  }
-  function jmOverview(dur, my) {
-    var cam = jm.map.cameraForBounds(jm.R.bounds, { padding: 70, bearing: -6 }) || {};
-    return jmCam({ center: cam.center, zoom: (cam.zoom || 6) - 0.25, pitch: 45, bearing: -6 }, dur, my);
-  }
-  function jmTip(txt, pt) {
-    var tip = jm.tip; if (!tip) { tip = jm.tip = document.createElement('div'); tip.className = 'jm-tip'; tip.setAttribute('aria-hidden', 'true'); jm.stage.appendChild(tip); }
-    if (!txt || !pt) { tip.classList.remove('on'); return; }
-    tip.textContent = txt; tip.style.transform = 'translate(' + Math.round(pt.x + 14) + 'px,' + Math.round(pt.y - 12) + 'px)'; tip.classList.add('on');
-  }
-  /* keep the drawing buffer near 2 megapixels: big desktop maps at retina density made the 3D terrain stutter */
-  function jmRatio() { var r = jm.box.getBoundingClientRect(), area = Math.max(1, r.width * r.height); return Math.max(1, Math.min(window.devicePixelRatio || 1, lite ? 1.5 : 2, Math.sqrt((lite ? 0.7e6 : 2.0e6) / area))); }
-  function jmWhole(dur, my) { var cam = jm.map.cameraForBounds(MN_B, { padding: 16, bearing: 0 }) || {}; return jmCam({ center: cam.center, zoom: cam.zoom, pitch: reduce ? 0 : 20, bearing: 0 }, dur, my); }
-  function jmStart() { if (jm.played || jm.playing || !jm.R) return; jm.played = true; if (reduce) { jmShowAll(true); return; } jmPlay(); }
-  async function jmPlay() {
-    if (!jm.map || !jm.R) return;
-    var my = ++jm.tok, R = jm.R, map = jm.map;
-    jm.playing = true; jm.replay.hidden = true; jm.view.hidden = true; jm.played = true;
-    map.stop(); jmHideCard(); jmOthers(false); jmProgress(0); jm.carEl.classList.remove('on'); jm.car.setLngLat(R.ll[0]);
-    (jm.pins || []).forEach(function (p) { p.el.classList.remove('on'); });
-    $$('button', jm.chips).forEach(function (b) { b.classList.add('dim'); });
-    map.jumpTo(Object.assign(map.cameraForBounds(MN_B, { padding: 16, bearing: 0 }) || {}, { pitch: 0, bearing: 0 }));
-    await jmWait(250, my); if (my !== jm.tok) return;
-    jmPinOn(0, true);
-    await jmCam({ center: R.ll[0], zoom: jmCloseZoom() - 1.3, pitch: 52, bearing: -10 }, 1500, my);
-    for (var i = 0; i < R.segs.length; i++) {
-      await jmDrive(i, my); if (my !== jm.tok) return;
-      var to = i + 1, st = R.stops[to];
-      if (st.id !== 'ub') jmPinOn(to, true);
-      $$('button', jm.chips).forEach(function (b) { if (+b.dataset.i === to) b.classList.remove('dim'); });
-      if (st.img) {
-        jmCard(to);
-        await jmCam({ ease: true, bearing: map.getBearing() + 9, pitch: 62 }, 1300, my); if (my !== jm.tok) return;
-        jmHideCard();
-      }
-    }
-    jm.carEl.classList.remove('on');
-    await jmWhole(2000, my); if (my !== jm.tok) return;
-    jmOthers(true);
-    jm.playing = false; jm.atRoute = false; jmCtl();
-  }
-  function jmStop(showAll) {
-    jm.tok++; var was = jm.playing; jm.playing = false;
-    if (jm.map) jm.map.stop();
-    if (showAll && was) jmShowAll(false);
-  }
-  function jmShowAll(moveCam) {
-    if (!jm.map || !jm.R) return;
-    jmProgress(1); if (jm.carEl) jm.carEl.classList.remove('on'); jmHideCard();
-    (jm.pins || []).forEach(function (p) { p.el.classList.add('on'); });
-    $$('button', jm.chips).forEach(function (b) { b.classList.remove('dim'); });
-    if (moveCam) { var cam = jm.map.cameraForBounds(MN_B, { padding: 16, bearing: 0 }) || {}; jm.map.jumpTo({ center: cam.center, zoom: cam.zoom, pitch: 0, bearing: 0 }); jm.atRoute = false; jmOthers(true); jmCtl(); return; }
-    jm.atRoute = true; jmCtl();
-  }
-  function jmCtl() {
-    jm.replay.hidden = !!jm.playing; jm.view.hidden = !!jm.playing;
-    $('use', jm.view).setAttribute('href', jm.atRoute ? '#i-zout' : '#i-zin'); $('span', jm.view).textContent = t(jm.atRoute ? 'rm.zout' : 'jm.route');
-  }
-  function jmToggleView() {
-    if (!jm.map) return;
-    jmStop(true); var my = jm.tok, d = reduce ? 0 : 2000;
-    jmHideCard();
-    if (jm.atRoute) { jmWhole(d, my).then(function () { if (my === jm.tok) jmOthers(true); }); jm.atRoute = false; }
-    else { jmOverview(d, my); jm.atRoute = true; }
-    jmCtl();
-  }
-  function jmGoStop(i) {
-    if (jm.fallback || !jm.map || !jm.R) return;
-    if (jm.playing) jmStop(true); else jmShowAll(false);
-    var my = jm.tok, R = jm.R;
-    jmCard(i);
-    jmCam({ center: R.ll[i], zoom: jmCloseZoom(), pitch: reduce ? 40 : 60, bearing: jm.map.getBearing() }, reduce ? 0 : 2200, my);
-    jm.atRoute = false; jmCtl();
-  }
-  function jmLang() {
-    if (!jm.sec || !jm.stage) return;
-    jm.box.setAttribute('aria-label', t('jm.aria')); jmTabs(); jmChips();
-    if (jm.fallback) { jmFallback(); return; }
-    if (jm.map) {
-      (jm.rg || []).forEach(function (o) { o.el.textContent = L(o.l.t); });
-      if (jm.R) { var playing = jm.playing; jmSetTour(jm.cur, false); if (!playing) jmCtl(); }
-    }
-  }
+  function jmLang() { if (!jm.box) return; jmTabs(); jmRender(false); }
   jmInit();
 
-  /* ---------- short videos: play muted while on screen, one sound at a time ---------- */
+  /* ---------- full-screen viewer: photos, videos and reviews ---------- */
+  function ytId(u) { var m = String(u || '').match(/(?:youtu\.be\/|youtube\.com\/(?:shorts\/|embed\/|live\/|watch\?(?:[^#]*&)?v=))([\w-]{11})/); return m ? m[1] : (/^[\w-]{11}$/.test(String(u || '')) ? u : ''); }
+  function mediaUrl(x) { return !x ? '' : (/^(https?:)?\/\//.test(x) || /^(video|img)\//.test(x)) ? x : imgUrl(x); }
+  var lbx = $('#lbx'), lbxItems = [], lbxAt = 0, lbxFocus = null;
+  function lockPage(on) { document.body.style.overflow = on ? 'hidden' : ''; if (lenis) { if (on) lenis.stop(); else lenis.start(); } }
+  function lbxShow(i) {
+    var n = lbxItems.length; if (!n) return;
+    lbxAt = (i + n) % n;
+    var it = lbxItems[lbxAt], box = $('#lbxMedia'), yt = it.yt ? ytId(it.yt) : ytId(it.video);
+    $$('video', box).forEach(function (v) { try { v.pause(); } catch (e) {} });
+    if (yt) box.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + yt + '?autoplay=1&rel=0&playsinline=1" title="' + esc(it.title || 'YouTube') + '" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+    else if (it.video) box.innerHTML = '<video src="' + esc(it.video) + '"' + (it.poster ? ' poster="' + esc(it.poster) + '"' : '') + ' controls autoplay playsinline></video>';
+    else box.innerHTML = '<img src="' + esc(it.img) + '" alt="' + esc(it.alt || it.title || it.cap || '') + '">';
+    box.className = 'lbx-media' + (yt ? ' is-yt' : it.video ? ' is-vid' : '');
+    var cap = [it.cap, n > 1 ? (lbxAt + 1) + ' / ' + n : ''].filter(Boolean).join('  ·  ');
+    $('#lbxCap').textContent = cap;
+    var side = $('#lbxSide'), r = it.rev, h = '';
+    if (r) h = '<div class="lbx-rh">' + (r.avatar ? '<img class="lbx-av" src="' + esc(r.avatar) + '" alt="">' : '') + '<p class="lbx-who">' + esc(r.who) + (r.tour ? '<small>' + esc(r.tour) + '</small>' : '') + '</p></div>' + stars(r.r) + (r.q ? '<blockquote>“' + esc(r.q) + '”</blockquote>' : '');
+    else if (it.title || it.text) h = (it.title ? '<h3>' + esc(it.title) + '</h3>' : '') + (it.text ? String(it.text).split(/\n+/).map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') : '');
+    side.innerHTML = h; side.hidden = !h; side.scrollTop = 0; lbx.classList.toggle('has-side', !!h);
+    $('#lbxPrev').hidden = $('#lbxNext').hidden = n < 2;
+    var nx = lbxItems[(lbxAt + 1) % n]; if (nx && nx.img && n > 1) { var pre = new Image(); pre.src = nx.img; }
+  }
+  function openLbx(items, i) {
+    if (!items || !items.length) return;
+    $$('#reels video').forEach(function (v) { v.pause(); });
+    lbxItems = items; lbxFocus = document.activeElement; lbx.hidden = false; lbxShow(i || 0); lockPage(true);
+    $('#lbxClose').focus({ preventScroll: true });
+  }
+  function closeLbx() { $('#lbxMedia').innerHTML = ''; lbx.hidden = true; lockPage(false); if (lbxFocus && lbxFocus.focus) lbxFocus.focus({ preventScroll: true }); }
+  $('#lbxClose').addEventListener('click', closeLbx);
+  $('#lbxPrev').addEventListener('click', function () { lbxShow(lbxAt - 1); });
+  $('#lbxNext').addEventListener('click', function () { lbxShow(lbxAt + 1); });
+  lbx.addEventListener('click', function (e) { if (e.target === lbx || e.target.classList.contains('lbx-in') || e.target.classList.contains('lbx-fig')) closeLbx(); });
+  document.addEventListener('keydown', function (e) {
+    if (lbx.hidden) return;
+    if (e.key === 'Escape') closeLbx(); else if (e.key === 'ArrowLeft') lbxShow(lbxAt - 1); else if (e.key === 'ArrowRight') lbxShow(lbxAt + 1);
+    else if (e.key === 'Tab') { var f = [$('#lbxClose'), $('#lbxPrev'), $('#lbxNext')].concat($$('#lbxMedia video, #lbxMedia iframe')).filter(function (x) { return x && !x.hidden; }), k = f.indexOf(document.activeElement); e.preventDefault(); f[(k + (e.shiftKey ? f.length - 1 : 1) + f.length) % f.length].focus(); }
+  });
   (function () {
-    var vids = $$('#reels video'); if (!vids.length) return;
-    function load(v) { if (!v.src && v.dataset.src) v.src = v.dataset.src; }
+    var sx = null, sy = 0, fig = $('.lbx-fig', lbx);
+    fig.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+    fig.addEventListener('touchend', function (e) { if (sx == null) return; var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) lbxShow(lbxAt + (dx < 0 ? 1 : -1)); sx = null; });
+  })();
+
+  /* ---------- hero slideshow: a new photo every 3 seconds, paused when the hero is off screen ---------- */
+  var heroS = { items: [], at: 0, timer: 0, on: true };
+  function renderHero() {
+    var hero = $('.hero'), stage = $('.hero-stage'), first = $('.hero-bg', stage), title = $('.hero-title', stage), dots = $('#heroDots');
+    var sl = (D.hero || []).filter(function (h) { return h && h.img; });
+    if (!heroS.items.length) {
+      heroS.items = sl.map(function (h, i) {
+        if (i === 0 && h.img === 'hero') return first;
+        var im = document.createElement('img'); im.className = 'hero-bg hero-sl'; im.decoding = 'async'; im.dataset.src = imgUrl(h.img);
+        if (i === 0) { im.src = im.dataset.src; im.classList.add('on'); }
+        stage.insertBefore(im, title); return im;
+      });
+      hero.classList.toggle('no-orig', !(sl[0] && sl[0].img === 'hero'));
+      hero.classList.toggle('alt', !(sl[0] && sl[0].img === 'hero'));
+      if (sl.length > 1) heroLoop();
+    }
+    heroS.items.forEach(function (im, i) { if (sl[i] && (im !== first || sl[0].img === 'hero')) im.alt = L(sl[i]); });
+    dots.hidden = sl.length < 2;
+    dots.innerHTML = sl.length < 2 ? '' : sl.map(function (h, i) { return '<button type="button" data-hs="' + i + '" aria-label="' + esc(L(h) || (i + 1)) + '" aria-pressed="' + (i === heroS.at) + '"></button>'; }).join('');
+  }
+  function heroLoad(i) {
+    var im = heroS.items[i]; if (!im) return Promise.resolve();
+    if (!im.getAttribute('src') && im.dataset.src) im.src = im.dataset.src;
+    if (im.complete && im.naturalWidth) return Promise.resolve();
+    return new Promise(function (res) { im.addEventListener('load', res, { once: true }); im.addEventListener('error', res, { once: true }); setTimeout(res, 4000); });
+  }
+  function heroGo(i) {
+    var n = heroS.items.length; if (n < 2) return;
+    i = (i + n) % n;
+    heroLoad(i).then(function () {
+      heroS.at = i;
+      var sl = D.hero.filter(function (h) { return h && h.img; }), orig = sl[i] && sl[i].img === 'hero';
+      heroS.items.forEach(function (im, k) { if (im.classList.contains('hero-sl')) im.classList.toggle('on', k === i); });
+      $('.hero').classList.toggle('alt', !orig);
+      $$('#heroDots button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.hs === i)); });
+      heroLoad((i + 1) % n);
+    });
+  }
+  function heroLoop() {
+    clearInterval(heroS.timer);
+    heroS.timer = setInterval(function () { if (heroS.on && !document.hidden) heroGo(heroS.at + 1); }, reduce ? 6000 : 3000);
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { heroS.on = es[0].isIntersecting; }).observe($('.hero'));
+    setTimeout(function () { heroLoad(1); }, 2500);
+  }
+  $('#heroDots').addEventListener('click', function (e) { var b = e.target.closest('[data-hs]'); if (b) { heroGo(+b.dataset.hs); heroLoop(); } });
+
+  /* ---------- section photos chosen in /admin ---------- */
+  function applySiteImages() {
+    var im = (D.site && D.site.img) || {};
+    $$('[data-img]').forEach(function (el) {
+      var v = im[el.dataset.img]; if (!v) return;
+      var u = imgUrl(v); if (el.getAttribute('src') === u) return;
+      el.removeAttribute('srcset'); el.removeAttribute('sizes'); el.src = u;
+    });
+    var cp = $('#carPrice'); if (cp && D.site && D.site.carPrice) cp.textContent = D.site.carPrice;
+  }
+  applySiteImages();
+
+  /* ---------- short films: play muted while on screen, one sound at a time, tap to watch full screen ---------- */
+  var reelIO = null;
+  function reelList() {
+    return ((D.site && D.site.reels) || []).filter(function (r) { return r && !r.hidden && (r.video || r.yt); }).map(function (r) {
+      var yt = r.yt ? ytId(r.yt) : '';
+      return { video: yt ? '' : mediaUrl(r.video), yt: yt, poster: r.poster ? mediaUrl(r.poster) : (yt ? 'https://i.ytimg.com/vi/' + yt + '/hqdefault.jpg' : ''), title: L(r), text: r.d ? L(r.d) : '' };
+    });
+  }
+  var SND = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="snd-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="snd-off" d="M16.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  function renderReels() {
+    var box = $('#reels'), items = reelList();
+    box.hidden = !items.length;
+    box.innerHTML = items.map(function (r, i) {
+      return '<figure class="reel">' + (r.video ? '<video muted loop playsinline preload="' + (r.poster ? 'none' : 'metadata') + '"' + (r.poster ? ' poster="' + esc(r.poster) + '"' : '') + ' data-src="' + esc(r.video) + '" aria-label="' + esc(r.title) + '"></video>' : '<img src="' + esc(r.poster) + '" alt="" loading="lazy" decoding="async">') +
+        '<button class="reel-open" type="button" data-ri="' + i + '" aria-label="' + esc(t('lb.open') + (r.title ? ': ' + r.title : '')) + '"><span class="reel-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></button>' +
+        (r.title ? '<figcaption class="reel-cap">' + esc(r.title) + '</figcaption>' : '') +
+        (r.video ? '<button class="reel-snd" type="button" aria-pressed="false" aria-label="' + esc(t('gl.sound')) + '">' + SND + '</button>' : '') + '</figure>';
+    }).join('');
+    initReels();
+  }
+  function initReels() {
+    var vids = $$('#reels video'); if (reelIO) { reelIO.disconnect(); reelIO = null; }
+    function load(v) { if (!v.getAttribute('src') && v.dataset.src) v.src = v.dataset.src; }
     function play(v) { load(v); var p = v.play(); if (p && p.catch) p.catch(function () {}); }
-    if ('IntersectionObserver' in window && !reduce) {
+    if ('IntersectionObserver' in window && !reduce && vids.length) {
       var vis = new Map();
-      var io = new IntersectionObserver(function (es) {
+      reelIO = new IntersectionObserver(function (es) {
         es.forEach(function (e) { vis.set(e.target, e.intersectionRatio); });
+        if (!lbx.hidden) return;
         /* desktop: every reel that is fully in view may play; phones: only the single most visible one */
         var best = null, bestR = 0.6;
         vids.forEach(function (v) { var r = vis.get(v) || 0; if (r >= bestR) { best = v; bestR = r; } });
         vids.forEach(function (v) { var r = vis.get(v) || 0; if (lite ? v === best : r >= 0.6) play(v); else v.pause(); });
       }, { threshold: [0, 0.6, 0.8, 1] });
-      vids.forEach(function (v) { io.observe(v); });
+      vids.forEach(function (v) { reelIO.observe(v); });
     }
-    vids.forEach(function (v) {
-      v.addEventListener('click', function () { if (v.paused) play(v); else v.pause(); });
-      var b = v.parentNode.querySelector('.reel-snd');
+    $$('#reels .reel-snd').forEach(function (b) {
+      var v = $('video', b.parentNode);
       b.addEventListener('click', function () {
         var on = v.muted;
-        vids.forEach(function (o) { o.muted = true; var ob = o.parentNode.querySelector('.reel-snd'); ob.setAttribute('aria-pressed', 'false'); });
+        vids.forEach(function (o) { o.muted = true; var ob = $('.reel-snd', o.parentNode); if (ob) ob.setAttribute('aria-pressed', 'false'); });
         if (on) { v.muted = false; play(v); }
         b.setAttribute('aria-pressed', String(on));
       });
     });
-  })();
+  }
+  $('#reels').addEventListener('click', function (e) { var b = e.target.closest('[data-ri]'); if (b) openLbx(reelList(), +b.dataset.ri); });
+
   function money(n) { return '$' + n.toLocaleString('en-US'); }
   function tourInfo(tr) {
     var h = '<div class="tour-info">';
@@ -965,6 +815,20 @@ function skyBoot() {
     }
     return h;
   }
+  function tvList(tr) {
+    return (tr.videos || []).filter(function (x) { return x && (x.video || x.yt); }).map(function (x) {
+      var yt = x.yt ? ytId(x.yt) : '';
+      return { video: yt ? '' : mediaUrl(x.video), yt: yt, poster: x.poster ? mediaUrl(x.poster) : (yt ? 'https://i.ytimg.com/vi/' + yt + '/hqdefault.jpg' : ''), title: L(x.t || {}), text: L(x.d || {}) };
+    });
+  }
+  function tourVids(tr) {
+    var v = tvList(tr); if (!v.length) return '';
+    return '<section class="tvids" aria-label="' + esc(t('tv.title')) + '"><h3 class="tvids-h">' + esc(t('tv.title')) + '</h3><div class="tv-strip">' + v.map(function (x, i) {
+      return '<button type="button" class="tv" data-tv="' + i + '" aria-label="' + esc(t('gl.play') + (x.title ? ': ' + x.title : '')) + '">' +
+        (x.poster ? '<img src="' + esc(x.poster) + '" alt="" loading="lazy" decoding="async">' : '<video src="' + esc(x.video) + '#t=0.5" muted playsinline preload="metadata" tabindex="-1"></video>') +
+        '<span class="tv-play" aria-hidden="true"><svg><use href="#i-play"/></svg></span>' + (x.title ? '<span class="tv-t">' + esc(x.title) + '</span>' : '') + '</button>';
+    }).join('') + '</div></section>';
+  }
   function renderTours() {
     $('#tourTabs').innerHTML = D.tours.map(function (tr) {
       var on = tr.id === tourSel;
@@ -978,7 +842,7 @@ function skyBoot() {
       return '<li class="tday"><span class="tday-n"><small>' + esc(t('tr.day')) + '</small><b>' + (i + 1) + '</b></span><div class="tday-b"><h3>' + esc(L(d.t)) + '</h3><p>' + esc(L(d.d)) + '</p>' +
         (d.img ? '<figure class="tday-img"><img src="' + imgUrl(d.img) + '" alt="' + esc(L(d.t)) + '" width="1600" height="720" loading="lazy" decoding="async"></figure>' : '') +
         ((d.s || d.m) ? '<p class="tday-s"><svg><use href="#i-toono"/></svg><span>' + (d.s ? esc(t('tr.stay')) + ': ' + esc(L(d.s)) : '') + (d.s && d.m ? ' · ' : '') + (d.m ? esc(t('tr.meals')) + ': ' + d.m.split(' ').map(function (k) { return esc(t('tr.' + k)); }).join(', ') : '') + '</span></p>' : '') + '</div></li>';
-    }).join('') + '</ol>' + tourInfo(tr) + '<div class="tour-actions"><button class="btn btn-ink tour-book" type="button" data-book="' + tr.id + '">' + esc(t('tr.book')) + ' <svg><use href="#i-arrow"/></svg></button>' +
+    }).join('') + '</ol>' + tourInfo(tr) + tourVids(tr) + '<div class="tour-actions"><button class="btn btn-ink tour-book" type="button" data-book="' + tr.id + '">' + esc(t('tr.book')) + ' <svg><use href="#i-arrow"/></svg></button>' +
       (tr.film ? '<a class="tour-film" href="' + tr.film + '" target="_blank" rel="noopener"><span class="play"><svg><use href="#i-play"/></svg></span>' + esc(t('tr.film')) + '</a>' : '') + '</div>';
     initRouteMap($('#tourPanel .rmap'));
     $('#moreTours').innerHTML = D.moreTours.map(function (m) {
@@ -1005,6 +869,7 @@ function skyBoot() {
     tourSel = D.tours[i].id; renderTours(); $('#tt-' + tourSel).focus();
   });
   $('#tourPanel').addEventListener('click', function (e) {
+    var tv = e.target.closest('[data-tv]'); if (tv) { openLbx(tvList(D.tours.filter(function (x) { return x.id === tourSel; })[0]), +tv.dataset.tv); return; }
     var b = e.target.closest('[data-book]'); if (!b) return;
     var tr = D.tours.filter(function (x) { return x.id === b.dataset.book; })[0], f = $('#pform');
     f.msg.value = 'Tour: ' + tr.name.en + (f.msg.value && f.msg.value.indexOf('Tour: ') !== 0 ? '\n' + f.msg.value : '');
@@ -1012,54 +877,141 @@ function skyBoot() {
     setTimeout(function () { goTo('#plan'); setTimeout(function () { f.name.focus({ preventScroll: true }); }, 900); }, 300);
   });
 
-  /* ---------- gallery ---------- */
+  /* ---------- gallery: tap a photo to see it full screen ---------- */
   var glOpen = false, GL_FIRST = 11;
+  function glItems() { return D.gallery.map(function (g) { return { img: imgUrl(g.img), cap: L(g) }; }); }
   function renderGallery() {
     $('#glGrid').innerHTML = D.gallery.map(function (g, i) {
-      return '<figure class="gl' + (g.w ? ' gl-w' : '') + (g.tall ? ' gl-t' : '') + '"' + (!glOpen && i >= GL_FIRST ? ' hidden' : '') + '><img src="' + imgUrl(g.img) + '" alt="' + esc(L(g)) + '" loading="lazy" decoding="async"><figcaption>' + esc(L(g)) + '</figcaption></figure>';
+      return '<figure class="gl' + (g.w ? ' gl-w' : '') + (g.tall ? ' gl-t' : '') + '"' + (!glOpen && i >= GL_FIRST ? ' hidden' : '') + '><button class="gl-open" type="button" data-gi="' + i + '" aria-label="' + esc(t('lb.open') + (L(g) ? ': ' + L(g) : '')) + '"><img src="' + imgUrl(g.img) + '" alt="' + esc(L(g)) + '" loading="lazy" decoding="async"></button><figcaption>' + esc(L(g)) + '</figcaption></figure>';
     }).join('');
-    var b = $('#glMore'); b.textContent = (glOpen ? t('gl.less') : t('gl.more') + ' (' + D.gallery.length + ')'); b.setAttribute('aria-expanded', glOpen);
-    $('#rvPhotos').innerHTML = D.travellers.map(function (g) {
-      return '<figure class="rvp"><img src="img/' + g.img + '.webp" alt="' + esc(L(g)) + '" loading="lazy" decoding="async"><figcaption>' + esc(L(g)) + '</figcaption></figure>';
-    }).join('');
+    var b = $('#glMore'); b.hidden = D.gallery.length <= GL_FIRST; b.textContent = (glOpen ? t('gl.less') : t('gl.more') + ' (' + D.gallery.length + ')'); b.setAttribute('aria-expanded', glOpen);
   }
+  $('#glGrid').addEventListener('click', function (e) { var b = e.target.closest('[data-gi]'); if (b) openLbx(glItems(), +b.dataset.gi); });
   $('#glMore').addEventListener('click', function () {
     glOpen = !glOpen; renderGallery();
     if (!glOpen) goTo('#gallery');
     if (window.ScrollTrigger) setTimeout(function () { ScrollTrigger.refresh(); }, 100);
   });
 
-  /* ---------- reviews ---------- */
+  /* ---------- reviews: traveller photos with the rating on them; the review opens with the photos ---------- */
   function stars(r) { var h = ''; for (var i = 1; i <= 5; i++) h += '<i class="' + (r >= i ? 'on' : r >= i - .5 ? 'half' : '') + '"></i>'; return '<span class="stars" role="img" aria-label="' + r + ' / 5">' + h + '</span>'; }
+  var wallLb = [];
   function renderReviews() {
-    $('#rvList').innerHTML = D.reviews.map(function (v) {
-      return '<figure class="rv">' + stars(v.r) + '<blockquote>“' + esc(v.q) + '”</blockquote><figcaption>' + esc(v.who) + '</figcaption></figure>';
+    var tiles = [], lb = [];
+    (D.reviews || []).forEach(function (v) {
+      var ph = (v.photos || []).filter(Boolean); if (!ph.length) return;
+      tiles.push({ i: lb.length, v: v, img: ph[0], n: ph.length });
+      ph.forEach(function (p) { lb.push({ img: mediaUrl(p), rev: { r: v.r, q: v.q, who: v.who, tour: v.tour, avatar: v.avatar ? mediaUrl(v.avatar) : '' }, alt: v.who }); });
+    });
+    (D.travellers || []).forEach(function (g) { tiles.push({ i: lb.length, img: imgUrl(g.img), cap: L(g), n: 1 }); lb.push({ img: imgUrl(g.img), cap: L(g) }); });
+    wallLb = lb;
+    $('#rvWall').innerHTML = tiles.map(function (x) {
+      var v = x.v;
+      return '<button type="button" class="rvw' + (v ? ' has-rev' : '') + '" data-wi="' + x.i + '" aria-label="' + esc(t('lb.open') + ': ' + (v ? v.who : x.cap)) + '">' +
+        '<img src="' + esc(mediaUrl(x.img)) + '" alt="" loading="lazy" decoding="async">' +
+        (v ? '<span class="rvw-rate">' + stars(v.r) + '</span>' : '') + (x.n > 1 ? '<span class="rvw-n">+' + (x.n - 1) + '</span>' : '') +
+        '<span class="rvw-meta">' + (v ? '<span class="rvw-who">' + (v.avatar ? '<img class="rvw-av" src="' + esc(mediaUrl(v.avatar)) + '" alt="">' : '') + '<b>' + esc(v.who) + '</b></span>' + (v.q ? '<q>' + esc(v.q) + '</q>' : '') : '<b class="rvw-cap">' + esc(x.cap) + '</b>') + '</span></button>';
+    }).join('');
+    $('#rvList').innerHTML = (D.reviews || []).filter(function (v) { return !(v.photos || []).filter(Boolean).length; }).map(function (v) {
+      return '<figure class="rv">' + stars(v.r) + '<blockquote>“' + esc(v.q) + '”</blockquote><figcaption>' + (v.avatar ? '<img class="rv-av" src="' + esc(mediaUrl(v.avatar)) + '" alt="">' : '') + '<span>' + esc(v.who) + (v.tour ? '<small>' + esc(v.tour) + '</small>' : '') + '</span></figcaption></figure>';
     }).join('');
     var sel = $('#rvForm select[name=tour]');
-    if (sel) sel.innerHTML = '<option value="">' + esc(t('rvf.tour0')) + '</option>' + D.tours.map(function (x) { return '<option>' + esc(L(x.name)) + '</option>'; }).join('');
+    if (sel) { var keep = sel.value; sel.innerHTML = '<option value="">' + esc(t('rvf.tour0')) + '</option>' + D.tours.map(function (x) { return '<option>' + esc(L(x.name)) + '</option>'; }).join(''); sel.value = keep; }
   }
-  /* leave a review: goes to the owners for approval */
+  $('#rvWall').addEventListener('click', function (e) { var b = e.target.closest('[data-wi]'); if (b) openLbx(wallLb, +b.dataset.wi); });
+
+  /* leave a review: goes to the owners for approval; photos are made smaller here before they are sent */
+  function shrinkImg(file, max, q) {
+    return new Promise(function (res, rej) {
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function () {
+        var s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight)), w = Math.round(img.naturalWidth * s), h = Math.round(img.naturalHeight * s);
+        var c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url); var d = c.toDataURL('image/jpeg', q); res({ url: d, b64: d.split(',')[1] });
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(); };
+      img.src = url;
+    });
+  }
   (function () {
     var f = $('#rvForm'), open = $('#rvOpen'); if (!f || !open) return;
+    var av = null, phs = [], MAXP = 6, msg = $('#rvMsg');
+    function drawThumbs() {
+      $$('.rvf-th', f).forEach(function (x) { x.remove(); });
+      var add = $('#rvAddPh');
+      phs.forEach(function (p, i) {
+        var s = document.createElement('span'); s.className = 'rvf-th';
+        s.innerHTML = '<img src="' + p.url + '" alt=""><button type="button" data-x="' + i + '" aria-label="' + esc(t('rvf.remove')) + '"><svg><use href="#i-close"/></svg></button>';
+        add.parentNode.insertBefore(s, add);
+      });
+      add.hidden = phs.length >= MAXP;
+    }
+    function setAv(p) { av = p; var pv = $('#rvAvPv'); pv.hidden = !p; if (p) pv.src = p.url; else pv.removeAttribute('src'); $('#rvAvX').hidden = !p; }
+    $('#rvAv').addEventListener('change', function () { var file = this.files[0]; this.value = ''; if (!file) return; shrinkImg(file, 480, 0.85).then(setAv, function () { msg.textContent = t('rvf.phbad'); }); });
+    $('#rvAvX').addEventListener('click', function () { setAv(null); });
+    $('#rvPh').addEventListener('change', function () {
+      var files = Array.prototype.slice.call(this.files); this.value = '';
+      if (phs.length + files.length > MAXP) msg.textContent = t('rvf.phmax');
+      files.slice(0, MAXP - phs.length).reduce(function (pr, file) {
+        return pr.then(function () { return shrinkImg(file, 1400, 0.82).then(function (p) { if (phs.length < MAXP) phs.push(p); drawThumbs(); }, function () { msg.textContent = t('rvf.phbad'); }); });
+      }, Promise.resolve());
+    });
+    $('#rvThumbs').addEventListener('click', function (e) { var b = e.target.closest('[data-x]'); if (b) { phs.splice(+b.dataset.x, 1); drawThumbs(); } });
     open.addEventListener('click', function () { var on = f.hidden; f.hidden = !on; open.setAttribute('aria-expanded', String(on)); if (on) setTimeout(function () { f.name.focus(); }, 50); });
     $$('.rvf-stars button', f).forEach(function (b) {
       b.addEventListener('click', function () { var v = +b.dataset.v; f.rating.value = v; $$('.rvf-stars button', f).forEach(function (x) { x.setAttribute('aria-pressed', String(+x.dataset.v <= v)); }); });
     });
     f.addEventListener('submit', function (e) {
       e.preventDefault();
-      var msg = $('#rvMsg'), btn = $('button[type=submit]', f);
+      var btn = $('button[type=submit]', f);
       if (!+f.rating.value) { msg.textContent = t('rvf.needStars'); return; }
       btn.disabled = true; msg.textContent = t('rvf.sending');
       fetch(D.contact.api.replace(/contact$/, 'admin'), { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + D.contact.apiKey, apikey: D.contact.apiKey },
-        body: JSON.stringify({ action: 'review-submit', name: f.name.value, country: f.country.value, rating: +f.rating.value, tour: f.tour.value, body: f.body.value, website: f.website.value, lang: lang }) })
+        body: JSON.stringify({ action: 'review-submit', name: f.name.value, country: f.country.value, rating: +f.rating.value, tour: f.tour.value, body: f.body.value, website: f.website.value, lang: lang,
+          avatar: av ? av.b64 : '', photos: phs.map(function (p) { return p.b64; }) }) })
         .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok && j.ok, j: j }; }); })
         .then(function (x) {
           btn.disabled = false;
-          if (x.ok) { f.reset(); $$('.rvf-stars button', f).forEach(function (b) { b.setAttribute('aria-pressed', 'false'); }); msg.textContent = t('rvf.thanks'); }
+          if (x.ok) { f.reset(); setAv(null); phs = []; drawThumbs(); $$('.rvf-stars button', f).forEach(function (b) { b.setAttribute('aria-pressed', 'false'); }); msg.textContent = t('rvf.thanks'); }
           else msg.textContent = t('rvf.err');
         }).catch(function () { btn.disabled = false; msg.textContent = t('rvf.err'); });
     });
   })();
+
+  /* ---------- about us, team and contact details (edited in /admin) ---------- */
+  function paras(s) { return String(s || '').split(/\n+/).filter(function (p) { return p.trim(); }).map(function (p) { return '<p>' + esc(p) + '</p>'; }).join(''); }
+  function renderAbout() {
+    var ab = (D.site && D.site.about) || {}, team = ((D.site && D.site.team) || []).filter(function (m) { return m && m.name && !m.hidden; });
+    var txt = L(ab.text || {});
+    $('#ab-h').textContent = L(ab.title || {}) || t('nav.about');
+    $('#abText').innerHTML = paras(txt);
+    $('#team').innerHTML = team.length ? '<h3 class="team-h">' + esc(t('team.title')) + '</h3><div class="team-grid">' + team.map(function (m) {
+      return '<figure class="tm">' + (m.photo ? '<img src="' + esc(imgUrl(m.photo)) + '" alt="' + esc(m.name) + '" loading="lazy" decoding="async">' : '<span class="tm-ph" aria-hidden="true"><svg><use href="#i-user"/></svg></span>') +
+        '<figcaption><b>' + esc(m.name) + '</b>' + (L(m.role || {}) ? '<small>' + esc(L(m.role)) + '</small>' : '') + (L(m.bio || {}) ? paras(L(m.bio)) : '') + '</figcaption></figure>';
+    }).join('') + '</div>' : '';
+    $('#about').hidden = !txt && !team.length;
+  }
+  function mapLink(c, addr) {
+    var m = String(c.map || '').trim(), ll = m.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+    if (ll) return { url: 'https://www.google.com/maps?q=' + ll[1] + ',' + ll[2], embed: 'https://maps.google.com/maps?q=' + ll[1] + ',' + ll[2] + '&z=15&output=embed' };
+    if (/^https?:\/\//.test(m)) return { url: m, embed: '' };
+    return { url: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr || 'Ulaanbaatar'), embed: '' };
+  }
+  function renderContact() {
+    var c = (D.site && D.site.contact) || {}, phone = c.phone || D.contact.phone, wa = c.whatsapp || phone, email = c.email || D.contact.email, addr = L(c.address || {}), ml = mapLink(c, addr);
+    var tel = phone.replace(/[^\d+]/g, ''), waN = wa.replace(/\D/g, ''), copy = function (v) { return '<button class="copy" type="button" data-copy="' + esc(v) + '">' + esc(t('dc.copy')) + '</button>'; };
+    D.contact.phoneRaw = '+' + waN;
+    $('#directList').innerHTML =
+      '<li><svg><use href="#i-phone"/></svg><span class="dl"><small>' + esc(t('dc.phone')) + '</small><a href="tel:' + esc(tel) + '">' + esc(phone) + '</a></span>' + copy(tel) + '</li>' +
+      '<li><svg><use href="#i-wa"/></svg><span class="dl"><small>' + esc(t('dc.wa')) + '</small><a href="https://wa.me/' + waN + '" target="_blank" rel="noopener">' + esc(wa) + '</a></span>' + copy('+' + waN) + '</li>' +
+      '<li><svg><use href="#i-mail"/></svg><span class="dl"><small>' + esc(t('dc.email')) + '</small><a href="mailto:' + esc(email) + '">' + esc(email) + '</a></span>' + copy(email) + '</li>' +
+      (addr ? '<li><svg><use href="#i-pin"/></svg><span class="dl"><small>' + esc(t('dc.office')) + '</small><b>' + esc(addr) + '</b><a class="dl-map" href="' + esc(ml.url) + '" target="_blank" rel="noopener">' + esc(t('dc.map')) + ' ↗</a></span></li>' : '') +
+      (c.hours ? '<li><svg><use href="#i-calendar"/></svg><span class="dl"><small>' + esc(t('dc.hours')) + '</small><b>' + esc(c.hours) + '</b></span></li>' : '');
+    var dm = $('#directMap');
+    if (ml.embed) { if (dm.dataset.src !== ml.embed) { dm.dataset.src = ml.embed; dm.innerHTML = '<iframe src="' + esc(ml.embed) + '" title="' + esc(t('dc.office')) + '" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>'; } dm.hidden = false; }
+    else { dm.hidden = true; dm.innerHTML = ''; dm.dataset.src = ''; }
+    $$('.foot-mail').forEach(function (a) { a.href = 'mailto:' + email; a.textContent = email; });
+  }
 
   /* ---------- copy contact lines ---------- */
   document.addEventListener('click', function (e) {
@@ -1123,21 +1075,40 @@ function skyBoot() {
     w.setAttribute('aria-label', txt);
     root.classList.add('split');
   }
+  function langUI() {
+    var cur = LANGS.filter(function (l) { return l.id === lang; })[0] || LANGS[0];
+    $('#langCur').textContent = cur.short;
+    var btns = LANGS.map(function (l) { return '<button type="button" data-lang="' + l.id + '" lang="' + l.id + '" aria-pressed="' + (l.id === lang) + '"><b>' + esc(l.short) + '</b><span>' + esc(l.name) + '</span></button>'; }).join('');
+    $('#langList').innerHTML = btns; $('#mLangs').innerHTML = btns;
+  }
+  function langOpen(on) { $('#langList').hidden = !on; $('#langBtn').setAttribute('aria-expanded', String(on)); }
+  $('#langBtn').addEventListener('click', function (e) { e.stopPropagation(); langOpen($('#langList').hidden); });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-lang]');
+    if (b) {
+      langOpen(false); if (b.closest('#mLangs')) setMenu(false);
+      var nl = b.dataset.lang; if (lang === nl) return;
+      root.classList.add('lang-loading');
+      (D.loadLang || function (x, cb) { cb(); })(nl, function () { root.classList.remove('lang-loading'); lang = (nl === 'en' || nl === 'mn' || (D.tx && D.tx[nl])) ? nl : 'en'; store.set('sky-lang', lang); applyLang(false); });
+      return;
+    }
+    if (!e.target.closest('#lang')) langOpen(false);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('#langList').hidden) { langOpen(false); $('#langBtn').focus(); } });
   function applyLang(first) {
-    root.lang = lang === 'mn' ? 'mn' : 'en';
+    root.lang = lang === 'zh' ? 'zh-Hans' : lang;
     $$('[data-i18n]').forEach(function (el) { if (el.classList.contains('hero-word')) return; el.textContent = t(el.getAttribute('data-i18n')); });
     $$('[data-i18n-alt]').forEach(function (el) { el.alt = t(el.getAttribute('data-i18n-alt')); });
+    renderContact();
     var wa = $('#chatWa'); if (wa) wa.href = 'https://wa.me/' + D.contact.phoneRaw.replace(/\D/g, '') + '?text=' + encodeURIComponent(t('chat.waText'));
     var ms = $('#chatMs'); if (ms && D.links.messenger) ms.href = D.links.messenger;
     $$('[data-i18n-aria]').forEach(function (el) { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria'))); });
     var cc = $('#carCta'); if (cc && !cc._b) { cc._b = 1; cc.addEventListener('click', function () { var ps = $('#p-style'); if (ps) ps.value = t('car.style'); }); }
-    $$('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.lang === lang); });
-    renderTabs(); renderCards(); renderJourneys(); renderTours(); jmLang(); renderGallery(); renderReviews(); renderTiles(); fillSelects(); syncTrip();
+    langUI();
+    renderHero(); renderTabs(); renderCards(); renderJourneys(); renderTours(); jmLang(); renderReels(); renderGallery(); renderReviews(); renderAbout(); renderTiles(); fillSelects(); syncTrip();
+    if (!lbx.hidden) lbxShow(lbxAt);
     if (!first) { splitWord(); if (window.ScrollTrigger) { ScrollTrigger.refresh(); } }
   }
-  $$('.lang button').forEach(function (b) {
-    b.addEventListener('click', function () { if (lang === b.dataset.lang) return; lang = b.dataset.lang; store.set('sky-lang', lang); applyLang(false); });
-  });
 
   /* ---------- header, nav, mobile menu ---------- */
   var hdr = $('#hdr'), burger = $('.burger'), mnav = $('#mnav');
@@ -1145,6 +1116,7 @@ function skyBoot() {
   window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
   function setMenu(open) {
     burger.setAttribute('aria-expanded', open); mnav.hidden = !open; document.body.style.overflow = open ? 'hidden' : '';
+    root.classList.toggle('menu-open', !!open);
     if (lenis) { open ? lenis.stop() : lenis.start(); }
   }
   burger.addEventListener('click', function () { setMenu(burger.getAttribute('aria-expanded') !== 'true'); });
@@ -1177,7 +1149,7 @@ function skyBoot() {
   /* ---------- loader: what the page waits for before it lifts ---------- */
   var loaderEl = $('#loader');
   function pageReady(onProgress) {
-    var jobs = [$('.hero-bg'), $('.hero-fg')].map(function (img) {
+    var jobs = [$('.hero.no-orig') ? $('.hero-sl.on') : $('.hero-bg'), $('.hero-fg')].map(function (img) {
       return new Promise(function (res) {
         if (!img || (img.complete && img.naturalWidth)) return res();
         img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true });
@@ -1324,8 +1296,8 @@ function skyBoot() {
 
 /* ---------- content edited in /admin (Supabase "content" table), with the bundled data as fallback ---------- */
 (function () {
-  var D = window.SKY, M = window.SKY_MAP, booted = false, CK = 'sky-content-v1';
-  function boot() { if (booted) return; booted = true; skyBoot(); }
+  var D = window.SKY, M = window.SKY_MAP, booted = false, CK = 'sky-content-v2';
+  function boot() { if (booted) return; booted = true; if (D.loadLang && D.pickLang) D.loadLang(D.pickLang(), skyBoot); else skyBoot(); }
   function proj(lat, lon) {
     var p = M.proj, A = p[0], B = p[1], C = p[2], K = A * 180 / Math.PI;
     return [A * lon + B, C - K * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))];
@@ -1346,11 +1318,25 @@ function skyBoot() {
       if (ok.length) D.tours = ok;
     });
     (rows || []).forEach(function (r) {
+      var d = r.data;
+      if (r.key === 'site' && d && typeof d === 'object' && !Array.isArray(d)) Object.keys(d).forEach(function (k) { if (k === 'img' && d.img && typeof d.img === 'object') D.site.img = Object.assign({}, D.site.img, d.img); else if (d[k] != null) D.site[k] = d[k]; });
+      if (r.key === 'hero' && Array.isArray(d)) { var h = d.filter(function (x) { return x && x.img && !x.hidden; }); if (h.length) D.hero = h; }
+      if (r.key === 'destinations' && Array.isArray(d)) { var ps = d.filter(function (x) { return x && x.id && x.img && x.name && !x.hidden; }); if (ps.length) D.places = ps; }
+      if (r.key === 'styles' && Array.isArray(d)) { var st = d.filter(function (x) { return x && x.img && !x.hidden; }); if (st.length) D.styles = st; }
+    });
+    (rows || []).forEach(function (r) {
+      if (r.key === 'journeys' && Array.isArray(r.data)) {
+        var ids = {}; D.places.forEach(function (p) { ids[p.id] = 1; });
+        var js = r.data.filter(function (j) { return j && j.id && j.img && j.name && !j.hidden; }).map(function (j) { j.places = (j.places || []).filter(function (id) { return ids[id]; }); return j; }).filter(function (j) { return j.places.length; });
+        if (js.length) D.journeys = js;
+      }
       if (r.key === 'gallery' && Array.isArray(r.data) && r.data.length) D.gallery = r.data.filter(function (g) { return g && g.img && !g.hidden; });
       /* approved traveller reviews first, then the ones carried over from the old site */
       if (r.key === 'reviews' && Array.isArray(r.data)) {
         D.reviewsBase = D.reviewsBase || D.reviews;
-        D.reviews = r.data.map(function (v) { return { r: v.rating, q: v.body, who: v.name + (v.country ? ', ' + v.country : ''), fresh: 1 }; }).concat(D.reviewsBase);
+        /* the old-site reviews now live in the table too; keep the bundled copies only while the table has none of them */
+        if (r.data.some(function (v) { return v.name === 'John Cummins' || v.name === 'Veronica Jean'; })) D.reviewsBase = [];
+        D.reviews = r.data.map(function (v) { return { r: v.rating, q: v.body, who: v.name + (v.country ? ', ' + v.country : ''), tour: v.tour || '', photos: Array.isArray(v.photos) ? v.photos : [], avatar: v.avatar || '', fresh: 1 }; }).concat(D.reviewsBase);
       }
     });
   }
@@ -1361,7 +1347,7 @@ function skyBoot() {
   if (!base || !window.fetch || !M.proj) { boot(); return; }
   var timer = setTimeout(boot, cached ? 900 : 2500);
   var get = function (path) { return fetch(base + '/rest/v1/' + path, { headers: { apikey: c.apiKey } }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); };
-  Promise.all([get('content?select=key,data,updated_at'), get('reviews?select=name,country,rating,body&order=created_at.desc&limit=40')])
+  Promise.all([get('content?select=key,data,updated_at'), get('reviews?select=name,country,rating,body,tour,photos,avatar&order=created_at.desc&limit=60').then(function (x) { return x || get('reviews?select=name,country,rating,body&order=created_at.desc&limit=60'); })])
     .then(function (res) {
       var rows = res[0]; if (!rows && !res[1]) return;
       rows = (rows || []).concat(res[1] ? [{ key: 'reviews', data: res[1] }] : []);

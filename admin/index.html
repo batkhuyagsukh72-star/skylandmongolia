@@ -150,6 +150,45 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
 .toast.bad{background:var(--bad)}
 .empty{color:var(--ink2);padding:24px;text-align:center;border:1px dashed var(--line);border-radius:14px}
 
+/* generic list editor */
+.le{display:grid;gap:12px}
+.le-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0}
+.le-item{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--card);min-width:0}
+.le-item.off{opacity:.55}
+.le-media{display:grid;gap:8px;align-content:start}
+.le-img{position:relative;border:1px dashed var(--line);padding:0;border-radius:10px;overflow:hidden;background:var(--sand);height:126px;width:100%;display:grid;place-items:center;font-size:13px;color:var(--ink2);font-weight:600}
+.le-img img,.le-img video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.le-img.tall{height:200px}
+.le-img .cap{position:absolute;left:6px;bottom:6px;font-size:11px;font-weight:700;background:rgba(0,0,0,.6);color:#fff;padding:2px 8px;border-radius:999px}
+.le-f{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-width:0;align-content:start}
+.le-f .full{grid-column:1/-1}
+.le-ctl{grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.le-ctl .sp{flex:1}
+.checks{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.checks .chk{font-weight:500;font-size:13px}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.slot{display:grid;gap:6px;font-size:13px;font-weight:700;color:var(--ink2)}
+.slot small{font-weight:400}
+.bigadd{display:flex;align-items:center;gap:14px;width:100%;padding:18px 20px;border:2px dashed var(--azure);border-radius:16px;background:var(--azure2);color:var(--azure);font-weight:800;font-size:17px;text-align:left;margin-bottom:12px}
+.bigadd:hover{background:#d6e5f3}
+.bigadd b{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--azure);color:#fff;font-size:26px;line-height:1;flex:none}
+.bigadd small{display:block;font-size:12.5px;font-weight:600;color:var(--ink2);margin-top:2px}
+.rvph{display:flex;gap:6px;flex-wrap:wrap}
+.rvph a,.rvph span{position:relative;display:block;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.rvph img{width:100%;height:100%;object-fit:cover;display:block}
+.rvph button{position:absolute;right:3px;top:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:12px;line-height:1;display:grid;place-items:center}
+.rvav{width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--line)}
+.pwrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pwrow input{max-width:320px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.eye{position:relative}
+.eye input{padding-right:48px}
+.eye button{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:38px;height:34px;border:0;border-radius:8px;background:transparent;color:var(--ink2);display:grid;place-items:center}
+.eye button:hover{background:var(--sand);color:var(--ink)}
+.eye svg{width:20px;height:20px}
+.prog{height:6px;border-radius:999px;background:var(--sand);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--azure);width:0;transition:width .2s}
+@media (max-width:640px){.le-item{grid-template-columns:1fr}.le-f{grid-template-columns:1fr}}
+
 @media (max-width:900px){
   .tours,.places{grid-template-columns:1fr}
   .tlist{position:static}
@@ -180,7 +219,7 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
   <form id="loginForm" autocomplete="on" hidden>
     <h1>Skyland удирдлага</h1>
     <p>Нууц үгээр нэвтрэх.</p>
-    <label class="f"><span class="l">Нууц үг</span><input type="password" name="password" id="pw" autocomplete="current-password" required></label>
+    <label class="f"><span class="l">Нууц үг</span><span class="eye"><input type="password" name="password" id="pw" autocomplete="current-password" required spellcheck="false"><button type="button" class="eyebtn" data-for="pw" aria-label="Нууц үгийг харах" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button></span></label>
     <button class="btn pri" type="submit" id="loginBtn">Нэвтрэх</button>
     <p class="err" id="loginErr" aria-live="polite"></p>
     <p style="margin:0"><button type="button" class="btn sm ghost" id="toCode">Имэйл кодоор нэвтрэх</button></p>
@@ -193,11 +232,16 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
     <span class="brand">SKYLAND</span>
     <nav class="tabs" role="tablist">
       <button class="tab" role="tab" data-tab="tours" aria-selected="true">Аяллууд</button>
-      <button class="tab" role="tab" data-tab="places" aria-selected="false">Газрууд</button>
-      <button class="tab" role="tab" data-tab="gallery" aria-selected="false">Галерей</button>
+      <button class="tab" role="tab" data-tab="hero" aria-selected="false">Нүүр зураг</button>
+      <button class="tab" role="tab" data-tab="sections" aria-selected="false">Хэсгийн зургууд</button>
+      <button class="tab" role="tab" data-tab="dest" aria-selected="false">Очих газрууд</button>
+      <button class="tab" role="tab" data-tab="gallery" aria-selected="false">Зураг, бичлэг</button>
       <button class="tab" role="tab" data-tab="reviews" aria-selected="false">Сэтгэгдэл <span class="tag" id="rvCount" hidden></span></button>
+      <button class="tab" role="tab" data-tab="about" aria-selected="false">Бидний тухай, хаяг</button>
+      <button class="tab" role="tab" data-tab="places" aria-selected="false">Газрын зургийн цэгүүд</button>
       <button class="tab" role="tab" data-tab="requests" aria-selected="false">Захиалгууд</button>
       <button class="tab" role="tab" data-tab="history" aria-selected="false">Өмнөх хувилбар</button>
+      <button class="tab" role="tab" data-tab="settings" aria-selected="false">Тохиргоо</button>
     </nav>
     <span class="sp"></span>
     <span class="status" id="status" aria-live="polite"></span>
@@ -209,18 +253,62 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
   <main>
     <section data-view="tours">
       <h2>Аяллууд</h2>
-      <p class="lead">Аяллаа сонгоод засаарай. "Хадгалах" дармагц сайтын аяллын хэсэг, газрын зураг, 3D нислэг, захиалгын форм бүгд шинэчлэгдэнэ.</p>
+      <p class="lead">Аяллаа сонгоод засаарай. "Хадгалах" дармагц сайтын аяллын хэсэг, газрын зураг, захиалгын форм бүгд шинэчлэгдэнэ.</p>
+      <button type="button" class="bigadd" id="addTour"><b>+</b><span>Шинэ аялал нэмэх<small>Хоосон аялал үүснэ. Нэр, өдөр, маршрут, үнэ, зураг, бичлэгээ оруулаад "Сайтад нуух"-ийг арилгахад сайтад гарна.</small></span></button>
       <div class="tours">
         <aside>
           <div class="tlist" id="tlist"></div>
-          <p style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="addTour">+ Шинэ аялал</button><button class="btn sm" id="dupTour">Хуулбарлах</button></p>
+          <p style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" id="dupTour">Сонгосон аяллыг хуулбарлах</button></p>
         </aside>
         <div class="ed" id="editor"></div>
       </div>
     </section>
 
+    <section data-view="hero" hidden>
+      <h2>Нүүр зураг</h2>
+      <p class="lead">Сайтын хамгийн дээд хэсгийн зургууд. 3 секунд тутам ээлжилж солигдоно. 7–8 зураг байхад хамгийн гоё. Хэвтээ, өндөр чанартай (2000 px-ээс өргөн) зураг сонгоорой. Дарааллыг ↑ ↓ товчоор солино.</p>
+      <div class="le" id="heroEd"></div>
+    </section>
+
+    <section data-view="sections" hidden>
+      <h2>Хэсгийн зургууд</h2>
+      <p class="lead">Сайтын хэсэг бүрийн зураг. Зураг дээр дарж шинэ зураг оруулна эсвэл өмнө оруулсан зургаасаа сонгоно. AI зургуудыг өөрийн мэргэжлийн зургаар сольж болно.</p>
+      <div class="sec"><div class="sec-h"><h3>Хэсгүүдийн зураг</h3></div><div class="slots" id="slots"></div></div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h3>Машин түрээс</h3><p>Хамгийн доод үнэ (жишээ нь €120 эсвэл $130). Машины 4 зураг дээрх хэсэгт байгаа.</p></div>
+        <label class="f" style="max-width:260px"><span class="l">Өдрийн үнэ</span><input type="text" id="carPrice"></label></div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h3>"Өөрийн хэв маягаар аялах" хавтангууд</h3><p>6 зураг, тус бүр гарчигтай.</p></div><div class="le" id="stylesEd"></div></div>
+    </section>
+
+    <section data-view="dest" hidden>
+      <h2>Очих газрууд</h2>
+      <p class="lead">"Аялах газрууд" хэсгийн картууд: зураг, нэр, байршил, тохиромжтой сар, тайлбар. Газрын зураг дээр гарах цэгийг "Газрын зургийн цэгүүд" хэсгээс сонгоно.</p>
+      <div class="le" id="destEd"></div>
+      <h2 style="margin-top:36px">Санал болгох маршрутууд</h2>
+      <p class="lead">"Онцлох аяллууд" хэсгийн том зургууд. Зурган дээр дарахад сонгосон газрууд аялагчийн маршрутад нэмэгдэнэ.</p>
+      <div class="le" id="jrnEd"></div>
+    </section>
+
+    <section data-view="about" hidden>
+      <h2>Бидний тухай, холбоо барих</h2>
+      <p class="lead">Компанийн танилцуулга, хамт олон, хаяг, утас, имэйл, ажлын цаг, байршил.</p>
+      <div class="sec"><div class="sec-h"><h3>Компанийн тухай</h3></div><div class="grid2" id="aboutF"></div></div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h3>Холбоо барих</h3><p>Байршил: Google Maps-аас координат хуулж "47.9123, 106.9345" хэлбэрээр бичвэл сайтад газрын зураг гарна. Эсвэл Google Maps-ийн холбоос тавьж болно.</p></div><div class="grid2" id="contactF"></div></div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h3>Хамт олон</h3><p>Хөтөч, жолооч, менежерүүд. Зураг, нэр, албан тушаал, товч намтар.</p></div><div class="le" id="teamEd"></div></div>
+    </section>
+
+    <section data-view="settings" hidden>
+      <h2>Тохиргоо</h2>
+      <p class="lead">Админ хэсэгт нэвтрэх тохиргоо.</p>
+      <div class="sec"><div class="sec-h"><h3>Нууц үг</h3><p>"Нууц үгээр нэвтрэх" үед ашигладаг нийтлэг нууц үг. Нүдэн дээр дарж харна. Шинэ нууц үг дор хаяж 8 тэмдэгт.</p></div>
+        <div class="pwrow"><span class="eye"><input type="password" id="curPw" readonly value="" aria-label="Одоогийн нууц үг"><button type="button" class="eyebtn" data-for="curPw" aria-label="Нууц үгийг харах" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button></span><button class="btn sm" id="pwCopy" type="button">Хуулах</button></div>
+        <p class="hint" id="pwSrc"></p>
+        <div class="pwrow"><span class="eye"><input type="password" id="newPw" autocomplete="new-password" placeholder="Шинэ нууц үг" spellcheck="false" aria-label="Шинэ нууц үг"><button type="button" class="eyebtn" data-for="newPw" aria-label="Нууц үгийг харах" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button></span><button class="btn sm pri" id="pwSave" type="button">Нууц үг солих</button></div>
+      </div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h3>Имэйл кодоор нэвтрэх</h3><p>Эдгээр имэйл хаяг руу 6 оронтой код очно.</p></div><p id="loginEmails" style="margin:0;font-weight:600"></p></div>
+    </section>
+
     <section data-view="places" hidden>
-      <h2>Газрууд</h2>
+      <h2>Газрын зургийн цэгүүд</h2>
       <p class="lead">Маршрутад сонгох газрууд. Шинэ газар нэмэхдээ газрын зураг дээр дарж байршлыг нь тэмдэглээд, эсвэл координатыг нь шууд бичнэ.</p>
       <div class="places">
         <div class="sec">
@@ -240,15 +328,20 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
     </section>
 
     <section data-view="gallery" hidden>
-      <h2>Галерей</h2>
-      <p class="lead">"Аяллын агшнууд" хэсгийн зургууд. Зураг нэмэх, тайлбар засах, дараалал солих, устгах. Эхний 11 зураг сайтад шууд харагдаж, бусад нь "Бүх зургийг харах" дотор гарна. "Хадгалах" дарж сайтад гаргана.</p>
+      <h2>Богино бичлэгүүд</h2>
+      <p class="lead">"Аяллын агшнууд" хэсгийн босоо бичлэгүүд. Бичлэгээ шууд оруулах (MP4, 50 MB хүртэл) эсвэл YouTube холбоос тавина. Аялагч дээр нь дарахад бүтэн дэлгэцээр тайлбартайгаа гарна.</p>
+      <div class="le" id="reelsEd"></div>
+      <h2 style="margin-top:36px">Галерей зургууд</h2>
+      <p class="lead">Зураг нэмэх, тайлбар засах, дараалал солих, устгах. Эхний 11 зураг сайтад шууд харагдаж, бусад нь "Бүх зургийг харах" дотор гарна. "Хадгалах" дарж сайтад гаргана.</p>
       <p style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px"><button class="btn sm" id="gAdd">+ Зураг нэмэх</button></p>
       <div id="glist" class="glist"></div>
     </section>
 
     <section data-view="reviews" hidden>
       <h2>Сэтгэгдэл</h2>
-      <p class="lead">Аялагчдын үлдээсэн сэтгэгдэл. "Нийтлэх" дарсан сэтгэгдэл л сайтад гарна. Шинэ сэтгэгдэл ирэхэд skylandmongolia@gmail.com руу имэйл очно.</p>
+      <p class="lead">Аялагчдын үлдээсэн сэтгэгдэл. "Нийтлэх" дарсан сэтгэгдэл л сайтад гарна. Шинэ сэтгэгдэл ирэхэд skylandmongolia@gmail.com руу имэйл очно. Зурагтай сэтгэгдэл сайтад аялагчийн зураг дээр одтойгоо гарна. Мессежээр ирсэн сэтгэгдлийг та өөрөө нэмж болно.</p>
+      <p style="margin:0 0 14px"><button class="btn pri" id="rvAdd" type="button">+ Сэтгэгдэл нэмэх</button></p>
+      <div id="rvNew"></div>
       <div id="rvs" style="display:grid;gap:10px"></div>
     </section>
 
@@ -270,7 +363,7 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
   <div class="dlg">
     <div class="dlg-h">
       <h3>Зураг сонгох</h3><span class="sp"></span>
-      <label class="btn sm pri" style="cursor:pointer">Зураг оруулах<input type="file" id="upload" accept="image/jpeg,image/png,image/webp" hidden></label>
+      <label class="btn sm pri" style="cursor:pointer">Зураг оруулах<input type="file" id="upload" accept="image/*" multiple hidden></label>
       <button class="btn sm" id="pickNone">Зураггүй</button>
       <button class="btn sm ghost" id="pickClose">Хаах</button>
     </div>
@@ -280,7 +373,7 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
 
 <div class="toast" id="toast" hidden role="status"></div>
 
-<script src="../data.js"></script>
+<script src="../data.js?v=20261114"></script>
 <script src="../map.js"></script>
 <script>
 (function () {
@@ -307,7 +400,7 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
   }
 
   /* ---------- state ---------- */
-  var S = { token: ss.get('sky-admin'), tours: [], places: [], cur: 0, pcur: -1, dirty: { tours: false, places: false }, photos: null, uploads: [] };
+  var S = { token: ss.get('sky-admin'), tours: [], places: [], cur: 0, pcur: -1, dirty: {}, photos: null, uploads: [], site: {}, hero: [], dest: [], journeys: [], styles: [] };
   function placeById(id) { for (var i = 0; i < S.places.length; i++) if (S.places[i].id === id) return S.places[i]; return null; }
   function pname(id) { if (id === 'ub') return 'Улаанбаатар'; var p = placeById(id); return p ? (p.mn || p.en || id) : id + ' (олдсонгүй)'; }
   function imgUrl(x) { return /^https?:\/\//.test(x) ? x : '../img/' + x + '.webp'; }
@@ -345,7 +438,7 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
     S.token = null; ss.del('sky-admin'); $('#app').hidden = true; $('#login').hidden = false; $('#loginErr').textContent = msg || '';
   }
   $('#logout').onclick = function () {
-    if ((S.dirty.tours || S.dirty.places || S.dirty.gallery) && !confirmBar('Хадгалаагүй өөрчлөлт байна. Гарах уу?', function () { signOut(); })) return;
+    if (isDirty() && !confirmBar('Хадгалаагүй өөрчлөлт байна. Гарах уу?', function () { signOut(); })) return;
     signOut();
   };
 
@@ -370,15 +463,21 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
         S.places = by.places ? clone(by.places.data) : defaultPlaces();
         S.tours = by.tours ? clone(by.tours.data) : clone(D.tours);
         S.gallery = by.gallery ? clone(by.gallery.data) : clone(D.gallery);
-        S.dirty = { tours: false, places: false, gallery: false };
+        S.site = clone(D.site); if (by.site && by.site.data) Object.keys(by.site.data).forEach(function (k) { if (k === 'img') S.site.img = Object.assign({}, S.site.img, by.site.data.img); else S.site[k] = clone(by.site.data[k]); });
+        S.hero = by.hero ? clone(by.hero.data) : clone(D.hero);
+        S.dest = by.destinations ? clone(by.destinations.data) : clone(D.places);
+        S.journeys = by.journeys ? clone(by.journeys.data) : clone(D.journeys);
+        S.styles = by.styles ? clone(by.styles.data) : clone(D.styles);
+        S.dirty = {};
         S.cur = 0; renderTours(); renderPlaces(); renderGallery();
+        var cur = $('.tab[aria-selected=true]'); if (cur && cur.dataset.tab !== 'tours') cur.click();
         setStatus(by.tours ? 'Сүүлд хадгалсан: ' + new Date(by.tours.updated_at).toLocaleString('mn-MN') : 'Одоогийн сайтын мэдээлэл ачааллаа');
       });
     fetch('photos.json').then(function (r) { return r.json(); }).then(function (j) { S.photos = j; }).catch(function () { S.photos = []; });
   }
   function setStatus(t, dirty) { var s = $('#status'); s.textContent = t; s.classList.toggle('dirty', !!dirty); }
   function markDirty(k) { S.dirty[k] = true; $('#saveBtn').disabled = false; setStatus('Хадгалаагүй өөрчлөлттэй', true); }
-  window.addEventListener('beforeunload', function (e) { if (S.dirty.tours || S.dirty.places || S.dirty.gallery) { e.preventDefault(); e.returnValue = ''; } });
+  window.addEventListener('beforeunload', function (e) { if (isDirty()) { e.preventDefault(); e.returnValue = ''; } });
 
   /* ---------- tabs ---------- */
   $$('.tab').forEach(function (b) {
@@ -387,9 +486,15 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
       $$('[data-view]').forEach(function (v) { v.hidden = v.dataset.view !== b.dataset.tab; });
       if (b.dataset.tab === 'requests') loadRequests();
       if (b.dataset.tab === 'reviews') loadReviews();
-      if (b.dataset.tab === 'gallery') renderGallery();
+      if (b.dataset.tab === 'gallery') { renderGallery(); renderReels(); }
       if (b.dataset.tab === 'history') loadHistory();
       if (b.dataset.tab === 'places') renderPlaces();
+      if (b.dataset.tab === 'hero') renderHero();
+      if (b.dataset.tab === 'sections') renderSections();
+      if (b.dataset.tab === 'dest') renderDest();
+      if (b.dataset.tab === 'about') renderAbout();
+      if (b.dataset.tab === 'settings') loadSettings();
+      window.scrollTo(0, 0);
     };
   });
 
@@ -401,11 +506,13 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
         '<button class="pick" data-i="' + i + '"><b>' + esc((t.name && (t.name.mn || t.name.en)) || 'Нэргүй аялал') + '</b><small>' + (t.days || '?') + ' хоног' +
         (t.popular ? '<span class="tag">эрэлттэй</span>' : '') + (t.hidden ? '<span class="tag grey">нуусан</span>' : '') + '</small></button>' +
         '<button class="icon" data-up="' + i + '" aria-label="Дээш"' + (i ? '' : ' disabled') + '>↑</button>' +
-        '<button class="icon" data-dn="' + i + '" aria-label="Доош"' + (i < S.tours.length - 1 ? '' : ' disabled') + '>↓</button></div>';
+        '<button class="icon" data-dn="' + i + '" aria-label="Доош"' + (i < S.tours.length - 1 ? '' : ' disabled') + '>↓</button>' +
+        '<button class="icon" data-tdel="' + i + '" aria-label="Устгах" title="Устгах">✕</button></div>';
     }).join('');
     $$('[data-i]', el).forEach(function (b) { b.onclick = function () { S.cur = +b.dataset.i; renderTours(); }; });
     $$('[data-up]', el).forEach(function (b) { b.onclick = function () { move(S.tours, +b.dataset.up, -1); S.cur = +b.dataset.up - 1; markDirty('tours'); renderTours(); }; });
     $$('[data-dn]', el).forEach(function (b) { b.onclick = function () { move(S.tours, +b.dataset.dn, 1); S.cur = +b.dataset.dn + 1; markDirty('tours'); renderTours(); }; });
+    $$('[data-tdel]', el).forEach(function (b) { b.onclick = function () { var i = +b.dataset.tdel, t = S.tours[i]; confirmBar('"' + ((t.name && (t.name.mn || t.name.en)) || 'Нэргүй') + '" аяллыг устгах уу?', function () { S.tours.splice(i, 1); S.cur = Math.max(0, Math.min(S.cur, S.tours.length - 1)); markDirty('tours'); renderTours(); }); }; });
     renderEditor();
   }
   function move(arr, i, d) { var j = i + d; if (j < 0 || j >= arr.length) return; var x = arr[i]; arr[i] = arr[j]; arr[j] = x; }
@@ -413,9 +520,11 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
   $('#addTour').onclick = function () {
     S.tours.push({ id: uid('tour'), days: 3, name: { en: 'New tour', mn: 'Шинэ аялал' }, lead: { en: '', mn: '' },
       plan: [{ m: 'B L D', t: { en: '', mn: '' }, d: { en: '', mn: '' }, s: { en: '', mn: '' } }],
-      route: [{ id: 'ub' }, { id: 'ub', d: '1' }], price: [[1, 0], [2, 0], [3, 0], [4, 0]],
+      route: [{ id: 'ub' }, { id: 'ub', d: '1' }], price: [[1, 0], [2, 0], [3, 0], [4, 0]], videos: [],
       inc: clone(D.tours[0].inc || { en: [], mn: [] }), exc: clone(D.tours[0].exc || { en: [], mn: [] }), hidden: true });
     S.cur = S.tours.length - 1; markDirty('tours'); renderTours();
+    var tb = $('.tab[data-tab=tours]'); if (tb && tb.getAttribute('aria-selected') !== 'true') tb.click();
+    setTimeout(function () { var n = $('#editor [data-p="name.mn"]'); if (n) { n.focus(); n.select(); } }, 50);
     toast('Шинэ аялал нэмлээ. Бэлэн болмогц "Сайтад нуух"-ийг арилгаарай.');
   };
   $('#dupTour').onclick = function () {
@@ -455,6 +564,7 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
           '<label class="f" style="grid-column:span 2"><span class="l">YouTube бичлэг (заавал биш)</span><input type="url" data-p="film" value="' + esc(t.film || '') + '" placeholder="https://youtube.com/…"></label></div>' +
       '</div>' +
       priceSec(t) + daysSec(t) + routeSec(t) + incSec(t) +
+      '<div class="sec"><div class="sec-h"><h3>Бичлэгүүд</h3><p>Аяллын мэдээллийн доор "Энэ аяллын бичлэгүүд" хэсэгт гарна. Аялагч дээр нь дарахад бүтэн дэлгэцээр тайлбартай нь үзнэ. Бичлэгээ шууд оруулах (MP4, 50 MB хүртэл) эсвэл YouTube холбоос тавина.</p></div><div class="le" id="tvEd"></div></div>' +
       '<div class="sec"><div class="sec-h"><h3>Аялал устгах</h3><p>Түр нуух бол дээрх "Сайтад нуух"-ийг ашиглаарай. Устгасан ч "Өмнөх хувилбар"-аас сэргээж болно.</p></div>' +
         '<p style="margin:0"><button class="btn sm danger" id="delTour">Энэ аяллыг устгах</button></p></div>';
     bindEditor();
@@ -536,6 +646,12 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
   function bindEditor() {
     var ed = $('#editor'), t = T();
     var tm = $('#tmap', ed); if (tm) tm.innerHTML = routeSvg(t);
+    t.videos = t.videos || [];
+    LE({ el: '#tvEd', key: 'tours', get: function () { return t.videos; }, addLabel: '+ Бичлэг нэмэх', max: 20,
+      add: function () { return { video: '', t: { en: '', mn: '' }, d: { en: '', mn: '' } }; },
+      media: [{ k: 'video', type: 'video' }],
+      fields: [{ type: 'yt', k: 'yt', label: 'Эсвэл YouTube холбоос', full: true }, { type: 'lang', k: 't', label: 'Гарчиг' }, { type: 'lang', k: 'd', label: 'Тайлбар', area: true, rows: 2 }],
+      title: function (it, i) { return (i + 1) + '-р бичлэг'; } });
     $$('[data-p]', ed).forEach(function (el) {
       el.addEventListener('input', function () {
         var v = el.type === 'number' ? (el.value === '' ? '' : +el.value) : el.value;
@@ -580,10 +696,205 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
     };
   }
 
+
+  /* ---------- helpers for nested values ---------- */
+  function getP(o, path) { if (!path) return o; path.split('.').forEach(function (k) { o = o == null ? undefined : o[k]; }); return o; }
+  function setP(o, path, v) {
+    var ks = path.split('.');
+    for (var i = 0; i < ks.length - 1; i++) { if (o[ks[i]] == null || typeof o[ks[i]] !== 'object') o[ks[i]] = {}; o = o[ks[i]]; }
+    if (v === '' || v == null) delete o[ks[ks.length - 1]]; else o[ks[ks.length - 1]] = v;
+  }
+  function isDirty() { return Object.keys(S.dirty).some(function (k) { return S.dirty[k]; }); }
+  function vidSrc(x) { return !x ? '' : /^https?:\/\//.test(x) ? x : '../' + x; }
+  function ytId(u) { var m = String(u || '').match(/(?:youtu\.be\/|youtube\.com\/(?:shorts\/|embed\/|live\/|watch\?(?:[^#]*&)?v=))([\w-]{11})/); return m ? m[1] : ''; }
+  function mediaPrev(x) { return !x ? '' : (/^https?:\/\//.test(x) || /^(video|img)\//.test(x)) ? (/^https?:/.test(x) ? x : '../' + x) : imgUrl(x); }
+
+  /* ---------- video upload: straight from the browser to storage (up to 50 MB), with progress ---------- */
+  function uploadFile(file, onProg) {
+    return new Promise(function (res, rej) {
+      if (file.size > 50 * 1024 * 1024) { rej('Файл 50 MB-аас том байна. Бичлэгээ богиносгох/шахах эсвэл YouTube-д байршуулаад холбоосыг нь тавина уу.'); return; }
+      var type = file.type || (/\.mov$/i.test(file.name) ? 'video/quicktime' : /\.webm$/i.test(file.name) ? 'video/webm' : 'video/mp4');
+      api('upload-url', { name: file.name, type: type, size: file.size }).then(function (j) {
+        if (!j || !j.ok) { rej((j && j.error) || 'сервер'); return; }
+        var x = new XMLHttpRequest();
+        x.open('PUT', j.put); x.setRequestHeader('Content-Type', type); x.setRequestHeader('x-upsert', 'false'); x.setRequestHeader('apikey', KEY);
+        x.upload.onprogress = function (e) { if (e.lengthComputable && onProg) onProg(e.loaded / e.total); };
+        x.onload = function () { if (x.status >= 200 && x.status < 300) res(j.url); else rej('хуулах ' + x.status + ' ' + (x.responseText || '').slice(0, 120)); };
+        x.onerror = function () { rej('сүлжээ тасарлаа'); };
+        x.send(file);
+      }, function () { rej('сервертэй холбогдож чадсангүй'); });
+    });
+  }
+
+  /* ---------- generic list editor: photos/videos with texts; add, hide, reorder, delete ---------- */
+  function LE(o) {
+    var el = $(o.el); if (!el) return;
+    var arr = o.get();
+    function dirty() { markDirty(o.key); }
+    function rerender() { LE(o); }
+    var lab = function (f) { return '<span class="l">' + esc(f.label) + (f.lng ? ' <span class="lng">' + f.lng + '</span>' : '') + '</span>'; };
+    function fieldHTML(f, it, i) {
+      var v = getP(it, f.k); if (v == null) v = '';
+      var cls = f.full ? ' full' : '';
+      if (f.type === 'lang') {
+        var base = f.k ? f.k + '.' : '';
+        var one = function (lg) {
+          var val = getP(it, base + lg); if (val == null) val = '';
+          return '<label class="f' + cls + '">' + lab({ label: f.label, lng: lg === 'en' ? 'EN' : 'МН' }) + (f.area ? '<textarea rows="' + (f.rows || 3) + '" data-le="' + i + '" data-k="' + base + lg + '">' + esc(val) + '</textarea>' : '<input type="text" data-le="' + i + '" data-k="' + base + lg + '" value="' + esc(val) + '">') + '</label>';
+        };
+        return one('en') + one('mn');
+      }
+      if (f.type === 'select') return '<label class="f' + cls + '">' + lab(f) + '<select data-le="' + i + '" data-k="' + f.k + '" data-rr="' + (f.rerender ? 1 : '') + '">' + f.options().map(function (op) { return '<option value="' + esc(op[0]) + '"' + (String(op[0]) === String(v) ? ' selected' : '') + '>' + esc(op[1]) + '</option>'; }).join('') + '</select></label>';
+      if (f.type === 'checks') { var cur = v || []; return '<div class="f full">' + lab(f) + '<div class="checks">' + f.options().map(function (op) { return '<label class="chk"><input type="checkbox" data-lc="' + i + '" data-k="' + f.k + '" value="' + esc(op[0]) + '"' + (cur.indexOf(op[0]) >= 0 ? ' checked' : '') + '>' + esc(op[1]) + '</label>'; }).join('') + '</div></div>'; }
+      if (f.type === 'yt') return '<label class="f' + cls + '">' + lab(f) + '<input type="url" data-le="' + i + '" data-k="' + f.k + '" value="' + esc(v) + '" placeholder="https://youtube.com/shorts/…" data-rr="1"></label>';
+      return '<label class="f' + cls + '">' + lab(f) + (f.area ? '<textarea rows="' + (f.rows || 3) + '" data-le="' + i + '" data-k="' + f.k + '">' + esc(v) + '</textarea>' : '<input type="text" data-le="' + i + '" data-k="' + f.k + '" value="' + esc(v) + '">') + '</label>';
+    }
+    function mediaHTML(it, i) {
+      return (o.media || []).map(function (m) {
+        var v = getP(it, m.k) || '';
+        if (m.type === 'video') {
+          var yt = ytId(it.yt), poster = it.poster ? mediaPrev(it.poster) : (yt ? 'https://i.ytimg.com/vi/' + yt + '/hqdefault.jpg' : '');
+          return '<div class="le-img tall">' + (poster ? '<img src="' + esc(poster) + '" alt="">' : v ? '<video src="' + esc(vidSrc(v)) + '#t=0.5" muted playsinline preload="metadata"></video>' : 'Бичлэг алга') +
+            '<span class="cap">' + (yt ? 'YouTube' : v ? 'Бичлэг' : '') + '</span></div>' +
+            '<label class="btn sm" style="cursor:pointer;justify-content:center">' + (v ? 'Бичлэг солих' : 'Бичлэг оруулах') + '<input type="file" accept="video/mp4,video/webm,video/quicktime,video/*" data-vup="' + i + '" hidden></label>' +
+            '<div class="prog" data-prog="' + i + '" hidden><i></i></div>' +
+            '<button type="button" class="btn sm" data-img="' + i + '" data-k="poster">' + (it.poster ? 'Нүүр зураг солих' : 'Нүүр зураг (заавал биш)') + '</button>';
+        }
+        return '<span class="slot">' + (m.label ? esc(m.label) : '') + '<button type="button" class="le-img' + (m.tall ? ' tall' : '') + '" data-img="' + i + '" data-k="' + m.k + '">' + (v ? '<img src="' + esc(mediaPrev(v)) + '" alt="" loading="lazy">' : '+ Зураг') + '</button></span>';
+      }).join('');
+    }
+    el.innerHTML = '<p class="le-top"><button class="btn sm pri" type="button" data-add>' + esc(o.addLabel || '+ Нэмэх') + '</button>' + (o.note ? '<span class="hint">' + esc(o.note) + '</span>' : '') + '</p>' +
+      (arr.length ? arr.map(function (it, i) {
+        return '<div class="le-item' + (it.hidden ? ' off' : '') + '"><div class="le-media">' + mediaHTML(it, i) + '</div><div class="le-f">' + (o.fields || []).map(function (f) { return fieldHTML(f, it, i); }).join('') +
+          '<div class="le-ctl">' + (o.title ? '<b>' + esc(o.title(it, i)) + '</b>' : '') + '<span class="sp"></span>' + (o.noHide ? '' : '<label class="chk"><input type="checkbox" data-hide="' + i + '"' + (it.hidden ? ' checked' : '') + '>Нуух</label>') +
+          '<button class="icon" type="button" data-up="' + i + '"' + (i ? '' : ' disabled') + ' aria-label="Дээш">↑</button><button class="icon" type="button" data-dn="' + i + '"' + (i < arr.length - 1 ? '' : ' disabled') + ' aria-label="Доош">↓</button><button class="icon" type="button" data-del="' + i + '" aria-label="Устгах">✕</button></div></div></div>';
+      }).join('') : '<div class="empty">' + esc(o.empty || 'Одоогоор алга. Дээрх товчоор нэмнэ үү.') + '</div>');
+    $('[data-add]', el).onclick = function () {
+      if (o.max && arr.length >= o.max) { toast('Хамгийн ихдээ ' + o.max + '.', true); return; }
+      var add = function (it) { if (o.addTop) arr.unshift(it); else arr.push(it); dirty(); rerender(); };
+      if (o.addPick) pick('', function (v) { if (!v) return; var it = o.add(); setP(it, o.addPick, v); add(it); }, o.pickOpt); else add(o.add());
+    };
+    $$('[data-le]', el).forEach(function (x) {
+      x.addEventListener('input', function () { var it = arr[+x.dataset.le]; setP(it, x.dataset.k, x.value.trim() ? x.value : ''); dirty(); if (o.onChange) o.onChange(it, x.dataset.k); });
+      if (x.dataset.rr) x.addEventListener('change', rerender);
+    });
+    $$('[data-lc]', el).forEach(function (x) { x.onchange = function () { var it = arr[+x.dataset.lc], k = x.dataset.k; it[k] = $$('[data-lc="' + x.dataset.lc + '"][data-k="' + k + '"]', el).filter(function (c) { return c.checked; }).map(function (c) { return c.value; }); dirty(); }; });
+    $$('[data-img]', el).forEach(function (b) { b.onclick = function () { var it = arr[+b.dataset.img], k = b.dataset.k; pick(getP(it, k) || '', function (v) { if (!v && (o.media || []).some(function (m) { return m.k === k && m.req; })) return; setP(it, k, v); dirty(); rerender(); }, o.pickOpt); }; });
+    $$('[data-vup]', el).forEach(function (inp) {
+      inp.onchange = function () {
+        var f = inp.files[0], i = +inp.dataset.vup; inp.value = ''; if (!f) return;
+        var bar = $('[data-prog="' + i + '"]', el); bar.hidden = false;
+        toast('Бичлэг хуулж байна… Хуудсаа хаалгүй түр хүлээнэ үү.');
+        uploadFile(f, function (p) { $('i', bar).style.width = Math.round(p * 100) + '%'; }).then(function (url) {
+          var it = arr[i]; it.video = url; delete it.yt; dirty(); toast('Бичлэг орлоо. "Хадгалах" дарж сайтад гаргана.'); rerender();
+        }, function (err) { bar.hidden = true; toast('Бичлэг оруулж чадсангүй: ' + err, true); });
+      };
+    });
+    $$('[data-hide]', el).forEach(function (x) { x.onchange = function () { var it = arr[+x.dataset.hide]; if (x.checked) it.hidden = true; else delete it.hidden; dirty(); rerender(); }; });
+    $$('[data-up]', el).forEach(function (b) { b.onclick = function () { move(arr, +b.dataset.up, -1); dirty(); rerender(); }; });
+    $$('[data-dn]', el).forEach(function (b) { b.onclick = function () { move(arr, +b.dataset.dn, 1); dirty(); rerender(); }; });
+    $$('[data-del]', el).forEach(function (b) { b.onclick = function () { var i = +b.dataset.del; confirmBar('Устгах уу?', function () { arr.splice(i, 1); dirty(); rerender(); }); }; });
+  }
+
+  /* ---------- hero slides ---------- */
+  function renderHero() {
+    LE({ el: '#heroEd', key: 'hero', get: function () { return S.hero; }, addLabel: '+ Зураг нэмэх', addPick: 'img', addTop: false, max: 12, pickOpt: { max: 2560 },
+      add: function () { return { img: '', en: '', mn: '' }; },
+      media: [{ k: 'img', req: true }], fields: [{ type: 'lang', k: '', label: 'Зургийн тайлбар' }],
+      title: function (it, i) { return (i + 1) + '-р зураг' + (it.img === 'hero' ? ' (уулын зураастай анхны зураг)' : ''); } });
+  }
+  /* ---------- section photos, car price, style tiles ---------- */
+  var SLOTS = [['why', 'Яагаад Skyland: арын том зураг'], ['why1', 'Яагаад Skyland: 1-р зураг'], ['why2', 'Яагаад Skyland: 2-р зураг'], ['why3', 'Яагаад Skyland: 3-р зураг'],
+    ['steps', '3 алхам: арын зураг'], ['social', 'Сошиал хэсгийн зураг'], ['plan', 'Захиалгын хэсгийн арын зураг'], ['footer', 'Хөлийн хэсгийн зураг'],
+    ['car1', 'Машин түрээс: том зураг'], ['car2', 'Машин түрээс: 2-р зураг'], ['car3', 'Машин түрээс: 3-р зураг'], ['car4', 'Машин түрээс: 4-р зураг']];
+  function renderSections() {
+    S.site.img = S.site.img || {};
+    $('#slots').innerHTML = SLOTS.map(function (s) {
+      var v = S.site.img[s[0]] || '';
+      return '<span class="slot">' + esc(s[1]) + '<button type="button" class="le-img" data-slot="' + s[0] + '">' + (v ? '<img src="' + esc(imgUrl(v)) + '" alt="" loading="lazy">' : '+ Зураг') + '</button></span>';
+    }).join('');
+    $$('[data-slot]').forEach(function (b) { b.onclick = function () { var k = b.dataset.slot; pick(S.site.img[k] || '', function (v) { if (!v) return; S.site.img[k] = v; markDirty('site'); renderSections(); }, { max: 2400 }); }; });
+    var cp = $('#carPrice'); cp.value = S.site.carPrice || ''; cp.oninput = function () { S.site.carPrice = cp.value.trim(); markDirty('site'); };
+    LE({ el: '#stylesEd', key: 'styles', get: function () { return S.styles; }, addLabel: '+ Хавтан нэмэх', addPick: 'img', max: 12, add: function () { return { img: '', en: '', mn: '' }; },
+      media: [{ k: 'img', req: true }], fields: [{ type: 'lang', k: '', label: 'Гарчиг' }] });
+  }
+  /* ---------- destination cards and signature journeys ---------- */
+  function renderDest() {
+    var regions = D.regions.filter(function (r) { return r.id !== 'all'; });
+    LE({ el: '#destEd', key: 'destinations', get: function () { return S.dest; }, addLabel: '+ Газар нэмэх', addPick: 'img', addTop: true,
+      add: function () { var id = 'place', n = 1; while (S.dest.some(function (p) { return p.id === id + n; })) n++; return { id: id + n, img: '', region: 'central', name: { en: '', mn: '' }, where: { en: '', mn: '' }, best: { en: '', mn: '' }, text: { en: '', mn: '' } }; },
+      media: [{ k: 'img', req: true, tall: true }],
+      fields: [
+        { type: 'lang', k: 'name', label: 'Нэр' }, { type: 'lang', k: 'where', label: 'Байршил (аймаг)' }, { type: 'lang', k: 'best', label: 'Тохиромжтой сар' },
+        { type: 'lang', k: 'text', label: 'Тайлбар', area: true },
+        { type: 'select', k: 'region', label: 'Бүс', options: function () { return regions.map(function (r) { return [r.id, r.mn]; }); } },
+        { type: 'select', k: 'id', label: 'Газрын зураг дээрх цэг', rerender: true, options: function () { return [['', '— сонгох —']].concat(S.places.map(function (p) { return [p.id, (p.mn || p.en) + ' (' + p.id + ')']; })); } }
+      ],
+      title: function (it) { return (it.name && (it.name.mn || it.name.en)) || 'Шинэ газар'; },
+      onChange: function (it, k) { if (k === 'id' && S.dest.filter(function (p) { return p.id === it.id; }).length > 1) toast('Энэ цэгийг өөр газар аль хэдийн ашигласан байна.', true); } });
+    LE({ el: '#jrnEd', key: 'journeys', get: function () { return S.journeys; }, addLabel: '+ Маршрут нэмэх', addPick: 'img',
+      add: function () { var id = 'route', n = 1; while (S.journeys.some(function (j) { return j.id === id + n; })) n++; return { id: id + n, img: '', places: [], name: { en: '', mn: '' } }; },
+      media: [{ k: 'img', req: true, tall: true }],
+      fields: [{ type: 'lang', k: 'name', label: 'Нэр' }, { type: 'checks', k: 'places', label: 'Багтах газрууд', options: function () { return S.dest.map(function (p) { return [p.id, (p.name && (p.name.mn || p.name.en)) || p.id]; }); } }],
+      title: function (it) { return (it.name && (it.name.mn || it.name.en)) || 'Шинэ маршрут'; } });
+  }
+  /* ---------- short films ---------- */
+  function renderReels() {
+    S.site.reels = S.site.reels || [];
+    LE({ el: '#reelsEd', key: 'site', get: function () { return S.site.reels; }, addLabel: '+ Бичлэг нэмэх', addTop: true, max: 30,
+      note: 'MP4 (H.264) хамгийн найдвартай. iPhone-ы .mov зарим компьютер дээр тоглохгүй байж магадгүй.',
+      add: function () { return { video: '', en: '', mn: '' }; },
+      media: [{ k: 'video', type: 'video' }],
+      fields: [{ type: 'yt', k: 'yt', label: 'Эсвэл YouTube холбоос', full: true }, { type: 'lang', k: '', label: 'Гарчиг' }, { type: 'lang', k: 'd', label: 'Тайлбар (бүтэн дэлгэцэд)', area: true, rows: 2 }],
+      title: function (it, i) { return (i + 1) + '-р бичлэг'; } });
+  }
+  /* ---------- about, contact, team ---------- */
+  function bindForm(el, fields, obj) {
+    $(el).innerHTML = fields.map(function (f) {
+      var v = getP(obj, f.k); if (v == null) v = '';
+      return '<label class="f' + (f.full ? '" style="grid-column:1/-1' : '') + '"><span class="l">' + esc(f.label) + (f.lng ? ' <span class="lng">' + f.lng + '</span>' : '') + '</span>' +
+        (f.area ? '<textarea rows="' + (f.rows || 5) + '" data-fk="' + f.k + '">' + esc(v) + '</textarea>' : '<input type="text" data-fk="' + f.k + '" value="' + esc(v) + '"' + (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + '>') + '</label>';
+    }).join('');
+    $$('[data-fk]', $(el)).forEach(function (x) { x.addEventListener('input', function () { setP(obj, x.dataset.fk, x.value.trim() ? x.value : ''); markDirty('site'); }); });
+  }
+  function renderAbout() {
+    S.site.about = S.site.about || {}; S.site.contact = S.site.contact || {}; S.site.team = S.site.team || [];
+    bindForm('#aboutF', [{ k: 'title.en', label: 'Гарчиг', lng: 'EN' }, { k: 'title.mn', label: 'Гарчиг', lng: 'МН' },
+      { k: 'text.en', label: 'Танилцуулга (хоосон мөрөөр догол мөр тусгаарлана)', lng: 'EN', area: true, rows: 8 }, { k: 'text.mn', label: 'Танилцуулга', lng: 'МН', area: true, rows: 8 }], S.site.about);
+    bindForm('#contactF', [{ k: 'phone', label: 'Утас' }, { k: 'whatsapp', label: 'WhatsApp дугаар' }, { k: 'email', label: 'Имэйл' }, { k: 'hours', label: 'Ажлын цаг', ph: '8:00 – 22:00' },
+      { k: 'address.en', label: 'Хаяг', lng: 'EN' }, { k: 'address.mn', label: 'Хаяг', lng: 'МН' }, { k: 'map', label: 'Байршил (координат эсвэл Google Maps холбоос)', full: true, ph: '47.9123, 106.9345' }], S.site.contact);
+    LE({ el: '#teamEd', key: 'site', get: function () { return S.site.team; }, addLabel: '+ Хүн нэмэх', max: 40,
+      add: function () { return { photo: '', name: '', role: { en: '', mn: '' }, bio: { en: '', mn: '' } }; },
+      media: [{ k: 'photo', tall: true }],
+      fields: [{ k: 'name', label: 'Нэр', full: true }, { type: 'lang', k: 'role', label: 'Албан тушаал' }, { type: 'lang', k: 'bio', label: 'Товч намтар', area: true }],
+      title: function (it) { return it.name || 'Шинэ хүн'; } });
+  }
+  /* ---------- settings: see and change the password ---------- */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('.eyebtn'); if (!b) return;
+    var inp = $('#' + b.dataset.for), show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password'; b.setAttribute('aria-pressed', String(show)); b.setAttribute('aria-label', show ? 'Нууц үгийг нуух' : 'Нууц үгийг харах');
+  });
+  function loadSettings() {
+    $('#pwSrc').textContent = 'Ачаалж байна…';
+    api('settings-get').then(function (j) {
+      if (!j || !j.ok) { $('#pwSrc').textContent = 'Ачаалж чадсангүй.'; return; }
+      $('#curPw').value = j.password || '';
+      $('#pwSrc').textContent = j.source === 'none' ? 'Нууц үг тохируулаагүй байна. Доороос шинээр үүсгэнэ үү.' : j.source === 'admin' ? 'Энэ админ хэсгээс тохируулсан нууц үг.' : 'Supabase-ийн ADMIN_PASSWORD нууц үг. Доороос сольж болно.';
+      $('#loginEmails').textContent = (j.emails || []).join(', ');
+    });
+  }
+  $('#pwCopy').onclick = function () { var v = $('#curPw').value; if (!v) return; try { navigator.clipboard.writeText(v).then(function () { toast('Хууллаа'); }); } catch (e) { $('#curPw').type = 'text'; $('#curPw').select(); } };
+  $('#pwSave').onclick = function () {
+    var v = $('#newPw').value; if (v.length < 8) { toast('Нууц үг дор хаяж 8 тэмдэгт байх ёстой.', true); return; }
+    var b = this; b.disabled = true;
+    api('settings-password', { password: v }).then(function (j) { b.disabled = false; if (j && j.ok) { toast('Нууц үг солигдлоо.'); $('#newPw').value = ''; loadSettings(); } else toast('Сольж чадсангүй: ' + ((j && j.error) || ''), true); });
+  };
+
   /* ---------- photo picker ---------- */
-  var pickCb = null;
-  function pick(cur, cb) {
-    pickCb = cb; var g = $('#pgrid');
+  var pickCb = null, pickMax = 1600;
+  function pick(cur, cb, opt) {
+    pickCb = cb; pickMax = (opt && opt.max) || 1600; var g = $('#pgrid');
     var draw = function () {
       var b = function (x) { return '<button type="button" data-ph="' + esc(x) + '"' + (x === cur ? ' class="cur"' : '') + '><img src="' + esc(imgUrl(x)) + '" alt="" loading="lazy"><span>' + esc(/^https?:/.test(x) ? x.split('/').pop() : x) + '</span></button>'; };
       g.innerHTML = (S.uploads.length ? '<h4>Таны оруулсан зураг</h4>' + S.uploads.map(b).join('') : '') + '<h4>Сайтын зураг</h4>' + (S.photos || []).map(b).join('');
@@ -596,13 +907,20 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
   $('#pickClose').onclick = function () { $('#pickDlg').close(); };
   $('#pickNone').onclick = function () { $('#pickDlg').close(); pickCb && pickCb(''); };
   $('#upload').onchange = function () {
-    var f = this.files[0]; this.value = ''; if (!f) return;
-    toast('Зураг бэлдэж байна…');
-    shrink(f, 1600, 0.84).then(function (b64) { toast('Хуулж байна…'); return api('upload', { name: f.name, type: 'image/jpeg', b64: b64 }); })
-      .then(function (j) {
-        if (!j || !j.ok) { toast('Зураг оруулж чадсангүй: ' + ((j && j.error) || ''), true); return; }
-        S.uploads.unshift(j.url); toast('Зураг орлоо'); $('#pickDlg').close(); pickCb && pickCb(j.url);
-      }).catch(function () { toast('Зургийг уншиж чадсангүй.', true); });
+    var files = Array.prototype.slice.call(this.files); this.value = ''; if (!files.length) return;
+    var done = [], k = 0;
+    files.reduce(function (pr, f) {
+      return pr.then(function () {
+        k++; toast('Зураг бэлдэж байна… ' + (files.length > 1 ? k + '/' + files.length : ''));
+        return shrink(f, pickMax, 0.85).then(function (b64) { return api('upload', { name: f.name, type: 'image/jpeg', b64: b64 }); })
+          .then(function (j) { if (j && j.ok) { S.uploads.unshift(j.url); done.push(j.url); } else toast('Зураг оруулж чадсангүй: ' + ((j && j.error) || ''), true); })
+          .catch(function () { toast(f.name + ': зургийг уншиж чадсангүй.', true); });
+      });
+    }, Promise.resolve()).then(function () {
+      if (!done.length) return;
+      toast(done.length > 1 ? done.length + ' зураг орлоо. Хэрэгтэйгээ сонгоно уу.' : 'Зураг орлоо');
+      if (done.length === 1) { $('#pickDlg').close(); pickCb && pickCb(done[0]); } else pick('', pickCb, { max: pickMax });
+    });
   };
   function shrink(file, max, q) {
     return new Promise(function (res, rej) {
@@ -676,10 +994,13 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
     var jobs = [];
     if (S.dirty.places) jobs.push(function () { return api('save', { key: 'places', data: S.places }); });
     if (S.dirty.tours || S.dirty.places) jobs.push(function () { return api('save', { key: 'tours', data: S.tours }); });
-    if (S.dirty.gallery) jobs.push(function () { return api('save', { key: 'gallery', data: S.gallery }); });
+    var more = { gallery: function () { return S.gallery; }, site: function () { return S.site; }, hero: function () { return S.hero; }, destinations: function () { return S.dest; }, journeys: function () { return S.journeys; }, styles: function () { return S.styles; } };
+    Object.keys(more).forEach(function (k) { if (S.dirty[k]) jobs.push(function () { return api('save', { key: k, data: more[k]() }); }); });
+    var badD = S.dest.filter(function (p) { return !p.hidden && (!p.img || !p.id || !p.name || !(p.name.en || p.name.mn)); });
+    if (S.dirty.destinations && badD.length) { btn.disabled = false; setStatus('Хадгалаагүй өөрчлөлттэй', true); toast('Очих газар бүрт зураг, нэр, газрын зургийн цэг хэрэгтэй.', true); return; }
     jobs.reduce(function (p, job) { return p.then(function (r) { if (r && !r.ok) return r; return job(); }); }, Promise.resolve(null))
       .then(function (r) {
-        if (r && r.ok) { S.dirty = { tours: false, places: false, gallery: false }; setStatus('Хадгаллаа · ' + new Date().toLocaleTimeString('mn-MN')); toast('Хадгаллаа. Сайт дээр шууд харагдана.'); }
+        if (r && r.ok) { S.dirty = {}; setStatus('Хадгаллаа · ' + new Date().toLocaleTimeString('mn-MN')); toast('Хадгаллаа. Сайт дээр шууд харагдана.'); }
         else { btn.disabled = false; setStatus('Хадгалж чадсангүй', true); toast('Хадгалж чадсангүй: ' + ((r && r.error) || 'сүлжээ'), true); }
       }).catch(function () { btn.disabled = false; setStatus('Хадгалж чадсангүй', true); toast('Сервертэй холбогдож чадсангүй.', true); });
   };
@@ -732,21 +1053,54 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
   $('#gAdd').onclick = function () { pick('', function (v) { if (!v) return; S.gallery.unshift({ img: v, en: '', mn: '' }); markDirty('gallery'); renderGallery(); toast('Зураг нэмэгдлээ. Тайлбараа бичээд "Хадгалах" дарна уу.'); }); };
 
   /* ---------- reviews ---------- */
+  var RV = [];
+  function absImg(u) { return /^https:/.test(u) ? u : 'https://skylandmongolia.com/img/' + u + '.webp'; }
+  function rvForm(r, el) {
+    var v = r ? clone(r) : { name: '', country: '', rating: 5, tour: '', body: '', photos: [], avatar: '' };
+    v.photos = v.photos || [];
+    function draw() {
+      el.innerHTML = '<div class="sec" style="margin-bottom:12px"><div class="sec-h"><h3>' + (r ? 'Сэтгэгдэл засах' : 'Шинэ сэтгэгдэл') + '</h3><p>' + (r ? '' : 'Мессеж, имэйлээр ирсэн сэтгэгдлийг аялагчийн зөвшөөрөлтэйгөөр нэмнэ. Шууд сайтад гарна.') + '</p></div>' +
+        '<div class="grid2"><label class="f"><span class="l">Нэр</span><input type="text" data-v="name" value="' + esc(v.name) + '"></label><label class="f"><span class="l">Улс</span><input type="text" data-v="country" value="' + esc(v.country || '') + '"></label>' +
+        '<label class="f"><span class="l">Үнэлгээ</span><select data-v="rating">' + [5, 4, 3, 2, 1].map(function (n) { return '<option value="' + n + '"' + (+v.rating === n ? ' selected' : '') + '>' + '★★★★★'.slice(0, n) + '</option>'; }).join('') + '</select></label>' +
+        '<label class="f"><span class="l">Аялал</span><select data-v="tour"><option value="">—</option>' + S.tours.map(function (t) { var n = t.name && (t.name.en || t.name.mn); return '<option' + (n === v.tour ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + (v.tour && !S.tours.some(function (t) { return t.name && t.name.en === v.tour; }) ? '<option selected>' + esc(v.tour) + '</option>' : '') + '</select></label>' +
+        '<label class="f" style="grid-column:1/-1"><span class="l">Сэтгэгдэл</span><textarea rows="4" data-v="body">' + esc(v.body) + '</textarea></label></div>' +
+        '<div class="sec-h"><h3 style="font-size:14px">Аялагчийн зураг</h3></div><div class="rvph">' + (v.avatar ? '<span><img src="' + esc(v.avatar) + '" alt=""><button type="button" data-avx aria-label="Хасах">✕</button></span>' : '') + '<button class="btn sm" type="button" data-av>' + (v.avatar ? 'Солих' : '+ Зураг') + '</button></div>' +
+        '<div class="sec-h"><h3 style="font-size:14px">Аяллын зургууд</h3></div><div class="rvph">' + v.photos.map(function (u, i) { return '<span><img src="' + esc(u) + '" alt=""><button type="button" data-phx="' + i + '" aria-label="Хасах">✕</button></span>'; }).join('') + '<button class="btn sm" type="button" data-ph>+ Зураг нэмэх</button></div>' +
+        '<p style="display:flex;gap:8px;margin:6px 0 0"><button class="btn sm pri" type="button" data-save>' + (r ? 'Хадгалах' : 'Нэмэх') + '</button><button class="btn sm ghost" type="button" data-cancel>Болих</button></p></div>';
+      $$('[data-v]', el).forEach(function (x) { x.addEventListener('input', function () { v[x.dataset.v] = x.value; }); x.addEventListener('change', function () { v[x.dataset.v] = x.value; }); });
+      $('[data-av]', el).onclick = function () { pick(v.avatar, function (u) { v.avatar = u ? absImg(u) : ''; draw(); }, { max: 600 }); };
+      var ax = $('[data-avx]', el); if (ax) ax.onclick = function () { v.avatar = ''; draw(); };
+      $('[data-ph]', el).onclick = function () { pick('', function (u) { if (!u) return; v.photos.push(absImg(u)); draw(); }, { max: 1600 }); };
+      $$('[data-phx]', el).forEach(function (b) { b.onclick = function () { v.photos.splice(+b.dataset.phx, 1); draw(); }; });
+      $('[data-cancel]', el).onclick = function () { el.innerHTML = ''; if (r) loadReviews(); };
+      $('[data-save]', el).onclick = function () {
+        var b = this; b.disabled = true;
+        api(r ? 'review-edit' : 'review-add', { id: r && r.id, name: v.name, country: v.country, rating: +v.rating, tour: v.tour, body: v.body, photos: v.photos, avatar: v.avatar })
+          .then(function (j) { b.disabled = false; if (j && j.ok) { toast(r ? 'Хадгаллаа' : 'Нэмлээ. Сайтад гарлаа.'); el.innerHTML = ''; loadReviews(); } else toast('Алдаа: ' + ((j && j.error) || 'сүлжээ'), true); });
+      };
+    }
+    draw();
+  }
+  $('#rvAdd').onclick = function () { rvForm(null, $('#rvNew')); };
   function loadReviews() {
     var el = $('#rvs'); el.innerHTML = '<div class="empty">Ачаалж байна…</div>';
     api('reviews').then(function (j) {
       if (!j.ok) { el.innerHTML = '<div class="empty">Ачаалж чадсангүй.</div>'; return; }
+      RV = j.items;
       var pend = j.items.filter(function (x) { return !x.approved; }).length, c = $('#rvCount'); c.hidden = !pend; c.textContent = pend;
       if (!j.items.length) { el.innerHTML = '<div class="empty">Одоогоор сэтгэгдэл ирээгүй байна.</div>'; return; }
       el.innerHTML = j.items.map(function (r) {
-        return '<article class="req"><div class="req-h"><b>' + esc(r.name) + (r.country ? ' · ' + esc(r.country) : '') + '</b><small>' + '★★★★★'.slice(0, r.rating) + '☆☆☆☆☆'.slice(0, 5 - r.rating) + ' · ' + new Date(r.created_at).toLocaleString('mn-MN') +
+        var ph = Array.isArray(r.photos) ? r.photos : [];
+        return '<article class="req" data-rid="' + r.id + '"><div class="req-h">' + (r.avatar ? '<img class="rvav" src="' + esc(r.avatar) + '" alt="">' : '') + '<b>' + esc(r.name) + (r.country ? ' · ' + esc(r.country) : '') + '</b><small>' + '★★★★★'.slice(0, r.rating) + '☆☆☆☆☆'.slice(0, 5 - r.rating) + ' · ' + new Date(r.created_at).toLocaleString('mn-MN') +
           (r.approved ? ' · <span style="color:var(--ok)">сайтад гарч байгаа</span>' : ' · <span style="color:var(--warn)">хүлээгдэж буй</span>') + '</small></div>' +
           '<p style="margin:0;white-space:pre-wrap">' + esc(r.body) + '</p>' + (r.tour ? '<small style="color:var(--ink2)">Аялал: ' + esc(r.tour) + '</small>' : '') +
-          '<p style="display:flex;gap:8px;margin:6px 0 0">' + (r.approved ? '<button class="btn sm" data-rset="' + r.id + '" data-v="0">Сайтаас нуух</button>' : '<button class="btn sm pri" data-rset="' + r.id + '" data-v="1">Нийтлэх</button>') +
-          '<button class="btn sm danger" data-rdel="' + r.id + '">Устгах</button></p></article>';
+          (ph.length ? '<div class="rvph">' + ph.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="" loading="lazy"></a>'; }).join('') + '</div>' : '') +
+          '<p style="display:flex;gap:8px;margin:6px 0 0;flex-wrap:wrap">' + (r.approved ? '<button class="btn sm" data-rset="' + r.id + '" data-v="0">Сайтаас нуух</button>' : '<button class="btn sm pri" data-rset="' + r.id + '" data-v="1">Нийтлэх</button>') +
+          '<button class="btn sm" data-redit="' + r.id + '">Засах</button><button class="btn sm danger" data-rdel="' + r.id + '">Устгах</button></p><div data-rform></div></article>';
       }).join('');
       $$('[data-rset]', el).forEach(function (b) { b.onclick = function () { b.disabled = true; api('review-set', { id: +b.dataset.rset, approved: b.dataset.v === '1' }).then(function (x) { toast(x.ok ? (b.dataset.v === '1' ? 'Нийтэллээ. Сайтад гарлаа.' : 'Сайтаас нуулаа.') : 'Алдаа гарлаа', !x.ok); loadReviews(); }); }; });
-      $$('[data-rdel]', el).forEach(function (b) { b.onclick = function () { confirmBar('Энэ сэтгэгдлийг бүр мөсөн устгах уу?', function () { api('review-delete', { id: +b.dataset.rdel }).then(function (x) { toast(x.ok ? 'Устгалаа' : 'Алдаа гарлаа', !x.ok); loadReviews(); }); }); }; });
+      $$('[data-redit]', el).forEach(function (b) { b.onclick = function () { var r = RV.filter(function (x) { return x.id === +b.dataset.redit; })[0]; rvForm(r, $('[data-rform]', b.closest('article'))); }; });
+      $$('[data-rdel]', el).forEach(function (b) { b.onclick = function () { confirmBar('Энэ сэтгэгдэл, зургийг нь бүр мөсөн устгах уу?', function () { api('review-delete', { id: +b.dataset.rdel }).then(function (x) { toast(x.ok ? 'Устгалаа' : 'Алдаа гарлаа', !x.ok); loadReviews(); }); }); }; });
     });
   }
 
@@ -767,13 +1121,15 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
   /* ---------- history ---------- */
   function loadHistory() {
     var el = $('#hist'); el.innerHTML = '<div class="empty">Ачаалж байна…</div>';
-    Promise.all([api('history', { key: 'tours' }), api('history', { key: 'places' })]).then(function (rs) {
+    var HK = ['tours', 'places', 'gallery', 'site', 'hero', 'destinations', 'journeys', 'styles'];
+    Promise.all(HK.map(function (k) { return api('history', { key: k }); })).then(function (rs) {
       var items = [];
-      rs.forEach(function (j, k) { (j.items || []).forEach(function (x) { x.key = k ? 'places' : 'tours'; items.push(x); }); });
+      rs.forEach(function (j, k) { (j.items || []).forEach(function (x) { x.key = HK[k]; items.push(x); }); });
       items.sort(function (a, b) { return b.id - a.id; });
       if (!items.length) { el.innerHTML = '<div class="empty">Одоогоор өмнөх хувилбар алга. Анх хадгалсны дараа энд гарч ирнэ.</div>'; return; }
       el.innerHTML = items.map(function (x) {
-        return '<div class="hrow"><b>' + (x.key === 'tours' ? 'Аяллууд' : 'Газрууд') + '</b><small>' + new Date(x.saved_at).toLocaleString('mn-MN') + ' хүртэлх хувилбар' + (x.note ? ' · ' + esc(x.note) : '') + '</small><span style="flex:1"></span><button class="btn sm" data-rs="' + x.id + '">Сэргээх</button></div>';
+        var HN = { tours: 'Аяллууд', places: 'Газрын зургийн цэгүүд', gallery: 'Галерей', site: 'Хэсгийн зураг, бичлэг, бидний тухай', hero: 'Нүүр зураг', destinations: 'Очих газрууд', journeys: 'Санал болгох маршрут', styles: 'Аяллын хэв маяг' };
+        return '<div class="hrow"><b>' + (HN[x.key] || x.key) + '</b><small>' + new Date(x.saved_at).toLocaleString('mn-MN') + ' хүртэлх хувилбар' + (x.note ? ' · ' + esc(x.note) : '') + '</small><span style="flex:1"></span><button class="btn sm" data-rs="' + x.id + '">Сэргээх</button></div>';
       }).join('');
       $$('[data-rs]', el).forEach(function (b) {
         b.onclick = function () {
