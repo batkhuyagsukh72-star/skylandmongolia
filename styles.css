@@ -969,3 +969,4 @@ html[data-theme="dark"] .rvf .rvf-drop{background:rgba(255,255,255,.05)}
 .mnav nav a{font-size:clamp(28px,8.4vw,40px);padding:8px 0}
 html.menu-open .chat-dock{display:none}
 .rv-list:empty{display:none}
+[hidden]:not(.lbx-nav){display:none!important}
