@@ -1166,6 +1166,14 @@ function skyBoot() {
   }
   $('#yr').textContent = new Date().getFullYear();
 
+  /* called when newer content arrives after the page has opened from the saved copy */
+  window.skyRefresh = function () {
+    byId = {}; D.places.forEach(function (p) { byId[p.id] = p; });
+    if (!D.tours.some(function (x) { return x.id === tourSel; })) tourSel = D.tours[0].id;
+    if (!D.tours.some(function (x) { return x.id === jm.cur; }) && jmTours()[0]) jm.cur = jmTours()[0].id;
+    applySiteImages(); applyLang(false);
+  };
+
   /* ---------- first render ---------- */
   applyLang(true);
   splitWord();
@@ -1321,7 +1329,7 @@ function skyBoot() {
 
 /* ---------- content edited in /admin (Supabase "content" table), with the bundled data as fallback ---------- */
 (function () {
-  var D = window.SKY, M = window.SKY_MAP, booted = false, CK = 'sky-content-v2';
+  var D = window.SKY, M = window.SKY_MAP, booted = false, CK = 'sky-content-v3';
   function boot() { if (booted) return; booted = true; if (D.loadLang && D.pickLang) D.loadLang(D.pickLang(), skyBoot); else skyBoot(); }
   function proj(lat, lon) {
     var p = M.proj, A = p[0], B = p[1], C = p[2], K = A * 180 / Math.PI;
@@ -1376,8 +1384,11 @@ function skyBoot() {
     .then(function (res) {
       var rows = res[0]; if (!rows && !res[1]) return;
       rows = (rows || []).concat(res[1] ? [{ key: 'reviews', data: res[1] }] : []);
-      try { localStorage.setItem(CK, JSON.stringify(rows)); } catch (e) {}
+      var fresh = JSON.stringify(rows), old = cached ? JSON.stringify(cached) : '';
+      try { localStorage.setItem(CK, fresh); } catch (e) {}
       if (!booted) { try { apply(rows); } catch (e) {} }
+      /* the page already opened with the saved copy: if the owner changed something since, show the new content now */
+      else if (fresh !== old) { try { apply(rows); if (window.skyRefresh) window.skyRefresh(); } catch (e) {} }
     })
     .catch(function () {})
     .then(function () { clearTimeout(timer); boot(); });
