@@ -527,7 +527,7 @@ function skyBoot() {
       if (!window.gsap || reduce) { cam.x = to.x; cam.y = to.y; cam.s = to.s; applyCam(); done(); return; }
       flying = true; svg.classList.add('lbl-off');
       var zt = gsap.timeline({ onComplete: done });
-      fig._tl = zt; fly(zt, to, 0.95, 0);
+      fig._tl = zt; fly(zt, to, 0.6, 0);
     }
     function stopView(i) { var p = pts[i]; return { x: p[0], y: p[1], s: Math.min(Math.max(route.s * 1.6, sFull * 2.3), sFull * 5) }; }
     function idle() { return fig.dataset.playing !== '1'; }
@@ -566,28 +566,28 @@ function skyBoot() {
     startState(); fig.dataset.playing = '1';
     var tl = gsap.timeline({ onComplete: finalState });
     fig._tl = tl;
-    tl.add(function () { pins[0].classList.add('on'); }, 0.15);
-    fly(tl, route, mob ? 1.1 : 1.3, 0.45);
+    tl.add(function () { pins[0].classList.add('on'); }, 0.05);
+    fly(tl, route, mob ? 0.7 : 0.85, 0.15);
     tl.set(car, { opacity: 1 });
     segEls.forEach(function (el, si) {
-      var len = +el.dataset.len, dur = Math.min(Math.max(len / 95, 0.55), 1.2), st = { v: 0 };
+      var len = +el.dataset.len, dur = Math.min(Math.max(len / 170, 0.3), 0.7), st = { v: 0 };
       tl.to(st, { v: 1, duration: dur, ease: 'power1.inOut', onUpdate: function () {
         el.style.strokeDashoffset = len * (1 - st.v);
         var pt = el.getPointAtLength(len * st.v); carPt = [pt.x, pt.y]; placeCar(q(cam.s) / cam.s);
-      } }, '+=0.12');
+      } }, '+=0.04');
       var to = si + 1;
       tl.add(function () {
         if (pinByIdx[to]) pinByIdx[to].classList.add('on');
         chips.forEach(function (b) { if (+b.dataset.i === to) b.classList.remove('dim'); });
         if (stops[to] && stops[to].img) showCard(to); else hideCard();
       });
-      if (stops[to] && stops[to].img) tl.to({}, { duration: 0.75 });
+      if (stops[to] && stops[to].img) tl.to({}, { duration: 0.45 });
     });
-    tl.add(function () { hideCard(); gsap.to(car, { opacity: 0, duration: 0.3 }); if (!mob) svg.classList.add('lbl-off'); }, '+=0.15');
+    tl.add(function () { hideCard(); gsap.to(car, { opacity: 0, duration: 0.25 }); if (!mob) svg.classList.add('lbl-off'); }, '+=0.08');
     if (!mob) {
-      fly(tl, full, 1.2, '+=0.1');
+      fly(tl, full, 0.8, '+=0.05');
       tl.add(function () { applyLayout(le); svg.classList.remove('lbl-off'); svg.classList.add('oth-on'); });
-      tl.to({}, { duration: 0.4 });
+      tl.to({}, { duration: 0.2 });
     }
   }
   var rmObs = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
@@ -688,17 +688,28 @@ function skyBoot() {
   })();
 
   /* ---------- hero slideshow: a new photo every 3 seconds, paused when the hero is off screen ---------- */
-  var heroS = { items: [], at: 0, timer: 0, on: true };
+  var heroS = { items: [], fgs: [], at: 0, timer: 0, on: true };
   function renderHero() {
     var hero = $('.hero'), stage = $('.hero-stage'), first = $('.hero-bg', stage), title = $('.hero-title', stage), dots = $('#heroDots');
     var sl = (D.hero || []).filter(function (h) { return h && h.img; });
     if (!heroS.items.length) {
+      var ofg = $('.hero-fg', stage);
       heroS.items = sl.map(function (h, i) {
         if (i === 0 && h.img === 'hero') return first;
         var im = document.createElement('img'); im.className = 'hero-bg hero-sl'; im.decoding = 'async'; im.dataset.src = imgUrl(h.img);
         if (i === 0) { im.src = im.dataset.src; im.classList.add('on'); }
         stage.insertBefore(im, title); return im;
       });
+      /* the land without the sky, laid over the title so the word sits behind the ridge */
+      heroS.fgs = sl.map(function (h, i) {
+        if (h.img === 'hero') return ofg;
+        if (!h.fg) return null;
+        var f = document.createElement('img'); f.className = 'hero-fg'; f.alt = ''; f.setAttribute('aria-hidden', 'true'); f.decoding = 'async'; f.dataset.src = imgUrl(h.fg);
+        if (i === 0) { f.src = f.dataset.src; f.classList.add('on'); }
+        stage.appendChild(f); return f;
+      });
+      if (!(sl[0] && sl[0].img === 'hero') && ofg) ofg.classList.remove('on');
+      if (sl[0] && sl[0].lift) hero.style.setProperty('--lift', (+sl[0].lift || 0) + '%');
       hero.classList.toggle('no-orig', !(sl[0] && sl[0].img === 'hero'));
       hero.classList.toggle('alt', !(sl[0] && sl[0].img === 'hero'));
       if (sl.length > 1) heroLoop();
@@ -708,27 +719,40 @@ function skyBoot() {
     dots.innerHTML = sl.length < 2 ? '' : sl.map(function (h, i) { return '<button type="button" data-hs="' + i + '" aria-label="' + esc(L(h) || (i + 1)) + '" aria-pressed="' + (i === heroS.at) + '"></button>'; }).join('');
   }
   function heroLoad(i) {
-    var im = heroS.items[i]; if (!im) return Promise.resolve();
-    if (!im.getAttribute('src') && im.dataset.src) im.src = im.dataset.src;
-    if (im.complete && im.naturalWidth) return Promise.resolve();
-    return new Promise(function (res) { im.addEventListener('load', res, { once: true }); im.addEventListener('error', res, { once: true }); setTimeout(res, 4000); });
+    return Promise.all([heroS.items[i], heroS.fgs[i]].map(function (im) {
+      if (!im) return null;
+      if (!im.getAttribute('src') && im.dataset.src) im.src = im.dataset.src;
+      if (im.complete && im.naturalWidth) return null;
+      return new Promise(function (res) { im.addEventListener('load', res, { once: true }); im.addEventListener('error', res, { once: true }); setTimeout(res, 4000); });
+    }));
   }
   function heroGo(i) {
-    var n = heroS.items.length; if (n < 2) return;
+    var n = heroS.items.length; if (n < 2) return Promise.resolve();
     i = (i + n) % n;
-    heroLoad(i).then(function () {
+    return heroLoad(i).then(function () {
       heroS.at = i;
       var sl = D.hero.filter(function (h) { return h && h.img; }), orig = sl[i] && sl[i].img === 'hero';
       heroS.items.forEach(function (im, k) { if (im.classList.contains('hero-sl')) im.classList.toggle('on', k === i); });
+      heroS.fgs.forEach(function (f, k) { if (f) f.classList.toggle('on', k === i); });
+      $('.hero').style.setProperty('--lift', (+(sl[i] && sl[i].lift) || 0) + '%');
       $('.hero').classList.toggle('alt', !orig);
       $$('#heroDots button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.hs === i)); });
       heroLoad((i + 1) % n);
     });
   }
+  /* the first photo stays 5 s (counted once the page has opened), the others 3 s */
+  function heroNext() {
+    clearTimeout(heroS.timer);
+    if (!root.classList.contains('loaded')) { heroS.timer = setTimeout(heroNext, 300); return; }
+    var wait = reduce ? 6000 : heroS.at === 0 ? 5000 : 3000;
+    heroS.timer = setTimeout(function () {
+      if (!heroS.on || document.hidden) { heroNext(); return; }
+      heroGo(heroS.at + 1).then(heroNext);
+    }, wait);
+  }
   function heroLoop() {
-    clearInterval(heroS.timer);
-    heroS.timer = setInterval(function () { if (heroS.on && !document.hidden) heroGo(heroS.at + 1); }, reduce ? 6000 : 3000);
-    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { heroS.on = es[0].isIntersecting; }).observe($('.hero'));
+    heroNext();
+    if (!heroS.io && 'IntersectionObserver' in window) { heroS.io = new IntersectionObserver(function (es) { heroS.on = es[0].isIntersecting; }); heroS.io.observe($('.hero')); }
     setTimeout(function () { heroLoad(1); }, 2500);
   }
   $('#heroDots').addEventListener('click', function (e) { var b = e.target.closest('[data-hs]'); if (b) { heroGo(+b.dataset.hs); heroLoop(); } });
@@ -903,7 +927,8 @@ function skyBoot() {
       tiles.push({ i: lb.length, v: v, img: ph[0], n: ph.length });
       ph.forEach(function (p) { lb.push({ img: mediaUrl(p), rev: { r: v.r, q: v.q, who: v.who, tour: v.tour, avatar: v.avatar ? mediaUrl(v.avatar) : '' }, alt: v.who }); });
     });
-    (D.travellers || []).forEach(function (g) { tiles.push({ i: lb.length, img: imgUrl(g.img), cap: L(g), n: 1 }); lb.push({ img: imgUrl(g.img), cap: L(g) }); });
+    var used = {}; lb.forEach(function (x) { var m = String(x.img).match(/img\/(.+)\.webp/); if (m) used[m[1]] = 1; });
+    (D.travellers || []).forEach(function (g) { if (used[g.img]) return; tiles.push({ i: lb.length, img: imgUrl(g.img), cap: L(g), n: 1 }); lb.push({ img: imgUrl(g.img), cap: L(g) }); });
     wallLb = lb;
     $('#rvWall').innerHTML = tiles.map(function (x) {
       var v = x.v;

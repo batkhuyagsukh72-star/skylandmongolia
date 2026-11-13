@@ -39,7 +39,7 @@
   D.loadLang = function (id, cb) {
     if (id === 'en' || id === 'mn' || !ok(id) || D.tx[id]) { cb(); return; }
     var done = false, fin = function () { if (!done) { done = true; cb(); } };
-    var s = document.createElement('script'); s.src = 'i18n/' + id + '.js?v=20261114'; s.onload = fin; s.onerror = fin;
+    var s = document.createElement('script'); s.src = 'i18n/' + id + '.js?v=20261114b'; s.onload = fin; s.onerror = fin;
     setTimeout(fin, 5000); document.head.appendChild(s);
   };
 })();

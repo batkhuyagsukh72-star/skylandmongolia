@@ -373,7 +373,7 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
 
 <div class="toast" id="toast" hidden role="status"></div>
 
-<script src="../data.js?v=20261114"></script>
+<script src="../data.js?v=20261114b"></script>
 <script src="../map.js"></script>
 <script>
 (function () {
@@ -779,7 +779,7 @@ dialog::backdrop{background:rgba(19,26,39,.45)}
       if (x.dataset.rr) x.addEventListener('change', rerender);
     });
     $$('[data-lc]', el).forEach(function (x) { x.onchange = function () { var it = arr[+x.dataset.lc], k = x.dataset.k; it[k] = $$('[data-lc="' + x.dataset.lc + '"][data-k="' + k + '"]', el).filter(function (c) { return c.checked; }).map(function (c) { return c.value; }); dirty(); }; });
-    $$('[data-img]', el).forEach(function (b) { b.onclick = function () { var it = arr[+b.dataset.img], k = b.dataset.k; pick(getP(it, k) || '', function (v) { if (!v && (o.media || []).some(function (m) { return m.k === k && m.req; })) return; setP(it, k, v); dirty(); rerender(); }, o.pickOpt); }; });
+    $$('[data-img]', el).forEach(function (b) { b.onclick = function () { var it = arr[+b.dataset.img], k = b.dataset.k; pick(getP(it, k) || '', function (v) { if (!v && (o.media || []).some(function (m) { return m.k === k && m.req; })) return; if (k === 'img' && it.fg && v !== it.img) delete it.fg; setP(it, k, v); dirty(); rerender(); }, o.pickOpt); }; });
     $$('[data-vup]', el).forEach(function (inp) {
       inp.onchange = function () {
         var f = inp.files[0], i = +inp.dataset.vup; inp.value = ''; if (!f) return;

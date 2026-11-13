@@ -671,16 +671,16 @@ window.SKY = {
     vlog: 'https://www.instagram.com/tuvshin.tmz'
   },
 
-  /* Hero slideshow: changes every 3 seconds. The first photo keeps the ridge cut-out that the title sinks behind. Editable in /admin. */
+  /* Hero slideshow: the first photo stays 5 seconds, then a new one every 3. Photos with an `fg` cut-out (the land without the sky) show the title behind the land; `lift` raises the title (in % of the hero height) so the land covers only the foot of the letters. Editable in /admin. */
   hero: [
     { img: 'hero', en: 'Khongor sand dunes in the Gobi with a camel caravan', mn: 'Говийн Хонгорын элс, тэмээн жин' },
-    { img: 'old/khongor-sunset', en: 'Sunset over the Khongor dunes', mn: 'Хонгорын элсний нар жаргалт' },
+    { img: 'old/khongor-sunset', fg: 'old/khongor-sunset-fg', lift: 10, en: 'Sunset over the Khongor dunes', mn: 'Хонгорын элсний нар жаргалт' },
     { img: 'old/orkhon-waterfall', en: 'The Orkhon waterfall', mn: 'Орхоны хүрхрээ' },
     { img: 'old/khuvsgul', en: 'Lake Khuvsgul', mn: 'Хөвсгөл нуур' },
     { img: 'old/tsagaan-suvarga', en: 'Tsagaan Suvarga cliffs', mn: 'Цагаан суварга' },
     { img: 'old/erdene-zuu', en: 'Erdene Zuu Monastery', mn: 'Эрдэнэ Зуу хийд' },
     { img: 'old/turquoise-lake', en: 'A turquoise lake in the mountains', mn: 'Уулын цэнхэр нуур' },
-    { img: 'old/bayanzag-sunset', en: 'The Flaming Cliffs at sunset', mn: 'Баянзагийн улаан хад' }
+    { img: 'old/bayanzag-sunset', fg: 'old/bayanzag-sunset-fg', en: 'The Flaming Cliffs at sunset', mn: 'Баянзагийн улаан хад' }
   ],
   /* Photos of the fixed sections, the short films, the company text, the team and the contact details. All editable in /admin. */
   site: {
