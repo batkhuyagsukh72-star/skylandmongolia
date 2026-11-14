@@ -736,6 +736,7 @@ function skyBoot() {
       heroS.fgs.forEach(function (f, k) { if (f) f.classList.toggle('on', k === i); });
       $('.hero').style.setProperty('--lift', (+(sl[i] && sl[i].lift) || 0) + '%');
       $('.hero').classList.toggle('alt', !orig);
+      $('.hero').classList.toggle('not-first', i !== 0);
       $$('#heroDots button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.hs === i)); });
       heroLoad((i + 1) % n);
     });

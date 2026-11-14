@@ -970,3 +970,7 @@ html[data-theme="dark"] .rvf .rvf-drop{background:rgba(255,255,255,.05)}
 html.menu-open .chat-dock{display:none}
 .rv-list:empty{display:none}
 [hidden]:not(.lbx-nav){display:none!important}
+/* the word MONGOLIA belongs to the first photo only; it fades out with the slide change */
+.hero-title{transition:opacity .9s ease,bottom 1.2s ease}
+.hero.not-first .hero-title{opacity:0}
+html.rm .hero-title{transition:none}
