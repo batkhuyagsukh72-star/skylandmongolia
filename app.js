@@ -83,7 +83,7 @@ function skyBoot() {
   function cardHTML(p) {
     var on = inTrip(p.id);
     return '<article class="card" role="listitem" data-id="' + p.id + '" data-region="' + p.region + '">' +
-      '<img src="img/' + p.img + '.webp" alt="" width="800" height="1200" loading="lazy" decoding="async">' +
+      '<img src="' + esc(imgUrl(p.img)) + '" alt="" width="800" height="1200" loading="lazy" decoding="async">' +
       '<span class="card-ring" aria-hidden="true"></span>' +
       '<button class="card-open" type="button" aria-label="' + L(p.name) + ' — ' + t('dest.more') + '"></button>' +
       '<button class="card-add" type="button" aria-pressed="' + on + '" aria-label="' + t('dest.add') + ': ' + L(p.name) + '"><svg><use href="#i-' + (on ? 'check' : 'plus') + '"/></svg></button>' +
@@ -189,7 +189,7 @@ function skyBoot() {
     D.journeys.forEach(function (j, i) { cols[i % n].push(j); });
     $('#masonry').innerHTML = cols.map(function (col) {
       return '<div class="mcol">' + col.map(function (j) {
-        return '<button class="jcard" type="button" data-j="' + j.id + '"><img src="img/' + j.img + '.webp" alt="" width="800" height="1200" loading="lazy" decoding="async">' +
+        return '<button class="jcard" type="button" data-j="' + j.id + '"><img src="' + esc(imgUrl(j.img)) + '" alt="" width="800" height="1200" loading="lazy" decoding="async">' +
           '<span class="jname">' + L(j.name) + '</span><span class="jring"><b>' + j.places.length + '</b><span>' + t('j.places') + '</span></span>' +
           '<span class="jadd"><svg><use href="#i-plus"/></svg>' + t('j.add') + '</span></button>';
       }).join('') + '</div>';
@@ -208,7 +208,7 @@ function skyBoot() {
   /* ---------- styles tiles ---------- */
   function renderTiles() {
     $('#tiles').innerHTML = D.styles.map(function (s, i) {
-      return '<a class="tile" href="#plan" data-style="' + i + '"><img src="img/' + s.img + '.webp" alt="" width="1400" height="788" loading="lazy" decoding="async"><span class="tile-label">' + L(s) + '</span></a>';
+      return '<a class="tile" href="#plan" data-style="' + i + '"><img src="' + esc(imgUrl(s.img)) + '" alt="" width="1400" height="788" loading="lazy" decoding="async"><span class="tile-label">' + L(s) + '</span></a>';
     }).join('');
   }
   $('#tiles').addEventListener('click', function (e) {
@@ -300,7 +300,7 @@ function skyBoot() {
   }
   function openDetail(id) {
     var p = byId[id]; dlg.dataset.id = id;
-    $('#dt-img').src = 'img/' + p.img + '.webp'; $('#dt-img').alt = L(p.name);
+    $('#dt-img').src = imgUrl(p.img); $('#dt-img').alt = L(p.name);
     $('#dt-where').textContent = L(p.where); $('#dt-name').textContent = L(p.name);
     $('#dt-best').textContent = L(p.best); $('#dt-text').textContent = L(p.text);
     $('#dt-map').innerHTML = M.pins[id] ? mapSVG([id], { single: true }) : '';
