@@ -153,7 +153,7 @@ const okUrl = (u: unknown) => typeof u === "string" && /^https:\/\/[^\s"'<>]+$/.
 function escH(s: unknown) { return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!)); }
 async function mail(to: string, subject: string, html: string) {
   if (!RESEND) return false;
-  const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: "Bearer " + RESEND, "Content-Type": "application/json" }, body: JSON.stringify({ from: FROM, to: [to], subject, html }) });
+  const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: "Bearer " + RESEND, "Content-Type": "application/json" }, body: JSON.stringify({ from: FROM, to: [to], reply_to: NOTIFY, subject, html }) });
   return r.ok;
 }
 const ipOf = (req: Request) => sha(req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "?");

@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
   const lang = b.lang === "mn" ? "mn" : "en";
   const row = {
     name, contact,
-    email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contact) ? contact.toLowerCase() : null,
+    email: (contact.match(/[^\s@,;<>()]+@[^\s@,;<>()]+\.[a-z]{2,}/i)?.[0] ?? "").toLowerCase() || null,
     month: clip(b.month, 40), travellers: clip(b.travellers, 20), style: clip(b.style, 80),
     places: clip(b.places, 600), note: clip(b.note, 3000), tour: clip(b.tour, 120), lang,
     ip_hash: await sha(req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown"),
@@ -108,11 +108,14 @@ Deno.serve(async (req) => {
     const wa = row.email ? "" : contact.replace(/[^\d+]/g, "");
     try {
       await send({
-        from: MAIL_FROM, to: [NOTIFY_TO], subject: `New trip request — ${name}`,
-        ...(row.email ? { reply_to: row.email } : {}),
-        html: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5"><h2 style="font-weight:600;margin:0 0 12px">New trip request${id ? " #" + id : ""}</h2><table style="border-collapse:collapse">${rows}</table>` +
-          (row.email ? `<p style="margin-top:18px">Reply to this email to answer ${esc(name)} directly.</p>` : wa.length > 6 ? `<p style="margin-top:18px"><a href="https://wa.me/${wa.replace(/^\+/, "")}">Open WhatsApp chat</a></p>` : "") + `</div>`,
-        text: lines.filter((l) => l[1]).map((l) => `${l[0]}: ${l[1]}`).join("\n"),
+        from: MAIL_FROM, to: [NOTIFY_TO], subject: `New trip request — ${name}${row.email ? "" : " (WhatsApp / утас)"}`,
+        // replies go to the traveller; without an e-mail they come back to the team inbox instead of bouncing off hello@
+        reply_to: row.email || NOTIFY_TO,
+        html: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5">` +
+          (row.email ? "" : `<div style="background:#FFF4D6;border:1px solid #F0C54A;border-radius:8px;padding:12px 14px;margin:0 0 16px">⚠️ <b>Аялагч имэйл үлдээгээгүй.</b> Энэ имэйлд хариу бичвэл аялагчид очихгүй. Энэ дугаараар WhatsApp эсвэл утсаар холбогдоно уу: <b>${esc(contact)}</b>${wa.length > 6 ? ` — <a href="https://wa.me/${wa.replace(/^\+/, "")}">WhatsApp-аар нээх</a>` : ""}</div>`) +
+          `<h2 style="font-weight:600;margin:0 0 12px">New trip request${id ? " #" + id : ""}</h2><table style="border-collapse:collapse">${rows}</table>` +
+          (row.email ? `<p style="margin-top:18px">Reply to this email to answer ${esc(name)} directly.</p>` : "") + `</div>`,
+        text: (row.email ? "" : `Аялагч имэйл үлдээгээгүй — WhatsApp / утсаар холбогдоно уу: ${contact}\n\n`) + lines.filter((l) => l[1]).map((l) => `${l[0]}: ${l[1]}`).join("\n"),
       });
       mailed = true;
       if (row.email) {
